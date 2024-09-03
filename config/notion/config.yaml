@@ -1,0 +1,4 @@
+RAW_DIR: "/work/data/raw"
+PROCESSING_DIR: "/work/data/processing"
+STAGING_DIR: "/work/data/staging"
+MAPPING_HISTORY_DIR: "/work/config/notion"
