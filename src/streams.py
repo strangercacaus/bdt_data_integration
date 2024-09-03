@@ -1,4 +1,3 @@
-import datetime
 from abc import ABC, abstractmethod
 from typing import Tuple, Any
 import logging
@@ -171,7 +170,8 @@ class NotionDatabaseQueryStream(APIStream):
             logger.warning(
                 "Tipo de paginação não implementada, consulte o arquivo apis.py para opções de implementação"
             )
-    def run_source(self):
+    
+    def run_stream(self):
         """
         Método responsável pela ingestão completa da stream.
 
@@ -184,5 +184,3 @@ class NotionDatabaseQueryStream(APIStream):
             record_list.extend(page)
         return record_list
         
-
-    

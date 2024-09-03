@@ -1,11 +1,12 @@
+import datetime
 from abc import ABC, abstractmethod
-
+from typing import List
 
 class DataIngestor(ABC):
     """
     Lógica de checkpoints, logging de extração, checagem de DQ e Freshness, coisas do tipo.
     """
-    def __init__(self,api, writer,endpoint)-> None:
+    def __init__(self,api, writer,endpoint)->None:
         self.api = api
         self.writer = writer
 
