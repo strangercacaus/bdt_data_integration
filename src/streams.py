@@ -106,10 +106,7 @@ class NotionDatabaseQueryStream(APIStream):
         }
 
     def _get_next_payload(self, next_cursor=None):
-        if next_cursor:
-            return {"start_cursor": next_cursor}
-        else:
-            return {}
+        return {"start_cursor": next_cursor} if next_cursor else {}
 
     def _extract_next_cursor_from_response(self, response):
         return response.get("next_cursor") if response.get("has_more") else None
@@ -122,7 +119,9 @@ class NotionDatabaseQueryStream(APIStream):
         response.raise_for_status()
         return response.status_code, response.json()
 
-    def post_data(self, json={}, **kwargs) -> tuple[int, any]:
+    def post_data(self, json=None, **kwargs) -> tuple[int, any]:
+        if json is None:
+            json = {}
         endpoint = self._get_endpoint()
         headers = self._get_headers()
         logger.info(f"Gettinng data from endpoint {endpoint}")
@@ -170,10 +169,9 @@ class NotionDatabaseQueryStream(APIStream):
             Implement other pagination methods here
             """
             logger.warning(
-                f"Tipo de paginação não implementada, consulte o arquivo apis.py para opções de implementação"
+                "Tipo de paginação não implementada, consulte o arquivo apis.py para opções de implementação"
             )
-    
-    def run_stream(self):
+    def run_source(self):
         """
         Método responsável pela ingestão completa da stream.
 
