@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-class APIStream(ABC):
+class GenericAPIStream(ABC):
     """
     Classe abstrata que define uma de stream de dados e define os métodos obrigatórios.
     Uma Stream é fonte de dados de atualização recorrente, de formatação definida e estrutura estável.
@@ -22,7 +22,7 @@ class APIStream(ABC):
 
     """
     def __init__(
-        self, identifier: str, base_endpoint, token, auth_method, **kwargs
+        self, identifier: str, base_endpoint, token, writer, auth_method, **kwargs
     ) -> None:
         """
         Init: inicializa um objeto de APIStram da classe genérica
@@ -75,7 +75,7 @@ class APIStream(ABC):
         pass
 
 
-class NotionDatabaseQueryStream(APIStream):
+class PaginatedApiStream(GenericAPIStream):
     """
     Stream para a extração de dados da api Database Query do Notion
 
@@ -86,11 +86,12 @@ class NotionDatabaseQueryStream(APIStream):
         - auth_method: o tipo de autorização que será usada na conta, por padrão bearer token.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.identifier = "notion_d"
+    def __init__(self, *args, identifier, **kwargs):
+        super().__init__(*args, identifier, **kwargs)
+        self.identifier = kwargs.get("identifier")
         self.database_id = kwargs.get("database_id")
         self.auth_method = kwargs.get("auth_method")
+        self.writer = kwargs.get("writer")
 
     def _get_endpoint(self) -> str:
         return f"{self.base_endpoint}/databases/{self.database_id}/query"
@@ -126,6 +127,8 @@ class NotionDatabaseQueryStream(APIStream):
         logger.info(f"Gettinng data from endpoint {endpoint}")
         response = requests.post(url=endpoint, headers=headers, json=json)
         response.raise_for_status()
+
+        
         return response.status_code, response.json()
 
     def fetch_paginated_data(self, **kwargs):
@@ -144,11 +147,12 @@ class NotionDatabaseQueryStream(APIStream):
             - Devolve um objeto gerador (yield) que pode ser usado para obter as páginas da api.
 
         """
-        pagination_type = kwargs.get("mode")
+        pagination_type = kwargs.get("mode","cursor")
+        compression = kwargs.get("compression",False)
         endpoint = self._get_endpoint()
         headers = self._get_headers()
         record_list = []
-
+        
         if pagination_type == "cursor":
             successful_requests = 0
             next_cursor = None
@@ -158,6 +162,12 @@ class NotionDatabaseQueryStream(APIStream):
                 status_code, response = self.post_data(json=payload)
                 successful_requests += 1
                 logger.info(f"Successfully fetched page {successful_requests}")
+                self.writer.dump_json_data(
+                    data = response,
+                    compression=compression,
+                    target_layer='raw',
+                    page_number=successful_requests
+                    )
                 yield response["results"]
                 next_cursor = self._extract_next_cursor_from_response(response)
                 if not next_cursor:
@@ -170,7 +180,7 @@ class NotionDatabaseQueryStream(APIStream):
             logger.warning(
                 "Tipo de paginação não implementada, consulte o arquivo apis.py para opções de implementação"
             )
-    
+
     def run_stream(self):
         """
         Método responsável pela ingestão completa da stream.

@@ -1,11 +1,17 @@
-import json
 import os
+import json
+import gzip
 import yaml
 from typing import List
-from abc import ABC, abstractmethod
-from src.utils import utils
+import logging
 
-class DataTypeNotSupportedForIngestionException(Exception):
+from abc import ABC, abstractmethod
+from work.bdt_data_integration.src.utils import Utils
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+class DataTypeNotSupportedException(Exception):
     """
     Exceção levantada quando um tipo de dado não é adequado para 
     a escrita através do método especificado.
@@ -32,7 +38,7 @@ class DataWriter(ABC):
     Também e a responsável por reforçar as regras de negócio de uso das camadas raw, processing e staging,
     através de funções especificas para a manipulação de objetos nestas camadas.
     """
-    def __init__(self, source=None, stream=None, root=None) -> None:
+    def __init__(self, source=None, stream=None, root=None, config=None) -> None:
         """
         Inicializa uma instância da classe DataWriter com parâmetros opcionais 
         para source, stream e root. Este construtor configura os atributos 
@@ -47,26 +53,9 @@ class DataWriter(ABC):
             None
         """
         self.source = source
-        self.root = root
-    
-    @property
-    def _get_config(self):
-        """
-        Carrega e recupera as configurações a partir de um arquivo YAML. Esta 
-        propriedade fornece acesso aos dados de configuração necessários para 
-        o funcionamento da classe.
+        self.stream = stream 
+        self.config = config
 
-        Returns:
-            dict: As configurações carregadas do arquivo YAML.
-
-        Raises:
-            FileNotFoundError: Se o arquivo de configuração não existir.
-            yaml.YAMLError: Se houver um erro ao analisar o arquivo YAML.
-        """
-        with open(f'{self.root}/config/{self.source}/config.yaml', 'r') as file:
-            return yaml.safe_load(file)
-
-    @property
     def _get_raw_dir(self):
         """
         Retorna o diretório onde os dados brutos são armazenados. Esta 
@@ -78,7 +67,6 @@ class DataWriter(ABC):
         """
         return self.config["RAW_DIR"]
 
-    @property
     def _get_processing_dir(self):
         """
         Retorna o diretório onde os dados em processamento são armazenados. 
@@ -89,8 +77,7 @@ class DataWriter(ABC):
             str: O caminho do diretório de dados em processamento.
         """
         return self.config["PROCESSING_DIR"]
-    
-    @property
+
     def _get_staging_dir(self):
         """
         Retorna o diretório onde os dados em estágio são armazenados. Esta 
@@ -101,61 +88,77 @@ class DataWriter(ABC):
             str: O caminho do diretório de dados em estágio.
         """
         return self.config["STAGING_DIR"]
-
-    def _write_data(self, row:'str',output) ->None:
+        
+    def _write_row(self, rows:'List[str]', filename:str = None, compression=False, file_format=None) -> None:
         """
-        Escreve os dados fornecidos em um arquivo no caminho especificado. 
-        Esta função é responsável por persistir os dados em um formato 
-        adequado para uso posterior.
+        Escreve os dados fornecidos em um arquivo no caminho especificado, utilizando
+        uma lista de strings para melhorar a performance ao escrever múltiplas linhas.
 
         Args:
-            data: Os dados a serem escritos no arquivo.
-            output_path (str): O caminho do arquivo onde os dados serão 
-            armazenados.
+            rows (List[str]): As linhas de dados a serem escritas no arquivo.
+            output (str): O caminho do arquivo onde os dados serão armazenados.
+            compression (bool): Indica se a compressão gzip deve ser usada.
 
         Raises:
             IOError: Se ocorrer um erro ao tentar escrever no arquivo.
-        """           
-        os.makedirs(os.path.dirname(output), exist_ok=True)
-        with open(output, "a") as f:
-            f.write(row)
-
-    def dump_json_data(self, data: [List, dict], **kwargs): # type: ignore
         """
-        Serializa e grava dados em formato JSON em um arquivo, com base no 
-        diretório de destino especificado. Esta função aceita tanto dicionários 
-        quanto listas e determina o caminho do arquivo de saída com base no 
-        parâmetro de destino.
+        if filename == None:
+            raise ValueError ('Invalid filename on _write_row')
+        filename = filename + file_format + '.gz' if compression else filename + file_format
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        if not compression:
+            with open(filename, "wt", encoding='utf-8') as file:
+                file.writelines(rows)
+        else:
+            with gzip.open(filename, 'wt', encoding='utf-8') as file:
+                file.writelines(rows)
+
+
+    def get_output_file_path(self, source: str = 'default', stream: str = 'default', date: str = None, prefix: str = '', page_number: int = None, page_suffix: str = 'Page', target_layer: str = None):
+        date = Utils.get_current_formatted_date() if date is None else date
+        
+        if target_layer == 'raw':
+            target_dir = self._get_raw_dir()
+        elif target_layer == 'processing':
+            target_dir = self._get_processing_dir()
+        elif target_layer == 'staging':
+            target_dir = self.get_staging_dir()
+
+        path = f'{target_dir}/{source}/{stream}/{date}'
+        if page_number:
+            path += f'/{page_suffix}-{page_number}'
+
+        return path
+
+
+    def dump_json_data(self, data: [list, dict], compression: bool = False, target_layer: str = None, page_number: int = None, file_format: str = '.txt') -> None:
+        """
+        Serializa e escreve dados JSON em um arquivo com base no diretório de destino especificado.
+        Esta função aceita tanto dicionários quanto listas e determina o caminho
+        do arquivo de saída com base no parâmetro de destino.
 
         Args:
-            data (List or dict): Os dados a serem serializados e gravados. 
-            Pode ser um dicionário ou uma lista de elementos.
-            **kwargs: Parâmetros adicionais que podem incluir 'source', 
-            'stream' e 'target'.
+            data (list ou dict): Dados a serem serializados e escritos. Pode ser um dicionário ou uma lista de elementos.
+            compression (bool): Indica se a compactação gzip deve ser usada. Default é False.
+            target_layer (str): Diretório de destino ("raw", "processing", "staging").
+            page_number (int, opcional): Número da página a ser incluído no caminho do arquivo de saída. Default é None.
+            file_format (str): A extensão do arquivo de saída. Default é '.txt'.
 
         Raises:
-            DataTypeNotSupportedForIngestionException: Se os dados fornecidos 
-            não forem um dicionário nem uma lista.
-        """ 
-        source = kwargs.get("source")
-        stream = kwargs.get("stream")
-        target = kwargs.get("target")
-        date = utils.get_current_formatted_date()
+            ValueError: Se o "target_layer" não for nenhum de "raw", "processing" ou "staging".
+            DataTypeNotSupportedForIngestionException: Se os dados fornecidos não forem nem um dicionário nem uma lista.
+        """
+        if target_layer is None:
+            raise ValueError('"target_layer" must be one of "raw", "processing" or "staging"')
 
-        if target == 'raw':
-            output = f'{self._get_raw_dir()}/{source}/{stream}/{date}.txt'
-        elif target == 'processing':
-            output = f'{self._get_processing_dir()}/{source}/{date}.txt'
-        elif target == 'staging':
-            output = f'{self._get_staging_dir()}/{source}.txt'
-        else:
-            print('Target must be one of "raw", "processing" or "staging"')
+        output = self.get_output_file_path(source=self.source, stream=self.stream, target_layer=target_layer, page_number=page_number)
 
         if isinstance(data, dict):
-            row = json.dumps(data) + "\n"
-            self._write_row(row,output)
-        elif isinstance(data, List):
-            for row in data:
-                self._write_row(row,output)
+            rows = [json.dumps(data) + "\n"]
+        elif isinstance(data, list):
+            rows = [json.dumps(row) + "\n" for row in data]
         else:
-            raise DataTypeNotSupportedForIngestionException(data)
+            raise DataTypeNotSupportedException(data)
+
+        self._write_row(rows, output, compression, file_format)
