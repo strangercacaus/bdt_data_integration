@@ -6,10 +6,10 @@ class Utils:
     @staticmethod
     def get_current_formatted_date():
         """
-        Get the current date formatted with a UTC offset of -3 hours.
+        Obtém a data atual formatada com um deslocamento UTC de -3 horas.
 
         Returns:
-            date: The current date with the specified UTC offset.
+            date: A data atual no formato 'YYYY-MM-DD' com o deslocamento UTC especificado.
         """
         utc_offset = timedelta(hours=-3)
         return (datetime.now() + utc_offset).date()
@@ -17,10 +17,10 @@ class Utils:
     @staticmethod
     def find_config_yaml():
         """
-        Search for the 'config.yaml' file in the 'config' directory within the root directory.
+        Procura pelo arquivo 'config.yaml' no diretório 'config' dentro do diretório raiz.
 
         Returns:
-            str: The path to the 'config.yaml' file if found, otherwise None.
+            str: O caminho para o arquivo 'config.yaml' se encontrado, caso contrário, retorna None.
         """
         root_dir = os.getcwd()
         for dirpath, dirnames, filenames in os.walk(root_dir):
@@ -37,11 +37,10 @@ class Utils:
         Carrega a configuração do projeto do arquivo config.yaml
 
         Retorna:
-            dict: A configuração obtida do arquivo config.yaml, falso caso contrário.
+            dict: A configuração obtida do arquivo config.yaml, None caso contrário.
         """
-        config_path = Utils.find_config_yaml()
-        if config_path:
+        if config_path := Utils.find_config_yaml():
             with open(config_path, 'r') as file:
-                config = yaml.safe_load(file)
-                return config
-        return None
+                return yaml.safe_load(file)
+        else:
+            return None
