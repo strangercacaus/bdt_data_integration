@@ -38,7 +38,7 @@ class DataWriter(ABC):
     Também e a responsável por reforçar as regras de negócio de uso das camadas raw, processing e staging,
     através de funções especificas para a manipulação de objetos nestas camadas.
     """
-    def __init__(self, source=None, stream=None, root=None, config=None) -> None:
+    def __init__(self, source=None, stream=None, root=None, config=None, compression:bool=False) -> None:
         """
         Inicializa uma instância da classe DataWriter com parâmetros opcionais 
         para source, stream e root. Este construtor configura os atributos 
@@ -55,6 +55,7 @@ class DataWriter(ABC):
         self.source = source
         self.stream = stream 
         self.config = config
+        self.compression = compression
 
     def _get_raw_dir(self):
         """
@@ -89,7 +90,7 @@ class DataWriter(ABC):
         """
         return self.config["STAGING_DIR"]
         
-    def _write_row(self, rows:'List[str]', filename:str = None, compression=False, file_format=None) -> None:
+    def _write_row(self, rows:'List[str]', filename:str = None, file_format=None) -> None:
         """
         Escreve os dados fornecidos em um arquivo no caminho especificado, utilizando
         uma lista de strings para melhorar a performance ao escrever múltiplas linhas.
@@ -102,6 +103,7 @@ class DataWriter(ABC):
         Raises:
             IOError: Se ocorrer um erro ao tentar escrever no arquivo.
         """
+        compression = self.compression
         if filename == None:
             raise ValueError ('Invalid filename on _write_row')
         filename = filename + file_format + '.gz' if compression else filename + file_format
@@ -115,8 +117,18 @@ class DataWriter(ABC):
                 file.writelines(rows)
 
 
-    def get_output_file_path(self, source: str = 'default', stream: str = 'default', date: str = None, prefix: str = '', page_number: int = None, page_suffix: str = 'Page', target_layer: str = None):
-        date = Utils.get_current_formatted_date() if date is None else date
+    def get_output_file_path(
+                            self,
+                            source: str = 'default',
+                            stream: str = 'default',
+                            filename: str = '',
+                            page_number: int = None,
+                            page_suffix: str = 'Page',
+                            target_layer: str = None,
+                            date: bool = False,
+                            ):
+
+        current_date = Utils.get_current_formatted_date() if date else None
         
         if target_layer == 'raw':
             target_dir = self._get_raw_dir()
@@ -125,22 +137,33 @@ class DataWriter(ABC):
         elif target_layer == 'staging':
             target_dir = self.get_staging_dir()
 
-        path = f'{target_dir}/{source}/{stream}/{date}'
+        path = f'{target_dir}/{source}/{stream}'
+
+        if date:
+            path += f'/{current_date}'
+
         if page_number:
-            path += f'/{page_suffix}-{page_number}'
+            path += f'/{page_suffix}{page_number}'
+        
+        if filename:
+            path += '/{filename}'
 
         return path
 
 
-    def dump_json_data(self, data: [list, dict], compression: bool = False, target_layer: str = None, page_number: int = None, file_format: str = '.txt') -> None:
+    def dump_records(self,
+                     records: [list, dict],
+                     target_layer: str = None,
+                     page_number: int = None,
+                     file_format: str = '.txt',
+                     date:bool=False) -> None:
         """
         Serializa e escreve dados JSON em um arquivo com base no diretório de destino especificado.
         Esta função aceita tanto dicionários quanto listas e determina o caminho
         do arquivo de saída com base no parâmetro de destino.
 
         Args:
-            data (list ou dict): Dados a serem serializados e escritos. Pode ser um dicionário ou uma lista de elementos.
-            compression (bool): Indica se a compactação gzip deve ser usada. Default é False.
+            records (list ou dict): Dados a serem serializados e escritos. Pode ser um dicionário ou uma lista de elementos.
             target_layer (str): Diretório de destino ("raw", "processing", "staging").
             page_number (int, opcional): Número da página a ser incluído no caminho do arquivo de saída. Default é None.
             file_format (str): A extensão do arquivo de saída. Default é '.txt'.
@@ -152,13 +175,13 @@ class DataWriter(ABC):
         if target_layer is None:
             raise ValueError('"target_layer" must be one of "raw", "processing" or "staging"')
 
-        output = self.get_output_file_path(source=self.source, stream=self.stream, target_layer=target_layer, page_number=page_number)
+        output = self.get_output_file_path(source=self.source, stream=self.stream, target_layer=target_layer, page_number=page_number, date=date)
 
-        if isinstance(data, dict):
-            rows = [json.dumps(data) + "\n"]
-        elif isinstance(data, list):
-            rows = [json.dumps(row) + "\n" for row in data]
+        if isinstance(records, dict):
+            rows = [json.dumps(records) + "\n"]
+        elif isinstance(records, list):
+            rows = [json.dumps(record) + "\n" for record in records]
         else:
-            raise DataTypeNotSupportedException(data)
+            raise DataTypeNotSupportedException(records)
 
-        self._write_row(rows, output, compression, file_format)
+        self._write_row(rows, output, file_format)

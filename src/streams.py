@@ -162,11 +162,11 @@ class PaginatedApiStream(GenericAPIStream):
                 status_code, response = self.post_data(json=payload)
                 successful_requests += 1
                 logger.info(f"Successfully fetched page {successful_requests}")
-                self.writer.dump_json_data(
-                    data = response,
-                    compression=compression,
+                self.writer.dump_records(
+                    records = response,
                     target_layer='raw',
-                    page_number=successful_requests
+                    page_number=successful_requests,
+                    date=True
                     )
                 yield response["results"]
                 next_cursor = self._extract_next_cursor_from_response(response)

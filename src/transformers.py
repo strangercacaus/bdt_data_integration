@@ -10,16 +10,40 @@ logging.basicConfig(level=logging.INFO)
 
 class NotionTransformer():
     
-    def _parse_datetime(string):
+    @staticmethod
+    def process_date_columns(df, columns):
+        """corrige o formato de data/hora de todas as colunas solicitadas"""
+        date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+
+        for col in columns:
+            if col in df.columns:
+                df[col] = pd.to_datetime(df[col], format=date_format, errors='coerce')
+        return df
+
+    @staticmethod
+    def process_list_columns(df):
         """
-         Extrai um objeto datetime das strings de data e hora do Notion.
+        Processa colunas com listas para que o resultado seja apenas uma coluna de texto com valores separados por vírgula
         """
-        string = string.replace('T',' ')[0:19]
-        if len(string) == 19:
-            date_format = "%Y-%m-%d %H:%M:%S"
-        elif len(string) == 10:
-            date_format = "%Y-%m-%d"
-        return datetime.strptime(string, date_format)
+        for col in df.columns:
+            if df[col].apply(lambda x: isinstance(x, list)).any():
+                df[col] = df[col].apply(lambda x: ', '.join(map(str, x)) if isinstance(x, list) else x)
+        return df   
+    
+    def _extract_users_list(self,records: list) -> pd.DataFrame:
+        user_list = []
+        for record in records[0:300]:
+            properties = record.get("properties", {})
+            for key, property in properties.items():
+                if property.get("type") in ['person', 'people'] or property.get("object") == 'user':
+                    for user in property.get('people', []):
+                        id = user.get('id', None)
+                        name = user.get('name', None)
+                        person_info = user.get('person', {})
+                        email = person_info.get('email', None)
+                        user_list.append({"id":id,"name":name,"email":email})
+        return pd.DataFrame(user_list).drop_duplicates()
+ 
 
     # @staticmethod
     # # Obtem a relação entre nomes de campos
@@ -35,7 +59,7 @@ class NotionTransformer():
     #         else:
     #             return(filtered_list[0]['mapping'])
 
-    def extract_all_properties(self, record):
+    def extract_all_properties(self, record: dict):
         properties = record.get('properties', {})
         extracted = {
             'id': record.get('id'),
@@ -72,8 +96,8 @@ class NotionTransformer():
     def extract_all_records(self, records) -> pd.DataFrame:
         if type(records) == list and type(records[0]) == dict:
             try:
-                return [self.extract_all_properties(record)for record in records]
+                return pd.DataFrame([self.extract_all_properties(record)for record in records])
             except Exception as e:
-                logger.error(f'Failed to extract records from data, error: {e}')
+                logger.error(f'Falha ao extrair propriedades do registro: {e}')
         else:
-            logger.error(f'Incorrect file structure, expected dict list and got {type(records)}')
+            logger.error(f'Estrutura de arquivos incorreta, esperava list[dict(),] e recebu {type(records)}')
