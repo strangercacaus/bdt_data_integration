@@ -35,7 +35,7 @@ class NotionTransformer():
 
         Este método converte as colunas de data/hora do DataFrame para o formato padrão ISO 8601. 
         Se uma coluna não estiver presente no DataFrame, ela será ignorada. As entradas que não puderem 
-        ser convertidas serão definidas como NaT (Not a Time).
+        ser convertidas serão definidas como null.
 
         Args:
             df (pd.DataFrame): O DataFrame contendo as colunas a serem processadas.
@@ -49,6 +49,8 @@ class NotionTransformer():
         for col in columns:
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], format=date_format, errors='coerce')
+                df[col] = df[col].where(df[col].notna(), None)
+
         return df
 
     @staticmethod
@@ -99,21 +101,6 @@ class NotionTransformer():
                         email = person_info.get('email', None)
                         user_list.append({"id":user_id,"name":name,"email":email})
         return pd.DataFrame(user_list).drop_duplicates()
- 
-
-    # @staticmethod
-    # # Obtem a relação entre nomes de campos
-    # def _get_field_mapping(processing_date):
-    #     with open(f'{mapping_history_dir}/property_history.json', 'r') as file:
-    #         # Load the JSON data into a Python dictionary using json.loads
-    #         jsonfile = json.load(file)
-    #         data_list = jsonfile['data']
-    #         filtered_list = [obj for obj in data_list if datetime.strptime(obj["alter_date"], "%Y-%m-%d").date() <= processing_date]
-
-    #         if len(filtered_list) > 1:
-    #             return(filtered_list[-1]['mapping'])
-    #         else:
-    #             return(filtered_list[0]['mapping'])
 
     def extract_properties_from_page(self, page: dict):
         """
@@ -188,7 +175,7 @@ class NotionTransformer():
         """
         if type(records) == list and type(records[0]) == dict:
             try:
-                return pd.DataFrame([self.extract_all_page_properties(record)for record in records])
+                return pd.DataFrame([self.extract_properties_from_page(record)for record in records])
             except Exception as e:
                 logger.error(f'Falha ao extrair propriedades do registro: {e}')
         else:

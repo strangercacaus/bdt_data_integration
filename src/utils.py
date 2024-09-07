@@ -1,6 +1,8 @@
 import os
-from datetime import datetime, timedelta
 import yaml
+import gzip
+import json
+from datetime import datetime, timedelta
 
 class Utils:
     @staticmethod
@@ -44,3 +46,13 @@ class Utils:
                 return yaml.safe_load(file)
         else:
             return None
+    
+    @staticmethod
+    def read_records(file_path):
+        if file_path.endswith('.gz'):
+            with gzip.open(file_path, 'rt') as f:
+                records = [json.loads(line) for line in f.read().splitlines()]
+        else:
+            with open(file_path, 'r') as f:
+                records = [json.loads(line) for line in f.read().splitlines()]
+        return records

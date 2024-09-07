@@ -5,7 +5,7 @@ from typing import List
 import logging
 
 from abc import ABC, abstractmethod
-from src.utils import Utils
+from work.bdt_data_integration.src.utils import Utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -152,7 +152,7 @@ class DataWriter(ABC):
         elif target_layer == 'processing':
             target_dir = self._get_processing_dir()
         elif target_layer == 'staging':
-            target_dir = self.get_staging_dir()
+            target_dir = self._get_staging_dir()
 
         path = f'{target_dir}/{source}/{stream}'
 
