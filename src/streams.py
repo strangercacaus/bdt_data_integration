@@ -1,8 +1,11 @@
-from abc import ABC, abstractmethod
-from typing import Tuple, Any
+
 import logging
 import requests
-from work.bdt_data_integration.src.utils import Utils
+import pandas as pd
+from io import StringIO
+from typing import Tuple, Any
+from abc import ABC, abstractmethod
+from work.bdt_data_integration.src.utils import Utils, WebhookNotifier
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -61,6 +64,7 @@ class GenericAPIStream(ABC):
         pass
 
     @abstractmethod
+    
     def fetch_paginated_data(self, **kwargs) -> dict:
         """
         Método abstrato para a implementação da lógica de scroll através de paginações
@@ -68,7 +72,7 @@ class GenericAPIStream(ABC):
         pass
     
     @abstractmethod
-    def run_stream():
+    def run():
         """
         Método abstrato para a implementação da rotina principal da stream.
         Este método deve retornar todos os dados extraídos da stream, consolidados em um único json.
@@ -76,7 +80,7 @@ class GenericAPIStream(ABC):
         pass
 
 
-class PaginatedApiStream(GenericAPIStream):
+class NotionApiStream(GenericAPIStream):
     """
     Stream para a extração de dados da api Database Query do Notion
 
@@ -176,7 +180,7 @@ class PaginatedApiStream(GenericAPIStream):
                 "Tipo de paginação não implementada, consulte o arquivo apis.py para opções de implementação"
             )
 
-    def run_stream(self):
+    def run(self):
         """
         Método responsável pela ingestão completa da stream.
 
@@ -193,4 +197,86 @@ class PaginatedApiStream(GenericAPIStream):
             target_layer='raw',
             date=date)
         return record_list, date
+
+
+class BenditoAPIStream(GenericAPIStream):
+    """
+    Stream para a extração de dados da api Database Query do Notion
+
+    Atributos;
+        - identifier: notion
+        - base_endpoint: 'https://api.notion.com/v1'
+        - token: Bearer Token da conta conectada a integração
+        - auth_method: o tipo de autorização que será usada na conta, por padrão bearer token.
+    """
+
+    def __init__(self, identifier, token, compression=False, **kwargs):
+        super().__init__(*args, identifier, **kwargs)
+        self.identifier = identifier
+        self.token = token
+        self.writer = kwargs.get("writer")
+
+    def _get_endpoint(self) -> str:
+        return f"https://api-staging.bendito.digital/QueryViews"
+
+    def _get_headers(self):
+        api_key = self.token
+        return {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json"
+            }
+
+    def fetch_paginated_data(self, query, page_size = 200,  separator = ',', compression = False,):
+        """
+        Método responsável pela obtenção de dados de streams paginadas.
+
+        Args:
+            - Endpoint: Obtém o endpoint da stream através do método ._get_endpoint().
+            - Headers: Obtém o header das requisições através do método ._get_headers().
         
+        Kwargs:
+            - Pagination_type: define qual tipo de função de paginação será utilizada,
+              por padrão todos os modos são implementados aqui.
+        
+        Retorno:
+            - Devolve um objeto gerador (yield) que pode ser usado para obter as páginas da api.
+
+        """
+        endpoint = self._get_endpoint()
+        headers = self._get_headers()
+        offset = 0
+
+        while True:
+            query_string = f"{query} LIMIT {page_size} OFFSET {offset}"
+            payload = json.dumps({"query": query_string, "separator": separator})
+            response = requests.post(url=endpoint, headers=headers, data=payload)
+            logger.info(response.text)
+            if response.status_code == 200:
+                if len(response.text.splitlines()) > 1:
+                    csv_file = StringIO(response.text)
+                    yield pd.read_csv(csv_file, sep=separator)
+                    offset += page_size
+                else:
+                    break
+            else:
+                logger.error(f'{response.text}')
+                break
+
+    def run(self, **kwargs):
+        """
+        Método responsável pela ingestão completa da stream.
+
+        Retorno:
+            - Um objeto json com todas as páginas da stream combinadas.
+
+        """
+        all_dataframes = []
+        query = kwargs.get('query')
+        page_size = kwargs.get('page_size')
+        compression = kwargs.get('compression')
+        separator = kwargs.get('separator')
+
+        for df in self.fetch_paginated_data(query, page_size,  separator = separator, compression = compression):
+            all_dataframes.append(df)
+        combined_df = pd.concat(all_dataframes, ignore_index=True)
+        return combined_df

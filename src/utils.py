@@ -3,6 +3,8 @@ import glob
 import yaml
 import gzip
 import json
+import discord
+import requests
 from datetime import datetime, timedelta
 
 class Utils:
@@ -66,3 +68,53 @@ class Utils:
             with open(file_path, 'r') as f:
                 records = [json.loads(line) for line in f.read().splitlines()]
         return records
+
+class WebhookNotifier:
+
+    def __init__(self, url, pipeline):
+        self.url = url
+        self.pipeline = pipeline
+
+    def pipeline_start(self):
+        url = self.url
+        payload = json.dumps({"message": f'Iniciando pipeline: {self.pipeline}'})
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        print(response.text)
+
+    def pipeline_end(self):
+        url = self.url
+        payload = json.dumps({"message": f'Execução de pipeline encerrada: {self.pipeline}'})
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        print(response.text)
+
+    def pipeline_error(self, e=None):
+        url = self.url
+        payload = json.dumps({"message": f'Erro na execução do pipeline: {self.pipeline}.\n{e}'})
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        print(response.text)
+
+    def error_handler(self, func):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                self.pipeline_error(e)
+                raise e # Re-raise the exception after logging it
+        return wrapper
+
+class DiscordNotifier(discord.Client):
+
+    def __init__(self, token, channel_id, pipeline):
+        self.token = token
+        self.channel_id = channel_id
+        self.pipeline = pipeline
+        self.client = discord.client
