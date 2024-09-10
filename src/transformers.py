@@ -134,8 +134,10 @@ class NotionTransformer():
                 extracted[key] = value['select']['name'] if value['select'] else None
             elif value['type'] == 'multi_select':
                 extracted[key] = [item['name'] for item in value['multi_select']]
+            elif value['type'] == 'title':
+                extracted[key] = [item['plain_text'] for item in value['title']]
             elif value['type'] == 'formula':
-                extracted[key] = value['formula'][value['formula']['type']]
+                extracted[key] = value['formula'].get('number') or value['formula'].get('string')
             elif value['type'] == 'people':
                 extracted[key] = [person.get('name', '') for person in value['people']]
             elif value['type'] == 'relation':

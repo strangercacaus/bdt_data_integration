@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Any
 import logging
 import requests
+from work.bdt_data_integration.src.utils import Utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -184,12 +185,12 @@ class PaginatedApiStream(GenericAPIStream):
 
         """
         record_list=[]
+        date = Utils.get_current_formatted_date()
         for page in self.fetch_paginated_data(mode='cursor'):
             record_list.extend(page)
         self.writer.dump_records(
             records = record_list,
             target_layer='raw',
-            date=True
-                    )
-        return record_list
+            date=date)
+        return record_list, date
         

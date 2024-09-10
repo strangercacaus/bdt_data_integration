@@ -1,20 +1,30 @@
 import os
+import glob
 import yaml
 import gzip
 import json
 from datetime import datetime, timedelta
 
 class Utils:
+    
+    @staticmethod
+    def get_latest_file(directory, extension):
+        list_of_files = glob.glob(f'{directory}/*{extension}')
+        if not list_of_files:
+            return None
+        latest_file = max(list_of_files, key=os.path.getctime)
+        return latest_file
+
     @staticmethod
     def get_current_formatted_date():
         """
         Obtém a data atual formatada com um deslocamento UTC de -3 horas.
 
         Returns:
-            date: A data atual no formato 'YYYY-MM-DD' com o deslocamento UTC especificado.
+            date: A data atual no formato 'YYYY-MM-DD HH:MI:SS' com o deslocamento UTC especificado.
         """
         utc_offset = timedelta(hours=-3)
-        return (datetime.now() + utc_offset).date()
+        return (datetime.now() + utc_offset).strftime('%Y-%m-%d %H:%M:%S')
 
     @staticmethod
     def find_config_yaml():
