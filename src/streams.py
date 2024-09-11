@@ -1,4 +1,4 @@
-
+import json
 import logging
 import requests
 import pandas as pd
@@ -26,7 +26,7 @@ class GenericAPIStream(ABC):
 
     """
     def __init__(
-        self, identifier: str, base_endpoint, token, writer, auth_method, **kwargs
+        self, identifier: str, token, writer, **kwargs
     ) -> None:
         """
         Init: inicializa um objeto de APIStram da classe genérica
@@ -39,8 +39,8 @@ class GenericAPIStream(ABC):
         """
         self.identifier = identifier
         self.token = token
-        self.auth_method = auth_method
-        self.base_endpoint = base_endpoint
+        self.auth_method = kwargs.get('auth_method')
+        self.base_endpoint = kwargs.get('base_endpoint')
 
     @abstractmethod
     def _get_endpoint(self, **kwargs) -> str:
@@ -91,8 +91,8 @@ class NotionApiStream(GenericAPIStream):
         - auth_method: o tipo de autorização que será usada na conta, por padrão bearer token.
     """
 
-    def __init__(self, *args, identifier, **kwargs):
-        super().__init__(*args, identifier, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.identifier = kwargs.get("identifier")
         self.database_id = kwargs.get("database_id")
         self.auth_method = kwargs.get("auth_method")
@@ -210,11 +210,17 @@ class BenditoAPIStream(GenericAPIStream):
         - auth_method: o tipo de autorização que será usada na conta, por padrão bearer token.
     """
 
-    def __init__(self, identifier, token, compression=False, **kwargs):
-        super().__init__(*args, identifier, **kwargs)
-        self.identifier = identifier
-        self.token = token
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.token = kwargs.get('token')
+        self.identifier = kwargs.get('identifier')
         self.writer = kwargs.get("writer")
+
+    def get_data(self):
+        pass
+    
+    def post_data(self):
+        pass
 
     def _get_endpoint(self) -> str:
         return f"https://api-staging.bendito.digital/QueryViews"
@@ -250,7 +256,6 @@ class BenditoAPIStream(GenericAPIStream):
             query_string = f"{query} LIMIT {page_size} OFFSET {offset}"
             payload = json.dumps({"query": query_string, "separator": separator})
             response = requests.post(url=endpoint, headers=headers, data=payload)
-            logger.info(response.text)
             if response.status_code == 200:
                 if len(response.text.splitlines()) > 1:
                     csv_file = StringIO(response.text)
