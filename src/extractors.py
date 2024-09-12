@@ -94,7 +94,7 @@ class GenericAPIExtractor(ABC):
         pass
 
 
-class NotionDatabaseApiExtractor(GenericAPIExtractor):
+class NotionDatabaseAPIExtractor(GenericAPIExtractor):
     """
     Extrator para a extração de dados da API Database Query do Notion.
 
@@ -124,7 +124,7 @@ class NotionDatabaseApiExtractor(GenericAPIExtractor):
         Returns:
             str: O endpoint formatado para a consulta do banco de dados.
         """
-        return f"{self.base_endpoint}/databases/{self.database_id}/query"
+        return f"https://api.notion.com/v1/databases/{self.database_id}/query"
 
     def _get_headers(self):
         """
@@ -346,20 +346,19 @@ class BenditoAPIExtractor(GenericAPIExtractor):
 
         while True:
             query_string = f"{query} LIMIT {page_size} OFFSET {offset}"
-            payload = {"query": query_string, "separator": separator}
-            response = requests.post(url=endpoint, headers=headers, json=payload)
+            payload = json.dumps({"query": query_string, "separator": separator})
+            response = requests.post(url=endpoint, headers=headers, data=payload)
             
             if response.status_code != 200:
                 logger.error(f'{response.text}')
                 break
             
-            if len(response.text) <= 1:
+            if len(response.text.splitlines()) <= 1:
                 break
             
             csv_file = StringIO(response.text)
-            yield pd.read_csv(csv_file, sep=separator)
             offset += page_size
-
+            yield pd.read_csv(csv_file, sep=separator)
 
     def run(self, **kwargs):
         """
@@ -375,10 +374,10 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         """
         all_dataframes = list(
             self.fetch_paginated_data(
-                kwargs.get('query'),
-                kwargs.get('page_size'), 
-                separator=kwargs.get('separator'),
-                compression=kwargs.get('compression')
+                kwargs.get('query','select 1'),
+                kwargs.get('page_size', 200), 
+                separator=kwargs.get('separator', ','),
+                compression=kwargs.get('compression',False)
             )
         )
         return pd.concat(all_dataframes, ignore_index=True)
