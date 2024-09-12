@@ -2,7 +2,7 @@ import datetime
 from abc import ABC, abstractmethod
 from typing import List
 
-class DataIngestor(ABC):
+class DataStream(ABC):
     """
     Lógica de checkpoints, logging de extração, checagem de DQ e Freshness, coisas do tipo.
     """
