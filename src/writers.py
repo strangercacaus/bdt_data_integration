@@ -1,11 +1,10 @@
 import os
 import json
 import gzip
-from typing import List
 import logging
-
+from typing import List
+from src.utils import Utils
 from abc import ABC, abstractmethod
-from work.bdt_data_integration.src.utils import Utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

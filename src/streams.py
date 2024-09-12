@@ -1,6 +1,10 @@
+import logging
 import datetime
-from abc import ABC, abstractmethod
 from typing import List
+from abc import ABC, abstractmethod
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class DataStream(ABC):
     """

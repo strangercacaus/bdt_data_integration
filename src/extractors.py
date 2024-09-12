@@ -5,7 +5,7 @@ import pandas as pd
 from io import StringIO
 from typing import Tuple, Any
 from abc import ABC, abstractmethod
-from work.bdt_data_integration.src.utils import Utils, WebhookNotifier
+from src.utils import Utils, WebhookNotifier
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

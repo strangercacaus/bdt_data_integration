@@ -1,14 +1,13 @@
-import warnings
-import logging
 import os
+import logging
 import psycopg2
-from jinja2 import Template
-
-
+import warnings
 import pandas as pd
+from jinja2 import Template
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import URL
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, PendingRollbackError
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -79,7 +78,6 @@ class PostgresLoader:
         """
         with self.engine.connect() as connection:
             connection.autocommit = True  # To allow session termination
-            print(self.db_name)
             terminate_query = f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = '{self.db_name}';"
             connection.execute(terminate_query)
 
@@ -236,10 +234,8 @@ class PostgresLoader:
         with self.engine.connect() as connection:
             if mode == "replace":
                 self.truncate_table(target_table, target_schema)
-            dataframe.to_sql(
-                target_table,
-                con=connection,
-                if_exists="append",
-                schema=target_schema,
-                index=False,
-            )
+            try:
+                dataframe.to_sql(target_table, con=connection, if_exists = "append", schema = target_schema, index = False)
+            except PendingRollbackError:
+                connection.execute("ROLLBACK;")
+                dataframe.to_sql(target_table, con=connection, if_exists = "append", schema = target_schema, index = False)

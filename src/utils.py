@@ -3,9 +3,13 @@ import glob
 import yaml
 import gzip
 import json
+import logging
 import discord
 import requests
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class Utils:
     """
@@ -135,7 +139,7 @@ class WebhookNotifier:
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.text)
+        logger.info(f"Make.Com Response: {response.text}")
 
     def pipeline_end(self):
         """
@@ -153,7 +157,7 @@ class WebhookNotifier:
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.text)
+        logger.info(f"Make.Com Response: {response.text}")
 
     def pipeline_error(self, e=None):
         """
@@ -169,12 +173,13 @@ class WebhookNotifier:
             None
         """
         url = self.url
+        texto: e.splitlines('\n')[:2]
         payload = json.dumps({"message": f'Erro na execução do pipeline: {self.pipeline}.\n{e}'})
         headers = {
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.text)
+        logger.info(f"Make.Com Response: {response.text}")
 
     def error_handler(self, func):
         """
