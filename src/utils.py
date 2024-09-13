@@ -23,6 +23,21 @@ class Utils:
     def get_latest_file(directory, extension):
         list_of_files = glob.glob(f'{directory}/*{extension}')
         return max(list_of_files, key=os.path.getctime) if list_of_files else None
+    
+    @staticmethod
+    def rename_columns(dataframe, mapping):
+        """
+        Renomeia as colunas de um dataframe de acordo com o mapa de nomes fornecido.
+
+        Args:
+        dataframe (pd.DataFrame): O dataframe cujas colunas serão renomeadas.
+        column_name_mapping (dict): Dicionário contendo o mapeamento de nomes de colunas antigos para novos.
+
+        Returns:
+        pd.DataFrame: DataFrame com as colunas renomeadas.
+        """
+        dataframe = dataframe.rename(columns=mapping)
+        return dataframe[list(mapping.values())]
 
     @staticmethod
     def get_current_formatted_date():

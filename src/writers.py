@@ -119,12 +119,11 @@ class DataWriter(ABC):
 
     def get_output_file_path(
         self,
-        source: str = 'default',
-        stream: str = 'default',
         filename: str = '',
         page_number: int = None,
         page_prefix: str = 'Page-',
         target_layer: str = None,
+        output_table: str = None,
         date: bool = False,
      ):
         """
@@ -144,7 +143,8 @@ class DataWriter(ABC):
         Returns:
             str: O caminho completo do arquivo de saída gerado com base nos parâmetros fornecidos.
         """
-        current_date = Utils.get_current_formatted_date() if date else None
+        current_date = Utils.get_current_formatted_date() if date == True else None
+        stream_name = output_table if output_table else self.stream
 
         if target_layer == 'raw':
             target_dir = self._get_raw_dir()
@@ -153,13 +153,10 @@ class DataWriter(ABC):
         elif target_layer == 'staging':
             target_dir = self._get_staging_dir()
 
-        path = f'{target_dir}/{source}/{stream}'
+        path = f'{target_dir}/{self.source}/{stream_name}'
 
         if date:
             path += f'/{current_date}'
-
-        if page_number:
-            path += f'/{page_prefix}{page_number}'
 
         if filename:
             path += f'/{filename}'
@@ -171,7 +168,6 @@ class DataWriter(ABC):
     def dump_records(self,
                      records: [list, dict], # type: ignore
                      target_layer = None,
-                     page_number: int = None,
                      file_format: str = '.txt',
                      date:bool=False) -> None:
         """
@@ -194,10 +190,7 @@ class DataWriter(ABC):
             raise ValueError('"target_layer" must be one of "raw", "processing" or "staging"')
 
         output = self.get_output_file_path(
-            source=self.source,
-            stream=self.stream,
             target_layer=target_layer,
-            page_number=page_number,
             date=date)
 
         if isinstance(records, dict):
