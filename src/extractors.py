@@ -25,7 +25,7 @@ class GenericAPIExtractor(ABC):
         - Uma lista de objetos JSON com todas as entradas de um sistema.
     """
     def __init__(
-        self, identifier: str, token, writer, **kwargs
+        self, source: str, token, **kwargs
     ) -> None:
         """
         Inicializa um objeto da classe GenericAPIExtractor.
@@ -36,7 +36,7 @@ class GenericAPIExtractor(ABC):
             writer: O objeto responsável por gravar os dados extraídos.
             **kwargs: Argumentos adicionais para configuração do extrator.
         """
-        self.identifier = identifier
+        self.source = source
         self.token = token
 
     @abstractmethod
@@ -102,9 +102,8 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         - identifier (str): Identificador do extrator, neste caso, 'notion'.
         - base_endpoint (str): URL base da API do Notion, 'https://api.notion.com/v1'.
         - token (str): Bearer Token da conta conectada à integração.
-        - auth_method (str): O tipo de autorização que será usada na conta, por padrão, bearer token.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, database_id, **kwargs):
         """
         Inicializa um extrator para a API do Notion.
 
@@ -112,9 +111,10 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
             *args: Argumentos posicionais para a classe pai.
             **kwargs: Argumentos nomeados, incluindo 'identifier', 'database_id' e 'writer'.
         """
-        super().__init__(*args, **kwargs)
-        self.identifier = kwargs.get("identifier")
-        self.database_id = kwargs.get("database_id")
+        super().__init__(database_id, **kwargs)
+        self.base_endpoint = 'https://api.notion.com/v1/databases'
+        self.source = 'notion'
+        self.database_id = database_id
         self.writer = kwargs.get("writer")
 
     def _get_endpoint(self) -> str:
@@ -124,7 +124,7 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         Returns:
             str: O endpoint formatado para a consulta do banco de dados.
         """
-        return f"https://api.notion.com/v1/databases/{self.database_id}/query"
+        return f"{self.base_endpoint}/{self.database_id}/query"
 
     def _get_headers(self):
         """
@@ -133,9 +133,8 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         Returns:
             dict: Um dicionário contendo os cabeçalhos de autorização e conteúdo.
         """
-        api_key = self.token
         return {
-            "Authorization": f"Bearer {api_key}",
+            "Authorization": f"Bearer {self.token}",
             "Notion-Version": "2021-08-16",
             "Content-Type": "application/json",
             "Data": "{}",
@@ -182,7 +181,7 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         response.raise_for_status()
         return response.status_code, response.json()
 
-    def post_data(self, json=None, **kwargs) -> tuple[int, any]:
+    def post_data(self, payload=None, **kwargs) -> tuple[int, any]:
         """
         Realiza uma chamada POST à API do Notion.
 
@@ -193,12 +192,12 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         Returns:
             tuple[int, any]: Um tupla contendo o código de status e os dados retornados.
         """
-        if json is None:
-            json = {}
+        if payload is None:
+            payload = {}
         endpoint = self._get_endpoint()
         headers = self._get_headers()
         logger.info(f"Gettinng data from endpoint {endpoint}")
-        response = requests.post(url=endpoint, headers=headers, json=json)
+        response = requests.post(url=endpoint, headers=headers, json=payload)
         response.raise_for_status()
         
         return response.json()
@@ -213,30 +212,18 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         Yields:
             dict: Um gerador que produz os resultados de cada página.
         """
-        pagination_type = kwargs.get("mode","cursor")
-        endpoint = self._get_endpoint()
-        
-        if pagination_type == "cursor":
-            successful_requests = 0
-            next_cursor = None
-            logger.info(f"Attempting scroll fetch from {endpoint}")
-            while True:
+        successful_requests = 0
+        next_cursor = None
+        logger.info(f"Attempting scroll fetch from {self._get_endpoint}")
+        while True:
                 payload = self._get_next_payload(next_cursor)
-                response = self.post_data(json=payload)
+                response = self.post_data(payload=payload)
                 successful_requests += 1
                 logger.info(f"Successfully fetched page {successful_requests}")
                 yield response["results"]
                 next_cursor = self._extract_next_cursor_from_response(response)
                 if not next_cursor:
-                    break
-
-        else:
-            """
-            Implement other pagination methods here
-            """
-            logger.warning(
-                "Tipo de paginação não implementada, consulte o arquivo apis.py para opções de implementação"
-            )
+                    break      
 
     def run(self):
         """
@@ -245,14 +232,7 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         Returns:
             tuple[list, str]: Uma tupla contendo a lista de registros extraídos e a data atual.
         """
-        date = Utils.get_current_formatted_date()
-        record_list = [record for page in self.fetch_paginated_data(mode='cursor') for record in page]
-        self.writer.dump_records(
-            records=record_list,
-            target_layer='raw',
-            date=date
-        )
-        return record_list, date
+        return [record for page in self.fetch_paginated_data() for record in page]
 
 
 class BenditoAPIExtractor(GenericAPIExtractor):
@@ -263,9 +243,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         - identifier (str): Identificador do extrator, neste caso, 'notion'.
         - base_endpoint (str): URL base da API do Notion, 'https://api.notion.com/v1'.
         - token (str): Bearer Token da conta conectada à integração.
-        - auth_method (str): O tipo de autorização que será usada na conta, por padrão, bearer token.
     """
-
     def __init__(self, *args, **kwargs):
         """
         Inicializa um extrator para a API do Bendito.

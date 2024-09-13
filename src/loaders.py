@@ -205,7 +205,7 @@ class PostgresLoader:
                 )
 
         self.create_update_updated_at_function()
-        self.create_updated_at_trigger()
+        self.create_updated_at_trigger(target_table, target_schema)
 
     def load_data(
         self,
