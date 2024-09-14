@@ -123,7 +123,7 @@ class DataWriter(ABC):
         page_number: int = None,
         page_prefix: str = 'Page-',
         target_layer: str = None,
-        output_table: str = None,
+        output_name: str = None,
         date: bool = False,
      ):
         """
@@ -144,7 +144,7 @@ class DataWriter(ABC):
             str: O caminho completo do arquivo de saída gerado com base nos parâmetros fornecidos.
         """
         current_date = Utils.get_current_formatted_date() if date == True else None
-        stream_name = output_table if output_table else self.stream
+        stream_name = output_name if output_name else self.stream
 
         if target_layer == 'raw':
             target_dir = self._get_raw_dir()
@@ -189,6 +189,8 @@ class DataWriter(ABC):
         if target_layer not in ['raw','processing','staging'] or target_layer is None:
             raise ValueError('"target_layer" must be one of "raw", "processing" or "staging"')
 
+        logger.info(f'Iniciando dump de registros de {self.stream} em {target_layer}')
+
         output = self.get_output_file_path(
             target_layer=target_layer,
             date=date)
@@ -201,3 +203,4 @@ class DataWriter(ABC):
             raise DataTypeNotSupportedException(records)
 
         self._write_row(rows, output, file_format)
+        logger.info(f'Dump Finalizado')

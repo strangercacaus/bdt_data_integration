@@ -20,6 +20,15 @@ class Utils:
     e podem ser chamados sem a necessidade de instanciar a classe.
     """
     @staticmethod
+    def find_file(file_name):
+        result = []
+        for root, dirs, files in os.walk('/'):
+            for file in files:
+                if file == file_name:
+                    result.append(os.path.join(root, file))
+        return result
+        
+    @staticmethod
     def get_latest_file(directory, extension):
         list_of_files = glob.glob(f'{directory}/*{extension}')
         return max(list_of_files, key=os.path.getctime) if list_of_files else None
@@ -36,8 +45,11 @@ class Utils:
         Returns:
         pd.DataFrame: DataFrame com as colunas renomeadas.
         """
-        dataframe = dataframe.rename(columns=mapping)
-        return dataframe[list(mapping.values())]
+        # Rename the columns
+        new_dataframe = dataframe.rename(mapping)
+        
+        # Return DataFrame with only the existing new column names
+        return new_dataframe[[col for col in mapping.values() if col in new_dataframe.columns]]
 
     @staticmethod
     def get_current_formatted_date():
@@ -93,6 +105,7 @@ class Utils:
                 return yaml.safe_load(file)
         else:
             return None
+        logger.info('Configuração YAML carregada.')
     
     @staticmethod
     def read_records(file_path):

@@ -6,7 +6,7 @@ import pandas as pd
 from jinja2 import Template
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import URL
-from sqlalchemy.exc import SQLAlchemyError, PendingRollbackError
+from sqlalchemy.exc import SQLAlchemyError, PendingRollbackError, ProgrammingError
 
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class PostgresLoader:
         )
         self.engine = create_engine(self.jdbc_string)
 
-    def load_sql_schema(self, target_table: str, target_schema: str):
+    def load_sql_schema(self, target_table: str, target_schema: str, path_to_schema_file:str):
         """
         Carrega o esquema SQL de uma tabela a partir de um arquivo.
 
@@ -60,14 +60,18 @@ class PostgresLoader:
 
         Returns:
             str: O comando SQL renderizado para criar a tabela.
+            
         """
-        with open(f"/work/schema/{target_table}.sql", "r", encoding="utf-8") as file:
-            text = file.read()
-            template = Template(text)
         context = {
             "target_table": target_table,
             "target_schema": target_schema,
         }
+        try:
+            with open(path_to_schema_file, "r", encoding="utf-8") as file:
+                text = file.read()
+                template = Template(text)
+        except:
+            raise Exception('Problema ao abrir o arquivo de schema.')
         return template.render(context)
 
     def close_connections(self):
@@ -93,9 +97,15 @@ class PostgresLoader:
             target_schema (str): O esquema de destino onde a tabela está localizada.
         """
         with self.engine.connect() as connection:
-            connection.autocommit = True  # To allow session termination
-            create_query = f"CREATE TRIGGER set_updated_at_{target_table} BEFORE UPDATE ON {target_schema}.{target_table} FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();"
-            connection.execute(create_query)
+            try:
+                connection.autocommit = True  # To allow session termination
+                create_query = f"CREATE TRIGGER set_updated_at_{target_table} BEFORE UPDATE ON {target_schema}.{target_table} FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();"
+                connection.execute(create_query)
+            except ProgrammingError as e:
+                if isinstance(e.orig, psycopg2.errors.DuplicateObject):
+                    logger.warning(f"O trigger set_updated_at_{target_table} já existe, pulando a criação.")
+            else:
+                raise e
 
     def truncate_table(self, target_table: str, target_schema: str):
         """
@@ -151,7 +161,7 @@ class PostgresLoader:
                 create_query = f"""ALTER TABLE {target_schema}.{target_table} ADD CONSTRAINT {target_table}__unique UNIQUE ("{column}");"""
             connection.execute(create_query)
 
-    def create_table(self, target_table: str, target_schema: str):
+    def create_table(self, target_table: str, target_schema: str, path_to_schema_file:str):
         """
         Cria a tabela de destino com base no esquema SQL carregado.
 
@@ -162,7 +172,7 @@ class PostgresLoader:
             target_table (str): O nome da tabela de destino.
             target_schema (str): O esquema de destino onde a tabela será criada.
         """
-        sql_command = self.load_sql_schema(target_table, target_schema)
+        sql_command = self.load_sql_schema(target_table, target_schema, path_to_schema_file)
         with self.engine.connect() as connection:
             try:
                 connection.execute(sql_command)
@@ -178,8 +188,10 @@ class PostgresLoader:
         self,
         target_table: str,
         target_schema: str,
+        path_to_schema_file: None,
         primary_key: str = None,
         unique_columns: list = None,
+
     ):
         """
         Cria o esquema SQL para a tabela de destino.
@@ -193,7 +205,8 @@ class PostgresLoader:
             primary_key (str, optional): O nome da coluna a ser usada como chave primária.
             unique_columns (list, optional): Uma lista de colunas que devem ser únicas.
         """
-        self.create_table(target_table, target_schema)
+        logger.info('loader.create_sql_schema, target_table: ' + target_table + ', target_schema: ' + target_schema)
+        self.create_table(target_table, target_schema, path_to_schema_file)
         if primary_key:
             self.create_constraint(
                 target_table, target_schema, column, kind="primary_key"
@@ -212,6 +225,7 @@ class PostgresLoader:
         dataframe: pd.DataFrame,
         target_table: str,
         target_schema: str,
+        path_to_schema_file:None,
         mode=("append", "replace"),
     ):
         """
@@ -226,16 +240,25 @@ class PostgresLoader:
             target_schema (str): O esquema de destino onde a tabela está localizada.
             mode (tuple, optional): O modo de carregamento ('append' para adicionar, 'replace' para substituir).
         """
+        logger.info(f'Iniciando o carregamento de dados para {target_table}.')
         self.close_connections()
         tables = inspect(self.engine).get_table_names(schema=target_schema)
         check = target_table in tables
         if not check:
-            self.create_sql_schema(target_table, target_schema)
+            if path_to_schema_file == None:
+                raise Exception('Relação não existe no destino, caminho do arquivo de schema precisa estar presente.')
+            logger.info(f'Criando tabela {target_table} em {target_schema}')
+            self.create_sql_schema(target_table, target_schema, path_to_schema_file)
         with self.engine.connect() as connection:
             if mode == "replace":
+                logger.info(f'Truncando dados de {target_table}.')
                 self.truncate_table(target_table, target_schema)
             try:
+                logger.info(f'Inserindo dados em {target_table}.')
                 dataframe.to_sql(target_table, con=connection, if_exists = "append", schema = target_schema, index = False)
             except PendingRollbackError:
+                logger.info(f'Rollback pendente detectado, realizando operação.')
                 connection.execute("ROLLBACK;")
+                logger.info(f'Inserindo dados em {target_table}.')
                 dataframe.to_sql(target_table, con=connection, if_exists = "append", schema = target_schema, index = False)
+        logger.info(f'Fim do carregamento de dados em {target_table}')

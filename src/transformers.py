@@ -44,13 +44,14 @@ class NotionTransformer():
         Returns:
             pd.DataFrame: O DataFrame com as colunas de data/hora corrigidas.
         """
+        logger.info('Executando transformer.process_data_columns')
         date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
 
         for col in columns:
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], format=date_format, errors='coerce')
                 df[col] = df[col].where(df[col].notna(), None)
-
+        logger.info('Colunas de data/hora transformadas com sucesso.')
         return df
 
     @staticmethod
@@ -68,11 +69,12 @@ class NotionTransformer():
         Returns:
             pd.DataFrame: O DataFrame com as colunas de listas convertidas em strings.
         """
+        logger.info('Executando transformer.process_list_columns')
         for col in df.columns:
             if df[col].apply(lambda x: isinstance(x, list)).any():
                 df[col] = df[col].apply(lambda x: ', '.join(map(str, x)) if isinstance(x, list) else x)
         return df   
-    
+        logger.info('Colunas de lista transformadas com sucesso.')
     def _extract_users_list(self,records: list) -> pd.DataFrame:
         """
         Extrai informações de usuários de uma lista de registros do Notion.
@@ -89,6 +91,7 @@ class NotionTransformer():
             pd.DataFrame: Um DataFrame contendo informações sobre os usuários extraídos, 
                         com colunas para ID, nome e e-mail, sem duplicatas.
         """
+        logger.info('Executando transformer._extract_users_list')
         user_list = []
         for record in records:
             properties = record.get("properties", {})
@@ -100,6 +103,7 @@ class NotionTransformer():
                         person_info = user.get('person', {})
                         email = person_info.get('email', None)
                         user_list.append({"id":user_id,"name":name,"email":email})
+        logger.info('Lista de usuários obtida com sucesso')
         return pd.DataFrame(user_list).drop_duplicates()
 
     def extract_properties_from_page(self, page: dict):
@@ -175,6 +179,7 @@ class NotionTransformer():
         Raises:
             Exception: Se ocorrer um erro durante a extração das propriedades dos registros.
         """
+        logger.info('Executando transformer.extract_pages_from_records.')
         if type(records) == list and type(records[0]) == dict:
             try:
                 return pd.DataFrame([self.extract_properties_from_page(record)for record in records])
@@ -182,3 +187,4 @@ class NotionTransformer():
                 logger.error(f'Falha ao extrair propriedades do registro: {e}')
         else:
             logger.error(f'Estrutura de arquivos incorreta, esperava list[dict(),] e recebu {type(records)}')
+        logger.info('Páginas extraídas com sucesso.')
