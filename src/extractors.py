@@ -2,6 +2,7 @@ import json
 import logging
 import requests
 import pandas as pd
+import numpy as np
 from io import StringIO
 from typing import Tuple, Any
 from abc import ABC, abstractmethod
@@ -255,9 +256,11 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         super().__init__(*args, **kwargs)
         self.source = 'bendito'
         self.token = kwargs.get('token')
-        self.writer = kwargs.get("writer")
+        self.writer = kwargs.get('writer')
+        self.schema = kwargs.get('schema',None)
+    
 
-    def get_data(self):
+    def send_get_request(self):
         """
         Método para obter dados da API.
 
@@ -268,7 +271,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         """
         return None
     
-    def post_data(self):
+    def send_post_request(self, payload):
         """
         Método para enviar dados para a API.
 
@@ -277,7 +280,13 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         Returns:
             None: Este método deve ser implementado.
         """
-        return None
+        endpoint = self._get_endpoint()
+        headers = self._get_headers()
+        response = requests.post(url=endpoint, headers=headers, data=payload)
+        if response.status_code != 200:
+            logger.error(f'{__name__}: {response.text}')
+            break
+        return response
 
     def _get_endpoint(self) -> str:
         """
@@ -286,7 +295,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         Returns:
             str: O endpoint da API para consultas.
         """
-        return "https://api-staging.bendito.digital/QueryViews"
+        return "https://api-staging.bendito.digital/BenditoBi"
 
     def _get_headers(self):
         """
@@ -301,8 +310,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             "Content-Type": "application/json"
             }
 
-
-    def fetch_paginated_data(self, query, page_size=200, separator=';', compression=False):
+    def fetch_paginated_data(self, query, page_size=200, **kwargs):
         """
         Obtém dados paginados da API Bendito.
 
@@ -318,32 +326,29 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         Yields:
             pd.DataFrame: Um gerador que produz DataFrames com os dados extraídos de cada página.
         """
-        endpoint = self._get_endpoint()
-        headers = self._get_headers()
+        separator = kwargs.get('separator',';')
         offset = 0
         page = 0
-
         while True:
+
+            logger.info(f'{__name__}: Obtendo página {page + 1} de {query}')
+
             query_string = f"{query} LIMIT {page_size} OFFSET {offset}"
-            logger.info(f'Obtendo página {page + 1} de {query}')
+
             payload = json.dumps({"query": query_string, "separator": separator})
-            response = requests.post(url=endpoint, headers=headers, data=payload)
-            if response.status_code != 200:
-                logger.error(f'{response.text}')
-                break
+            response = self.send_post_request(payload)
         
-            csv_file = StringIO(response.text)
-            dataframe = pd.read_csv(csv_file, sep=separator)
+            csv_file = StringIO(response.text.encode('latin1').decode('utf-8'))
+            dataframe = pd.read_csv(csv_file, sep=separator, encoding='utf-8')
 
             offset += page_size
             page += 1
-            yield dataframe
 
+            yield dataframe
             response_len = len(response.text.splitlines())
-            logger.info(f'Linhas de texto em página {page}: {response_len}, linhas do dataframe: {dataframe.shape[0]}.')
+            logger.info(f'{__name__}: Linhas de texto em página {page}: {response_len}, linhas do dataframe: {dataframe.shape[0]}.')
             if response_len <= page_size:
                 break
-
 
     def run(self, **kwargs):
         """
@@ -357,15 +362,19 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         Returns:
             pd.DataFrame: Um DataFrame contendo todos os dados extraídos e combinados.
         """
-        logger.info(f'Iniciando extração de dados para {query}')
+        query = kwargs.get('query','select 1')
+        page_size = kwargs.get('page_size',200)
         records = list(
             self.fetch_paginated_data(
-                kwargs.get('query','select 1'),
-                kwargs.get('page_size', 200), 
+                query,
+                page_size,
                 separator=kwargs.get('separator', ';'),
                 compression=kwargs.get('compression',False)
             )
         )
+        logger.info(f'{__name__}: Iniciando extração de dados para {query}')
         df = pd.concat(records, ignore_index=True)
-        logger.info('Fim da extração.')
+        logger.info(f'{__name__}: Fim da extração.')
+
+        
         return df

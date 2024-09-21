@@ -24,26 +24,33 @@ class NotionStream():
         self.config = config
         self.source_name = source_name
         self.output_name = kwargs.get('output_name',self.source_name)
-        self.writer = DataWriter(source=self.source, stream=self.source_name, compression = True, config= self.config)
-    
-    # def extract_database(self, database_id, token) -> None:
-    #     extractor = NotionDatabaseAPIExtractor(token = token, database_id = database_id)
-    #     records = extractor.run()
-    #     self.writer.dump_records(records, target_layer = 'raw', date=True)
+        self.writer = DataWriter(source=self.source, stream=self.source_name, compression = False, config= self.config)
     
     def extract_stream(self, database_id, token) -> None:
         extractor = NotionDatabaseAPIExtractor(token = token, database_id = database_id)
         records = extractor.run()
-        self.writer.dump_records(records, target_layer = 'raw', date=True)
+        self.writer.dump_records(records, target_layer = 'raw', date=False)
 
     def transform_stream(self, entity: str = ['pages','users'], **kwargs) -> None:
+        kwargs.get('')
+        separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
         transformer = NotionTransformer()
         source_name = kwargs.get('source_stream', self.source_name)
-        file_path = Utils.get_latest_file(f'/work/data/raw/{self.source}/{source_name}', '.txt.gz')
-        if file_path:
-            records = Utils.read_records(file_path)
-        else:
-            raise Exception(f'No files found in the specified directory: {file_path}')
+
+        path = f'/work/data/raw/{self.source}/{source_name}'
+        extension = '.txt'
+        if self.writer.compression == True:
+                extension += '.gz'
+        try:
+            raw_data_path = Utils.get_latest_file(path, extension)
+        except:
+            raw_data_path = path + extension
+        if raw_data_path == None:
+            raise Exception(f'{__name__}: raw_data_path é vazio.')
+        try:
+            records = Utils.read_records(raw_data_path)
+        except Exception as e:
+            raise Exception(f'No files found in the specified directory: {raw_data_path} ({e})')
         
         if entity == 'pages':
             # Extrair propriedades dos registros
@@ -57,41 +64,46 @@ class NotionStream():
 
             # Atualizar a coluna Task Interval com o atributo 'start' do objeto
             processed_data['Task Interval']  = processed_data['Task Interval'].apply(lambda x: x['start'] if isinstance(x, dict) and 'start' in x else None)
+            
         elif entity == 'users':
             processed_data = transformer._extract_users_list(records)
 
         # Gravando o arquivo na camada processing
         processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-        processed_data.to_csv(processed_data_path, index=False)
+        self.writer.dump_csv(processed_data, output_path = processed_data_path, sep = separator)
+        #processed_data.to_csv(processed_data_path, sep = separator, index=False, encoding='utf-8')
     
-    def stage_stream(self):
+    def stage_stream(self, rename_columns:bool = False, **kwargs):
+        separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
         # Lendo o arquivo na camada processing
         processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-        processed_data = pd.read_csv(processed_data_path)
+        processed_data = pd.read_csv(processed_data_path, sep = separator, encoding='utf-8')
 
-        # Atualizando o nome das colunas conforme o mapping
-        
-        try:
-            mapping_file_path = f'/work/schema/{self.output_name}.json'
-            with open(mapping_file_path, 'r') as file:
-                mapping = json.load(file)
-        except:
-            mapping_file_path = f'/datasets/_deepnote_work/schema/{self.output_name}.json'
-            with open(mapping_file_path, 'r') as file:
-                mapping = json.load(file)
-        processed_data = Utils.rename_columns(processed_data, mapping)
-        output = self.writer.get_output_file_path(output_name = self.output_name,target_layer='staging') + '.csv'
-        os.makedirs(os.path.dirname(output), exist_ok=True)
-        processed_data.to_csv(output, index=False)
+        if rename_columns:
+            mapping_file_path = kwargs.get('mapping_file_path',None)
+            if not mapping_file_path:
+                raise Exception('Caminho do arquivo mapping não foi informado')
+            try:
+                with open(mapping_file_path, 'r') as file:
+                    mapping = json.load(file)
+                processed_data = Utils.rename_columns(processed_data, mapping)
+            except Exception as e:
+                raise Exception(f'Erro ao ler o arquivo mapping: {e}')
+
+        staged_data_path = self.writer.get_output_file_path(output_name = self.output_name,target_layer='staging') + '.csv'
+        os.makedirs(os.path.dirname(staged_data_path), exist_ok=True)
+        self.writer.dump_csv(processed_data, output_path = staged_data_path, sep = separator)
+        #processed_data.to_csv(staged_data_path, sep = separator, index=False, encoding='utf-8')
     
     def load_stream(self, user, password, host, db_name, schema, mode = 'replace', **kwargs):
-        loader = PostgresLoader(user=user, password=password, host=host, db_name=db_name)
-        path_to_schema_file = kwargs.get('path_to_schema_file',None)
+        separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
+        schema_file_path = kwargs.get('schema_file_path',None)
+        loader = PostgresLoader(user=user, password=password, host=host, db_name=db_name, schema_file_path = schema_file_path, schema_file_type = 'template')
         staged_data_path = self.writer.get_output_file_path(output_name = self.output_name, target_layer='staging') + '.csv'
-        staged_data = pd.read_csv(staged_data_path)
-        loader.load_data(dataframe=staged_data, target_table=self.output_name, mode=mode, target_schema=schema, path_to_schema_file=path_to_schema_file)
+        staged_data = pd.read_csv(staged_data_path, sep=separator, encoding='utf-8')
+        loader.load_data(df=staged_data, target_table=self.output_name, mode=mode, target_schema=schema)
 
 class BenditoStream():
     def __init__(self, source_name,  config, **kwargs):
@@ -101,66 +113,90 @@ class BenditoStream():
         self.output_name = kwargs.get('output_name',self.source_name)
         self.writer = DataWriter(source=self.source, stream=self.source_name, compression = False, config= self.config)
 
-    def extract_stream(self, token, source_name=None, custom_query=None, page_size=500, **kwargs) -> None:
-        separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR'))
-        if not custom_query:
-            query = f"select * from {self.source_name}"
+    @property
+    def schema(self):
+        query = f"SELECT column_name, is_nullable, udt_name FROM information_schema.COLUMNS WHERE table_name = '{self.source_name}' ORDER BY table_name, ordinal_position"
+        payload = json.dumps({"query": query, "separator":";"})
+        response = requests.post(url, headers=headers, data=payload)
+        if response.status_code == 200:
+            self.schema = pd.read_csv(StringIO(response.text),sep=";", encoding='utf-8')
         else:
-            query = custom_query.strip().rstrip(';')
-        extractor = BenditoAPIExtractor(source = self.source, query = query, token = token, page_size = page_size, separator = separator, writer = self.writer)
-        records = extractor.run(query = query, separator = separator, page_size = page_size)
-        raw_data_path = self.writer.get_output_file_path(target_layer='raw', date=True) + '.csv'
-        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
-        records.to_csv(raw_data_path, index=False, sep=separator)
+            raise Exception(f'Exceção HTTP: {response.status_code}, {response.text}')
+        
+    def set_extractor(self, token, page_size = 500, separator = ';'):
+        self.extractor = BenditoAPIExtractor(source = self.source, token = token, writer = self.writer, schema = self.schema)
 
+    def extract_stream(self, custom_query=None, page_size=500, **kwargs) -> None:
+        separator = kwargs.get('separator',';')
+        
+        if custom_query:
+            query = custom_query.strip().rstrip(';')
+        else:
+            query = f"select * from {self.source_name}"
+
+        records = self.extractor.run(
+            query = query,
+            separator = separator,
+            page_size = page_size)
+            
+        raw_data_path = self.writer.get_output_file_path(target_layer='raw', date=False) + '.csv'
+        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
+        self.writer.dump_csv(records, output_path = raw_data_path, sep = separator)
+        #records.to_csv(raw_data_path, index=False, sep=separator, encoding='utf-8')
+        return records
+        
     def transform_stream(self, **kwargs) -> None:
         # Lendo o arquivo na camada raw
         separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
-        file_path = Utils.get_latest_file(f'/work/data/raw/{self.source}/{self.source_name}', '.csv')
-        if file_path:
-                records = pd.read_csv(file_path,sep=separator)
-        else:
-            raise Exception(f'No files found in the specified directory: {file_path}')    
-
-        ## .0000000000000000000000000. ##
-        ## .0000000000000000000000000. ##
-        ## .00 Transformações aqui 00. ##
-        ## .0000000000000000000000000. ##
-        ## .0000000000000000000000000. ##
+        path = f'/work/data/raw/{self.source}/{self.source_name}'
+        extension = '.csv'
+        try:
+            raw_data_path = Utils.get_latest_file(path, extension)
+        except:
+            raw_data_path = path + extension
+        if raw_data_path == None:
+            raise Exception(f'No files found in the specified directory: {file_path}')   
+        records = pd.read_csv(raw_data_path,sep=separator, low_memory=False)
 
         processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-        records.to_csv(processed_data_path, index=False, sep=separator)
+        self.writer.dump_csv(records, output_path = processed_data_path, sep = separator)
+        #records.to_csv(processed_data_path, index=False, sep=separator, encoding='utf-8')
     
     def stage_stream(self, rename_columns=False, **kwargs):
 
         # Lendo o arquivo na camada processing
+
         separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
         processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-        processed_data = pd.read_csv(processed_data_path, sep=separator)
+        processed_data = pd.read_csv(processed_data_path, sep=separator, low_memory=False, encoding='utf-8')
 
         # Atualizando o nome das colunas conforme o mapping
         if rename_columns:
-            path_to_mapping_file = kwargs.get('path_to_mapping_file',None)
-            if not path_to_mapping_file:
+            mapping_file_path = kwargs.get('mapping_file_path',None)
+            if not mapping_file_path:
                 raise Exception('Caminho do arquivo mapping não foi informado')
+
             try:
-                with open(path_to_mapping_file, 'r') as file:
-                    mapping = json.load(file)
-                processed_data = Utils.rename_columns(processed_data, mapping)
+                with open (mapping_file_path) as f:
+                    mapping = json.load(f)
+                    processed_data = Utils.rename_columns(processed_data, mapping)
             except Exception as e:
                 raise Exception(f'Erro ao ler o arquivo mapping: {e}')
 
         # Gravando os resultados na camada staging        
         processed_data_path = self.writer.get_output_file_path(output_name = self.output_name, target_layer='staging') + '.csv'
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-        processed_data.to_csv(processed_data_path, index=False, sep = separator)
+
+        # Testando função própria para a escrita de csv
+        self.writer.dump_csv(processed_data, output_path = processed_data_path, sep = separator)
+        #processed_data.to_csv(processed_data_path, index=False, sep = separator, encoding='utf-8')
     
     def load_stream(self, user, password, host, db_name, schema, mode = 'replace', **kwargs):
         separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
-        path_to_schema_file = kwargs.get('path_to_schema_file',None)
-        loader = PostgresLoader(user=user, password=password, host=host, db_name=db_name)
+        schema_file_path = kwargs.get('schema_file_path',None)
+        loader = PostgresLoader(user=user, password=password, host=host, db_name=db_name, schema_file_path = schema_file_path, schema_file_type = 'info_schema')
         staged_data_path = self.writer.get_output_file_path(output_name = self.output_name, target_layer='staging') + '.csv'
-        staged_data = pd.read_csv(staged_data_path, sep=separator)
-        loader.load_data(dataframe=staged_data, target_table=self.output_name, mode=mode, target_schema=schema, path_to_schema_file=path_to_schema_file)
+        staged_data = pd.read_csv(staged_data_path, sep=separator, low_memory = False, encoding='utf-8')
+        loader.load_data(df=staged_data, target_table=self.output_name, mode=mode, target_schema=schema)

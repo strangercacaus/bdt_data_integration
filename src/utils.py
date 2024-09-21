@@ -6,10 +6,17 @@ import json
 import logging
 import discord
 import requests
+import requests
+import sqlparse
+import pandas as pd
+import numpy as np
+from io import StringIO
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+token = os.environ['BENDITO_BI_TOKEN_STAGING'] 
 
 class Utils:
     """
@@ -19,6 +26,30 @@ class Utils:
     busca de configurações e leitura de registros de arquivos. Todos os métodos são estáticos 
     e podem ser chamados sem a necessidade de instanciar a classe.
     """
+    @staticmethod
+    def validate_sql(query):
+        try:
+            parsed = sqlparse.parse(command)
+            return bool(parsed)  # Returns True if there are parsed statements
+        except Exception as e:
+            return False
+
+    @staticmethod
+    def get_schema(schema): 
+        token = token
+        url = os.environ['BENDITO_BI_URL_STAGING']
+        headers = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}
+        all_dfs = []
+
+        query = f"SELECT * FROM information_schema.COLUMNS WHERE table_schema = '{schema}' ORDER BY table_name, ordinal_position"
+        payload = json.dumps({"query": query, "separator":";"})
+        response = requests.post(url, headers=headers, data=payload)
+        if response.status_code == 200:
+            df = pd.read_csv(StringIO(response.text),sep=";")
+            return df
+        else:
+            raise Exception(f'Exceção HTTP: {response.status_code}, {response.text}')
+
     @staticmethod
     def find_file(file_name):
         result = []
@@ -31,25 +62,32 @@ class Utils:
     @staticmethod
     def get_latest_file(directory, extension):
         list_of_files = glob.glob(f'{directory}/*{extension}')
-        return max(list_of_files, key=os.path.getctime) if list_of_files else None
+        path = max(list_of_files, key=os.path.getctime) if list_of_files else None
+        if path == None:
+            raise Exception(f'Arquivo não foi encotrado em {directory}')
+        else:
+            return path
     
     @staticmethod
-    def rename_columns(dataframe, mapping):
+    def rename_columns(df, mapping):
         """
-        Renomeia as colunas de um dataframe de acordo com o mapa de nomes fornecido.
+        Renomeia as colunas de um df de acordo com o mapa de nomes fornecido.
 
         Args:
-        dataframe (pd.DataFrame): O dataframe cujas colunas serão renomeadas.
+        df (pd.df): O df cujas colunas serão renomeadas.
         column_name_mapping (dict): Dicionário contendo o mapeamento de nomes de colunas antigos para novos.
 
         Returns:
-        pd.DataFrame: DataFrame com as colunas renomeadas.
+        pd.df: df com as colunas renomeadas.
         """
-        # Rename the columns
-        new_dataframe = dataframe.rename(mapping)
-        
-        # Return DataFrame with only the existing new column names
-        return new_dataframe[[col for col in mapping.values() if col in new_dataframe.columns]]
+        renamed_df = df.rename(columns=mapping)
+        renamed_df_cols = renamed_df.columns
+        new_cols = list(mapping.values())  # Use new names here
+        return renamed_df[[col for col in new_cols if col in renamed_df_cols]]
+    
+
+
+
 
     @staticmethod
     def get_current_formatted_date():
