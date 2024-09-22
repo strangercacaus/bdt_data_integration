@@ -75,8 +75,9 @@ class NotionTransformer():
         for col in df.columns:
             if df[col].apply(lambda x: isinstance(x, list)).any():
                 df[col] = df[col].apply(lambda x: ', '.join(map(str, x)) if isinstance(x, list) else x)
-        return df   
         logger.info('Colunas de lista transformadas com sucesso.')
+        return df   
+
     def _extract_users_list(self,records: list) -> pd.DataFrame:
         """
         Extrai informações de usuários de uma lista de registros do Notion.
@@ -185,17 +186,15 @@ class NotionTransformer():
         """
         logger.info('Executando transformer.extract_pages_from_records.')
 
-        if type(records) == list and type(records[0]) == dict:
-
-            try:
-                extracted_records_list = []
-                for record in records:
-                    extracted = self.extract_properties_from_page(record)
-                    extracted_records_list.append(extracted)
-                    df = pd.DataFrame(extracted_records_list)
-                return df
-            except Exception as e:
-                logger.error(f'Falha ao extrair propriedades do registro: {e}')
-        else:
+        if type(records) != list or type(records[0]) != dict:
             raise Exception('Estrutura de arquivos incorreta, esperava list[dict()] e recebu ' + type(records) + ' com ' + type(records[0]))
+        try:
+            extracted_records_list = []
+            for record in records:
+                extracted = self.extract_properties_from_page(record)
+                extracted_records_list.append(extracted)
+                df = pd.DataFrame(extracted_records_list)
+            return df
+        except Exception as e:
+            logger.error(f'Falha ao extrair propriedades do registro: {e}')
         logger.info('Páginas extraídas com sucesso.')

@@ -285,7 +285,6 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         response = requests.post(url=endpoint, headers=headers, data=payload)
         if response.status_code != 200:
             logger.error(f'{__name__}: {response.text}')
-            break
         return response
 
     def _get_endpoint(self) -> str:
@@ -304,7 +303,6 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         Returns:
             dict: Um dicionário contendo os cabeçalhos de autorização e conteúdo.
         """
-        api_key = self.token
         return {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json"
@@ -339,7 +337,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             response = self.send_post_request(payload)
         
             csv_file = StringIO(response.text.encode('latin1').decode('utf-8'))
-            dataframe = pd.read_csv(csv_file, sep=separator, encoding='utf-8')
+            dataframe = pd.read_csv(csv_file, sep=separator, encoding='utf-8', dtype=str)
 
             offset += page_size
             page += 1

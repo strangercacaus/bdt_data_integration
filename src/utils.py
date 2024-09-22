@@ -29,24 +29,22 @@ class Utils:
     @staticmethod
     def validate_sql(query):
         try:
-            parsed = sqlparse.parse(command)
+            parsed = sqlparse.parse(query)
             return bool(parsed)  # Returns True if there are parsed statements
         except Exception as e:
             return False
 
     @staticmethod
     def get_schema(schema): 
-        token = token
+        token =  os.environ['BENDITO_BI_TOKEN_STAGING']
         url = os.environ['BENDITO_BI_URL_STAGING']
         headers = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}
-        all_dfs = []
 
         query = f"SELECT * FROM information_schema.COLUMNS WHERE table_schema = '{schema}' ORDER BY table_name, ordinal_position"
         payload = json.dumps({"query": query, "separator":";"})
         response = requests.post(url, headers=headers, data=payload)
         if response.status_code == 200:
-            df = pd.read_csv(StringIO(response.text),sep=";")
-            return df
+            return pd.read_csv(StringIO(response.text),sep=";")
         else:
             raise Exception(f'Exceção HTTP: {response.status_code}, {response.text}')
 
@@ -54,16 +52,14 @@ class Utils:
     def find_file(file_name):
         result = []
         for root, dirs, files in os.walk('/'):
-            for file in files:
-                if file == file_name:
-                    result.append(os.path.join(root, file))
+            result.extend(os.path.join(root, file) for file in files if file == file_name)
         return result
         
     @staticmethod
     def get_latest_file(directory, extension):
         list_of_files = glob.glob(f'{directory}/*{extension}')
         path = max(list_of_files, key=os.path.getctime) if list_of_files else None
-        if path == None:
+        if path is None:
             raise Exception(f'Arquivo não foi encotrado em {directory}')
         else:
             return path
@@ -84,10 +80,6 @@ class Utils:
         renamed_df_cols = renamed_df.columns
         new_cols = list(mapping.values())  # Use new names here
         return renamed_df[[col for col in new_cols if col in renamed_df_cols]]
-    
-
-
-
 
     @staticmethod
     def get_current_formatted_date():

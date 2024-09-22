@@ -145,13 +145,13 @@ class DataWriter(ABC):
         Returns:
             str: O caminho completo do arquivo de saída gerado com base nos parâmetros fornecidos.
         """
-        current_date = Utils.get_current_formatted_date() if date == True else None
-        stream_name = output_name if output_name else self.stream
+        current_date = Utils.get_current_formatted_date() if date else None
+        stream_name = output_name or self.stream
 
-        if target_layer == 'raw':
-            target_dir = self._get_raw_dir()
-        elif target_layer == 'processing':
+        if target_layer == 'processing':
             target_dir = self._get_processing_dir()
+        elif target_layer == 'raw':
+            target_dir = self._get_raw_dir()
         elif target_layer == 'staging':
             target_dir = self._get_staging_dir()
 
@@ -164,8 +164,6 @@ class DataWriter(ABC):
             path += f'/{filename}'
 
         return path
-
-
 
     def dump_records(self,
                      records: [list, dict], # type: ignore
@@ -205,7 +203,7 @@ class DataWriter(ABC):
             raise DataTypeNotSupportedException(records)
 
         self._write_row(rows, output, file_format)
-        logger.info(f'Dump Finalizado')
+        logger.info('Dump Finalizado')
     
     def dump_csv(self, df, output_path, sep=';'):
         # Convert columns dynamically
@@ -240,11 +238,9 @@ class DataWriter(ABC):
                 continue  # Move to the next column
 
             # Check for float type
-            if pd.api.types.is_float_dtype(df[col]):
-                # If all non-NaN values are whole numbers, convert to Int64
-                if df[col].dropna().apply(lambda x: x.is_integer()).all():
-                    df[col] = df[col].astype('Int64')
-                    continue  # Move to the next column
+            if pd.api.types.is_float_dtype(df[col]) and df[col].dropna().apply(lambda x: x.is_integer()).all():
+                df[col] = df[col].astype('Int64')
+                continue  # Move to the next column
 
             # Check if the column is of string type (to prevent conversion)
             if pd.api.types.is_string_dtype(df[col]):
@@ -256,8 +252,5 @@ class DataWriter(ABC):
 
             # Try to convert non-integer and non-float columns to numeric
             if df[col].apply(self.is_str_col_int).all():
-                try:
-                    df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
-                except ValueError:
-                    pass  # If conversion fails, leave the column as is
+                df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
         return df

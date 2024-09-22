@@ -116,13 +116,6 @@ class PostgresLoader:
             raise Exception('Problema ao abrir o arquivo de schema.')
         return template.render(context)
 
-        # Step 3: Generate the CREATE TABLE query
-        if columns:
-            columns_definition = ',\n    '.join(columns)
-            return f"CREATE TABLE {target_schema}.{target_table} (\n    {columns_definition}\n);"
-        else:
-            raise ValueError(f"No columns found for table '{target_table}'")
-
     def close_connections(self):
         """
         Fecha as conexões ativas com o banco de dados.
@@ -262,7 +255,9 @@ class PostgresLoader:
             primary_key (str, optional): O nome da coluna a ser usada como chave primária.
             unique_columns (list, optional): Uma lista de colunas que devem ser únicas.
         """
-        logger.info('loader.create_sql_schema, target_table: ' + target_table + ', target_schema: ' + target_schema)
+        logger.info(
+            f'loader.create_sql_schema, target_table: {target_table}, target_schema: {target_schema}'
+        )
 
         self.create_table(target_table, target_schema)
 
@@ -333,7 +328,7 @@ class PostgresLoader:
         chunksize = kwargs.get('chunksize',1000)
         check = target_table in tables
         if not check:
-            if self.schema_file_path == None:
+            if self.schema_file_path is None:
                 raise Exception('Relação não existe no destino, caminho do arquivo de schema precisa estar presente.')
             logger.info(f'Criando tabela {target_table} em {target_schema}')
             self.create_sql_schema(target_table, target_schema)
@@ -346,7 +341,7 @@ class PostgresLoader:
                 logger.info(f'Inserindo dados em {target_table}.')
                 loaded_rows = df.to_sql(target_table, con=connection, if_exists = "append", schema = target_schema, index = False, chunksize = chunksize)
             except PendingRollbackError:
-                logger.info(f'Rollback pendente detectado, realizando operação.')
+                logger.info('Rollback pendente detectado, realizando operação.')
                 connection.execute("ROLLBACK;")
                 logger.info(f'Inserindo dados em {target_table}.')
                 loaded_rows = df.to_sql(target_table, con=connection, if_exists = "append", schema = target_schema, index = False, chunksize = chunksize)
