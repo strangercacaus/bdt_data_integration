@@ -14,9 +14,7 @@ from io import StringIO
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
-token = os.environ['BENDITO_BI_TOKEN_STAGING'] 
+logging.basicConfig(level=logging.INFO) 
 
 class Utils:
     """
@@ -36,8 +34,8 @@ class Utils:
 
     @staticmethod
     def get_schema(schema): 
-        token =  os.environ['BENDITO_BI_TOKEN_STAGING']
-        url = os.environ['BENDITO_BI_URL_STAGING']
+        token =  os.environ['BENDITO_BI_TOKEN']
+        url = os.environ['BENDITO_BI_URL']
         headers = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'}
 
         query = f"SELECT * FROM information_schema.COLUMNS WHERE table_schema = '{schema}' ORDER BY table_name, ordinal_position"

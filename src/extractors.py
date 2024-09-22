@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import requests
@@ -260,7 +261,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         self.schema = kwargs.get('schema',None)
     
 
-    def send_get_request(self):
+    def get_data(self):
         """
         Método para obter dados da API.
 
@@ -271,7 +272,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         """
         return None
     
-    def send_post_request(self, payload):
+    def post_data(self, payload):
         """
         Método para enviar dados para a API.
 
@@ -334,9 +335,9 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             query_string = f"{query} LIMIT {page_size} OFFSET {offset}"
 
             payload = json.dumps({"query": query_string, "separator": separator})
-            response = self.send_post_request(payload)
+            response = self.post_data(payload)
         
-            csv_file = StringIO(response.text.encode('latin1').decode('utf-8'))
+            csv_file = StringIO(response.text.replace('\r','').encode('latin1').decode('utf-8'))
             dataframe = pd.read_csv(csv_file, sep=separator, encoding='utf-8', dtype=str)
 
             offset += page_size

@@ -77,8 +77,8 @@ class NotionStream():
         # Gravando o arquivo na camada processing
         processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-        self.writer.dump_csv(processed_data, output_path = processed_data_path, sep = separator)
-        #processed_data.to_csv(processed_data_path, sep = separator, index=False, encoding='utf-8')
+        #self.writer.dump_csv(processed_data, output_path = processed_data_path, sep = separator)
+        processed_data.to_csv(processed_data_path, sep = separator, index=False, encoding='utf-8')
     
     def stage_stream(self, rename_columns:bool = False, **kwargs):
         separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
@@ -100,8 +100,8 @@ class NotionStream():
 
         staged_data_path = self.writer.get_output_file_path(output_name = self.output_name,target_layer='staging') + '.csv'
         os.makedirs(os.path.dirname(staged_data_path), exist_ok=True)
-        self.writer.dump_csv(processed_data, output_path = staged_data_path, sep = separator)
-        #processed_data.to_csv(staged_data_path, sep = separator, index=False, encoding='utf-8')
+        #self.writer.dump_csv(processed_data, output_path = staged_data_path, sep = separator)
+        processed_data.to_csv(staged_data_path, sep = separator, index=False, encoding='utf-8')
     
     def load_stream(self, user, password, host, db_name, schema, mode = 'replace', **kwargs):
         separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
@@ -137,8 +137,8 @@ class BenditoStream():
             
         raw_data_path = self.writer.get_output_file_path(target_layer='raw', date=False) + '.csv'
         os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
-        self.writer.dump_csv(records, output_path = raw_data_path, sep = separator)
-        #records.to_csv(raw_data_path, index=False, sep=separator, encoding='utf-8')
+        #self.writer.dump_csv(records, output_path = raw_data_path, sep = separator)
+        records.to_csv(raw_data_path, index=False, sep=separator, encoding='utf-8')
         return records
         
     def transform_stream(self, **kwargs) -> None:
@@ -163,8 +163,8 @@ class BenditoStream():
 
         processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-        self.writer.dump_csv(records, output_path = processed_data_path, sep = separator)
-        #records.to_csv(processed_data_path, index=False, sep=separator, encoding='utf-8')
+        #self.writer.dump_csv(records, output_path = processed_data_path, sep = separator)
+        records.to_csv(processed_data_path, index=False, sep=separator, encoding='utf-8')
     
     def stage_stream(self, rename_columns=False, **kwargs):
 
@@ -193,8 +193,8 @@ class BenditoStream():
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
 
         # Testando função própria para a escrita de csv
-        self.writer.dump_csv(processed_data, output_path = processed_data_path, sep = separator)
-        #processed_data.to_csv(processed_data_path, index=False, sep = separator, encoding='utf-8')
+        #self.writer.dump_csv(processed_data, output_path = processed_data_path, sep = separator)
+        processed_data.to_csv(processed_data_path, index=False, sep = separator, encoding='utf-8')
     
     def load_stream(self, user, password, host, db_name, schema, mode = 'replace', **kwargs):
         separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
