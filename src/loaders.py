@@ -76,11 +76,9 @@ class PostgresLoader:
             for row in reader:
                 # Step 2: Filter by table name
                 if row['table_name'] == target_table:
-                    column_def = f"{row['column_name']} {row['udt_name']}"
+                    column_def = f""""{row['column_name']}" {row['udt_name']}"""
                     if row['character_maximum_length']:
                         column_def += f"({int(float(row['character_maximum_length']))})"
-                    #if row['is_nullable'] == 'NO':
-                    #    column_def += ' NOT NULL'
                     columns.append(column_def)
         if columns:
             columns_definition = ',\n    '.join(columns)
@@ -334,9 +332,10 @@ class PostgresLoader:
             self.create_sql_schema(target_table, target_schema)
         with self.engine.connect() as connection:
             loaded_rows = 0
-            if mode == "replace":
-                logger.info(f'Truncando dados de {target_table}.')
-                self.truncate_table(target_table, target_schema)
+            if mode == 'replace':
+                if check:
+                    logger.info(f'Truncando dados de {target_table}.')
+                    self.truncate_table(target_table, target_schema)
             try:
                 logger.info(f'Inserindo dados em {target_table}.')
                 loaded_rows = df.to_sql(target_table, con=connection, if_exists = "append", schema = target_schema, index = False, chunksize = chunksize)

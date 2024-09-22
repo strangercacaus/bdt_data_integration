@@ -128,7 +128,7 @@ class BenditoStream():
         if custom_query:
             query = custom_query.strip().rstrip(';')
         else:
-            query = f"select * from {self.source_name}"
+            query = f'select * from "{self.source_name}"'
 
         records = self.extractor.run(
             query = query,
