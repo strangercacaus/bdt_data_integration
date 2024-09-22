@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+import time
 import yaml
 import logging
 import pandas as pd
@@ -26,23 +28,23 @@ class NotionTransformer():
             Extrai todas as propriedades de um registro do Notion e retorna um dicionário de um único nível.
         
         extract_all_records(records):
-            Extrai todos os registros de uma lista de registros do Notion e os retorna como um DataFrame do pandas.
+            Extrai todos os registros de uma lista de registros do Notion e os retorna como um df do pandas.
     """
     @staticmethod
     def process_date_columns(df, columns):
         """
-        Corrige o formato de data/hora de todas as colunas especificadas em um DataFrame.
+        Corrige o formato de data/hora de todas as colunas especificadas em um df.
 
-        Este método converte as colunas de data/hora do DataFrame para o formato padrão ISO 8601. 
-        Se uma coluna não estiver presente no DataFrame, ela será ignorada. As entradas que não puderem 
+        Este método converte as colunas de data/hora do df para o formato padrão ISO 8601. 
+        Se uma coluna não estiver presente no df, ela será ignorada. As entradas que não puderem 
         ser convertidas serão definidas como null.
 
         Args:
-            df (pd.DataFrame): O DataFrame contendo as colunas a serem processadas.
+            df (pd.DataFrame): O df contendo as colunas a serem processadas.
             columns (list): Uma lista de nomes de colunas que devem ser convertidas para o formato de data/hora.
 
         Returns:
-            pd.DataFrame: O DataFrame com as colunas de data/hora corrigidas.
+            pd.DataFrame: O df com as colunas de data/hora corrigidas.
         """
         logger.info('Executando transformer.process_data_columns')
         date_format = '%Y-%m-%dT%H:%M:%S.%fZ'
@@ -59,22 +61,23 @@ class NotionTransformer():
         """
         Processa colunas que contêm listas, convertendo os valores em uma única string com elementos separados por vírgula.
 
-        Este método verifica cada coluna do DataFrame e, se encontrar colunas que contêm listas, 
+        Este método verifica cada coluna do df e, se encontrar colunas que contêm listas, 
         transforma cada lista em uma string onde os elementos são concatenados e separados por vírgula. 
         As colunas que não contêm listas permanecem inalteradas.
 
         Args:
-            df (pd.DataFrame): O DataFrame a ser processado, contendo colunas que podem ter listas como valores.
+            df (pd.DataFrame): O df a ser processado, contendo colunas que podem ter listas como valores.
 
         Returns:
-            pd.DataFrame: O DataFrame com as colunas de listas convertidas em strings.
+            pd.DataFrame: O df com as colunas de listas convertidas em strings.
         """
         logger.info('Executando transformer.process_list_columns')
         for col in df.columns:
             if df[col].apply(lambda x: isinstance(x, list)).any():
                 df[col] = df[col].apply(lambda x: ', '.join(map(str, x)) if isinstance(x, list) else x)
-        return df   
         logger.info('Colunas de lista transformadas com sucesso.')
+        return df   
+
     def _extract_users_list(self,records: list) -> pd.DataFrame:
         """
         Extrai informações de usuários de uma lista de registros do Notion.
@@ -82,13 +85,13 @@ class NotionTransformer():
         Este método percorre os registros fornecidos e coleta informações sobre usuários, 
         incluindo ID, nome e e-mail. Ele verifica as propriedades de cada registro para identificar 
         campos do tipo 'person' ou 'people' e compila uma lista de usuários únicos. 
-        O resultado é retornado como um DataFrame do pandas, onde cada linha representa um usuário.
+        O resultado é retornado como um df do pandas, onde cada linha representa um usuário.
 
         Args:
             records (list): Uma lista de dicionários representando os registros do Notion.
 
         Returns:
-            pd.DataFrame: Um DataFrame contendo informações sobre os usuários extraídos, 
+            pd.DataFrame: Um df contendo informações sobre os usuários extraídos, 
                         com colunas para ID, nome e e-mail, sem duplicatas.
         """
         logger.info('Executando transformer._extract_users_list')
@@ -125,7 +128,9 @@ class NotionTransformer():
             dict: Um dicionário contendo as propriedades extraídas do registro, 
                 com chaves correspondentes aos tipos de dados do Notion.
         """
+
         properties = page.get('properties', {})
+
         extracted = {
             'id': page.get('id'),
             'created_time': page.get('created_time'),
@@ -166,25 +171,30 @@ class NotionTransformer():
 
         Este método verifica se a entrada é uma lista de dicionários e, em caso afirmativo, 
         utiliza a função `extract_all_page_properties` para extrair as propriedades de cada 
-        registro. Os dados extraídos são retornados como um DataFrame do pandas. 
+        registro. Os dados extraídos são retornados como um df do pandas. 
         Se a estrutura dos registros não for válida, um erro é registrado.
 
         Args:
             records: Uma lista de dicionários representando os registros do Notion.
 
         Returns:
-            pd.DataFrame: Um DataFrame contendo as propriedades extraídas das páginas, 
+            pd.DataFrame: Um df contendo as propriedades extraídas das páginas, 
                         ou None se a estrutura dos registros for inválida.
 
         Raises:
             Exception: Se ocorrer um erro durante a extração das propriedades dos registros.
         """
         logger.info('Executando transformer.extract_pages_from_records.')
-        if type(records) == list and type(records[0]) == dict:
-            try:
-                return pd.DataFrame([self.extract_properties_from_page(record)for record in records])
-            except Exception as e:
-                logger.error(f'Falha ao extrair propriedades do registro: {e}')
-        else:
-            logger.error(f'Estrutura de arquivos incorreta, esperava list[dict(),] e recebu {type(records)}')
+
+        if type(records) != list or type(records[0]) != dict:
+            raise Exception('Estrutura de arquivos incorreta, esperava list[dict()] e recebu ' + type(records) + ' com ' + type(records[0]))
+        try:
+            extracted_records_list = []
+            for record in records:
+                extracted = self.extract_properties_from_page(record)
+                extracted_records_list.append(extracted)
+                df = pd.DataFrame(extracted_records_list)
+            return df
+        except Exception as e:
+            logger.error(f'Falha ao extrair propriedades do registro: {e}')
         logger.info('Páginas extraídas com sucesso.')
