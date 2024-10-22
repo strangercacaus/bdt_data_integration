@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 from src.writers import DataWriter
 from src.loaders import PostgresLoader
 from src.transformers import NotionTransformer
-from src.extractors import NotionDatabaseAPIExtractor, BenditoAPIExtractor
+from src.extractors import NotionDatabaseAPIExtractor, BenditoAPIExtractor, Bitrix24APIExtractor
 from src.utils import Utils, WebhookNotifier, DiscordNotifier
 
 class NotionStream():
@@ -124,11 +124,12 @@ class BenditoStream():
 
     def extract_stream(self, custom_query=None, page_size=500, **kwargs) -> None:
         separator = kwargs.get('separator',';')
+        order_col = kwargs.get('order_col',1)
         
         if custom_query:
             query = custom_query.strip().rstrip(';')
         else:
-            query = f'select * from "{self.source_name}"'
+            query = f'select * from "{self.source_name}" order by {order_col} asc'
 
         records = self.extractor.run(
             query = query,
@@ -200,6 +201,82 @@ class BenditoStream():
         separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
         schema_file_path = kwargs.get('schema_file_path',None)
         loader = PostgresLoader(user=user, password=password, host=host, db_name=db_name, schema_file_path = schema_file_path, schema_file_type = 'info_schema')
+        staged_data_path = self.writer.get_output_file_path(output_name = self.output_name, target_layer='staging') + '.csv'
+        staged_data = pd.read_csv(staged_data_path, sep=separator, encoding='utf-8', dtype=str)
+        loader.load_data(df=staged_data, target_table=self.output_name, mode=mode, target_schema=schema)
+
+
+class Bitrix24Stream():
+    def __init__(self, source_name,  config, **kwargs):
+        self.source = 'bitrix24'
+        self.config = config
+        self.source_name = source_name 
+        self.output_name = kwargs.get('output_name',self.source_name)
+        self.writer = DataWriter(source=self.source, stream=self.source_name, compression = False, config= self.config)
+
+    def set_extractor(self, token, separator = ';'):
+        self.extractor = Bitrix24APIExtractor(source = self.source, token = token, writer = self.writer, separator=separator)
+
+    def extract_stream(self, **kwargs) -> None:
+        separator = kwargs.get('separator',';')
+        start = kwargs.get('start',0)
+
+        records = self.extractor.run(self.source_name, separator=separator, start = start)
+            
+        raw_data_path = self.writer.get_output_file_path(target_layer='raw', date=False) + '.csv'
+        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
+        records.to_csv(raw_data_path, index=False, sep=separator, encoding='utf-8')
+        return records
+        
+    def transform_stream(self, **kwargs) -> None:
+        # Lendo o arquivo na camada raw
+        separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
+        path = f'/work/data/raw/{self.source}/{self.source_name}'
+        extension = '.csv'
+        try:
+            raw_data_path = Utils.get_latest_file(path, extension)
+        except Exception:
+            raw_data_path = path + extension
+        if raw_data_path is None:
+            raise Exception(f'No files found in the specified directory: {file_path}')
+        records = pd.read_csv(raw_data_path,sep=separator, dtype=str)
+
+        processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
+        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
+        records.to_csv(processed_data_path, index=False, sep=separator, encoding='utf-8')
+    
+    def stage_stream(self, rename_columns=False, **kwargs):
+
+        # Lendo o arquivo na camada processing
+
+        separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
+        processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
+        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
+        processed_data = pd.read_csv(processed_data_path, sep=separator, encoding='utf-8', dtype=str)
+
+        # Atualizando o nome das colunas conforme o mapping
+        if rename_columns:
+            mapping_file_path = kwargs.get('mapping_file_path',None)
+            if not mapping_file_path:
+                raise Exception('Caminho do arquivo mapping não foi informado')
+
+            try:
+                with open (mapping_file_path) as f:
+                    mapping = json.load(f)
+                    processed_data = Utils.rename_columns(processed_data, mapping)
+            except Exception as e:
+                raise Exception(f'Erro ao ler o arquivo mapping: {e}') from e
+
+        # Gravando os resultados na camada staging        
+        processed_data_path = self.writer.get_output_file_path(output_name = self.output_name, target_layer='staging') + '.csv'
+        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
+
+        processed_data.to_csv(processed_data_path, index=False, sep = separator, encoding='utf-8')
+    
+    def load_stream(self, user, password, host, db_name, schema, mode = 'replace', **kwargs):
+        separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
+        schema_file_path = kwargs.get('schema_file_path',None)
+        loader = PostgresLoader(user=user, password=password, host=host, db_name=db_name, schema_file_path = schema_file_path, schema_file_type = 'infor_schema')
         staged_data_path = self.writer.get_output_file_path(output_name = self.output_name, target_layer='staging') + '.csv'
         staged_data = pd.read_csv(staged_data_path, sep=separator, encoding='utf-8', dtype=str)
         loader.load_data(df=staged_data, target_table=self.output_name, mode=mode, target_schema=schema)

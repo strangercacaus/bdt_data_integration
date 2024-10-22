@@ -122,7 +122,7 @@ class PostgresLoader:
         """
         with self.engine.connect() as connection:
             connection.autocommit = True  # To allow session termination
-            terminate_query = f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = '{self.db_name}';"
+            terminate_query = f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity JOIN pg_roles ON pg_stat_activity.usename = pg_roles.rolname WHERE pid <> pg_backend_pid() AND datname = '{self.db_name}' AND NOT pg_roles.rolsuper;"
             connection.execute(terminate_query)
 
     def create_updated_at_trigger(self, target_table, target_schema):
@@ -333,6 +333,9 @@ class PostgresLoader:
         with self.engine.connect() as connection:
             loaded_rows = 0
             if mode == 'replace':
+                # Apesar de essa implementação do replace estar incorreta, foi a que deu pra fazer a tempo do projeto.
+                # o correto seria fazer um upsert apenas para as linhas que sofreram alguma alteração,para isso seria necessário
+                # comparar o dataframe da última importação de staging com o novo dataframe e enviar para esta função apenas o dataframe com as novas linhas.
                 if check:
                     logger.info(f'Truncando dados de {target_table}.')
                     self.truncate_table(target_table, target_schema)
