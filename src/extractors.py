@@ -384,7 +384,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         
         return df
 
-class Bitrix24APIExtractor():
+class BitrixAPIExtractor():
     """
     Extrator para a extração de dados da API Database Query do Notion.
 
@@ -401,9 +401,11 @@ class Bitrix24APIExtractor():
             *args: Argumentos posicionais para a classe pai.
             **kwargs: Argumentos nomeados, incluindo 'token', 'identifier' e 'writer'.
         """
-        self.source = 'bitrix24'
+        self.source = 'bitrix'
         self.token = kwargs.get('token')
-        self.writer = kwargs.get('writer')    
+        self.writer = kwargs.get('writer') 
+        self.bitrix_url = kwargs.get('bitrix_url')
+        self.bitrix_user_id = kwargs.get('bitrix_user_id')
 
     def get_data(self, url, params):
         pass
@@ -412,7 +414,9 @@ class Bitrix24APIExtractor():
         pass
 
     def _get_endpoint(self, endpoint_id) -> str:
-        pass
+        url = f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/{endpoint_id}"
+        logger.info(url)
+        return url 
 
     def _get_headers(self):
         pass
@@ -420,7 +424,7 @@ class Bitrix24APIExtractor():
     def fetch_paginated_results(self, endpoint_id='str', start=0, **kwargs):
         start = 0
         records = []
-        url = f"https://benditocs.bitrix24.com.br/rest/83/{self.token}/{endpoint_id}"
+        url = self._get_endpoint(endpoint_id)
         while True:
             params = {
                 'start': start
