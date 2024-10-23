@@ -1,3 +1,4 @@
+import os
 import csv
 import json
 import logging
@@ -295,7 +296,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         Returns:
             str: O endpoint da API para consultas.
         """
-        return "https://api-staging.bendito.digital/BenditoBi"
+        return os.environ['BENDITO_BI_URL']
 
     def _get_headers(self):
         """
@@ -327,26 +328,32 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         """
         separator = kwargs.get('separator',';')
         offset = 0
+        results = 0
         page = 0
+        logger.info(f'{__name__}: Obtendo página {page + 1} de {query}')
         while True:
 
-            logger.info(f'{__name__}: Obtendo página {page + 1} de {query}')
+            #logger.info(f'{__name__}: Obtendo página {page + 1} de {query}')
 
             query_string = f"{query} LIMIT {page_size} OFFSET {offset}"
-
             payload = json.dumps({"query": query_string, "separator": separator})
+
             response = self.post_data(payload)
-        
-            csv_file = StringIO(response.text.replace('\r','').encode('latin1').decode('utf-8'))
+
+            response_text = response.text.replace('\r','').encode('latin1').decode('utf-8')
+            csv_file = StringIO(response_text)
             dataframe = pd.read_csv(csv_file, sep=separator, encoding='utf-8', dtype=str)
+
+            response_len = dataframe.shape[0]
+            results += response_len
 
             offset += page_size
             page += 1
 
             yield dataframe
-            response_len = len(response.text.splitlines())
-            logger.info(f'{__name__}: Linhas de texto em página {page}: {response_len}, linhas do dataframe: {dataframe.shape[0]}.')
-            if response_len <= page_size:
+            
+            #logger.info(f'{__name__}: Registros obtidos na página {page}: {response_len}, registros totais: {results}.')
+            if response_len < page_size:
                 break
 
     def run(self, **kwargs):
@@ -371,9 +378,104 @@ class BenditoAPIExtractor(GenericAPIExtractor):
                 compression=kwargs.get('compression',False)
             )
         )
-        logger.info(f'{__name__}: Iniciando extração de dados para {query}')
         df = pd.concat(records, ignore_index=True)
         logger.info(f'{__name__}: Fim da extração.')
 
         
         return df
+
+class BitrixAPIExtractor():
+    """
+    Extrator para a extração de dados da API Database Query do Notion.
+
+    Atributos:
+        - identifier (str): Identificador do extrator, neste caso, 'notion'.
+        - base_endpoint (str): URL base da API do Notion, 'https://api.notion.com/v1'.
+        - token (str): Bearer Token da conta conectada à integração.
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Inicializa um extrator para a API do Bitrix24.
+
+        Args:
+            *args: Argumentos posicionais para a classe pai.
+            **kwargs: Argumentos nomeados, incluindo 'token', 'identifier' e 'writer'.
+        """
+        self.source = 'bitrix'
+        self.token = kwargs.get('token')
+        self.writer = kwargs.get('writer') 
+        self.bitrix_url = kwargs.get('bitrix_url')
+        self.bitrix_user_id = kwargs.get('bitrix_user_id')
+
+    def get_data(self, url, params):
+        pass
+    
+    def post_data(self, payload):
+        pass
+
+    def _get_endpoint(self, endpoint_id) -> str:
+        url = f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/{endpoint_id}"
+        logger.info(url)
+        return url 
+
+    def _get_headers(self):
+        pass
+
+    def fetch_paginated_results(self, endpoint_id='str', start=0, **kwargs):
+        start = 0
+        records = []
+        url = self._get_endpoint(endpoint_id)
+        while True:
+            params = {
+                'start': start
+                     }
+            response = requests.get(url, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                yield data.get('result')
+                if data.get('next'):
+                    start = data.get('next')
+                else:
+                    break
+            else:
+                logger.error(f"Error: {response.status_code} - {response.text}")
+                break
+
+    def run(self, endpoint_id, **kwargs):
+        """
+        Executa a rotina principal do extrator, consolidando os dados extraídos.
+
+        Este método coleta todos os dados paginados e os combina em um único DataFrame.
+
+        Args:
+            **kwargs: Argumentos adicionais, incluindo 'query', 'page_size', 'separator' e 'compression'.
+
+        Returns:
+            pd.DataFrame: Um DataFrame contendo todos os dados extraídos e combinados.
+        """
+        records = []
+        
+        start = kwargs.get('start',0)
+        separator = kwargs.get('separator',';')
+
+        for response in self.fetch_paginated_results(endpoint_id, start=0):
+            if isinstance(response,list):
+                if len(response) > 0:
+                    if isinstance(response[0],dict):
+                        records.extend(response)
+                    else:
+                        raise Exception('Invalid Result Format')
+                else:
+                    logger.info(f'Nenhum dado foi encontrado em {endpoint_id}')
+                    break
+            elif isinstance(response,dict):
+                transformed_records = []
+                for key, record in response.items():
+                    record['name'] = key
+                    transformed_records.append(record)
+                records.extend(transformed_records)
+            else:
+                print(type(response))
+                raise Exception('Invalid Result Format')
+        return pd.DataFrame(records, dtype=str)

@@ -218,19 +218,17 @@ class WebhookNotifier:
     def pipeline_error(self, e=None):
         """
         Envia uma notificação de erro na execução do pipeline.
-
-        Este método envia uma mensagem para a URL do webhook informando que ocorreu um erro 
-        durante a execução do pipeline especificado, incluindo a mensagem de erro.
-
+        
         Args:
             e (Exception, optional): A exceção que ocorreu durante a execução do pipeline.
-
+            
         Returns:
             None
         """
         url = self.url
-        texto: e.splitlines('\n')[:2]
-        payload = json.dumps({"message": f'Erro na execução do pipeline: {self.pipeline}.\n{e}'})
+        # Convert the exception to a string and split it into lines if needed
+        error_message = str(e).splitlines()[:2]  # Take only the first 2 lines of the error message
+        payload = json.dumps({"message": f'Erro na execução do pipeline: {self.pipeline}.\n{" ".join(error_message)}'})
         headers = {
             'Content-Type': 'application/json'
         }
@@ -279,7 +277,7 @@ class WebhookNotifier:
                 raise e # Re-raise the exception after logging it
         return wrapper
 
-class DiscordNotifier(discord.Client):
+class DiscordNotifier(discord.Client): # Implementar o notificador via discord para diminuir o consumo da API do Notion e permitir a personalização do Bot.
 
     def __init__(self, token, channel_id, pipeline):
         self.token = token
