@@ -93,10 +93,13 @@ class NotionStream():
 
         try:
             records = Utils.read_records(raw_data_path)
+
         except Exception as e:
+            
             raise Exception(
                 f'No files found in the specified directory: {raw_data_path} ({e})'
             ) from e
+
 
         if entity == 'pages':
 
@@ -106,11 +109,12 @@ class NotionStream():
             # Transformar colunas de lista em strings separadas por vírgulas
             transformer.process_list_columns(processed_data)
 
-            # Remover o início do nome das etapas
-            processed_data['Etapa'] = processed_data['Etapa'].str[4:]
+            if self.source_name == 'universal_task_database':
+                # Remover o início do nome das etapas
+                processed_data['Etapa'] = processed_data['Etapa'].str[4:]
 
-            # Atualizar a coluna Task Interval com o atributo 'start' do objeto
-            processed_data['Task Interval']  = processed_data['Task Interval'].apply(lambda x: x['start'] if isinstance(x, dict) and 'start' in x else None)
+                # Atualizar a coluna Task Interval com o atributo 'start' do objeto
+                processed_data['Task Interval']  = processed_data['Task Interval'].apply(lambda x: x['start'] if isinstance(x, dict) and 'start' in x else None)
 
         elif entity == 'users':
             processed_data = transformer._extract_users_list(records)
@@ -176,6 +180,9 @@ class NotionStream():
 
             except Exception as e:
                 raise Exception(f'Erro ao ler o arquivo mapping: {e}') from e
+
+        else:
+            processed_data.columns = processed_data.columns.str.lower()
 
         staged_data_path = self.writer.get_output_file_path(
             output_name = self.output_name,
@@ -622,7 +629,13 @@ class BitrixStream():
 
         # Lendo o arquivo na camada processing
 
-        separator = kwargs.get('separator',self.config.get('DEFAULT_CSV_SEPARATOR',';'))
+        separator = kwargs.get(
+            'separator',
+            self.config.get(
+                'DEFAULT_CSV_SEPARATOR',
+                ';'
+                )
+            )
 
         processed_data_path = self.writer.get_output_file_path(
             target_layer='processing'
@@ -682,7 +695,7 @@ class BitrixStream():
             schema_file_type = 'template'
             )
     
-    def load_stream(self, target_schema, **kwargs):
+    def load_stream(self, target_schema, target_table, **kwargs):
 
         mode = kwargs.get(
             'mode',
@@ -712,6 +725,6 @@ class BitrixStream():
 
         self.loader.load_data(
             df = staged_data,
-            target_table = self.output_name,
+            target_table = target_table,
             mode = mode,
             target_schema = target_schema)

@@ -430,7 +430,7 @@ class BitrixAPIExtractor():
                 'start': start
                      }
             response = requests.get(url, params=params)
-            
+            response.raise_for_status
             if response.status_code == 200:
                 data = response.json()
                 yield data.get('result')
@@ -439,7 +439,7 @@ class BitrixAPIExtractor():
                 else:
                     break
             else:
-                logger.error(f"Error: {response.status_code} - {response.text}")
+                raise Exception(f"Error: {response.status_code} - {response.text}")
                 break
 
     def run(self, endpoint_id, **kwargs):
