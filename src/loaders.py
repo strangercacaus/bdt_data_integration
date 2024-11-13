@@ -458,24 +458,24 @@ class PostgresLoader:
                             mode = "replace"
                             )
 
-            except ProgrammingError as e:
+            # except ProgrammingError as e:
                 
-                error_message = str(e)
+            #     error_message = str(e)
 
-                if "column" in error_message and "does not exist" in error_message:
+            #     if "column" in error_message and "does not exist" in error_message:
 
-                    logger.warning('Novas colunas detectadas na fonte, atualizando tabela')
-                    self.drop_table(
-                        target_table,
-                        target_schema
-                        )
+            #         logger.warning('Novas colunas detectadas na fonte, atualizando tabela')
+            #         self.drop_table(
+            #             target_table,
+            #             target_schema
+            #             )
                         
-                    self.load_data(
-                        df,
-                        target_table = target_table,
-                        target_schema = target_schema,
-                        mode = "replace"
-                        )
+            #         self.load_data(
+            #             df,
+            #             target_table = target_table,
+            #             target_schema = target_schema,
+            #             mode = "replace"
+            #             )
                     
 
         logger.info(f'Fim do carregamento de dados em {target_table}, {loaded_rows} linhas inseridas.')

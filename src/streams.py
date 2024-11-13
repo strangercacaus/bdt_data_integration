@@ -110,11 +110,12 @@ class NotionStream():
             transformer.process_list_columns(processed_data)
 
             if self.source_name == 'universal_task_database':
+                
                 # Remover o início do nome das etapas
                 processed_data['Etapa'] = processed_data['Etapa'].str[4:]
 
                 # Atualizar a coluna Task Interval com o atributo 'start' do objeto
-                processed_data['Task Interval']  = processed_data['Task Interval'].apply(lambda x: x['start'] if isinstance(x, dict) and 'start' in x else None)
+                processed_data['Duração da Tarefa']  = processed_data['Duração da Tarefa'].apply(lambda x: x['start'] if isinstance(x, dict) and 'start' in x else None)
 
         elif entity == 'users':
             processed_data = transformer._extract_users_list(records)

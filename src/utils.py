@@ -179,7 +179,7 @@ class WebhookNotifier:
         self.url = url
         self.pipeline = pipeline
 
-    def pipeline_start(self):
+    def pipeline_start(self, **kwargs):
         """
         Envia uma notificação de início de execução do pipeline.
 
@@ -189,6 +189,8 @@ class WebhookNotifier:
         Returns:
             None
         """
+        text = kwargs.get('text',None)
+        message = text if text else f'Iniciando pipeline: {self.pipeline}'
         url = self.url
         payload = json.dumps({"message": f'Iniciando pipeline: {self.pipeline}'})
         headers = {
@@ -197,7 +199,7 @@ class WebhookNotifier:
         response = requests.request("POST", url, headers=headers, data=payload)
         logger.info(f"Make.Com Response: {response.text}")
 
-    def pipeline_end(self):
+    def pipeline_end(self, **kwargs):
         """
         Envia uma notificação de fim de execução do pipeline.
 
@@ -207,8 +209,10 @@ class WebhookNotifier:
         Returns:
             None
         """
+        text = kwargs.get('text',None)
+        message = text if text else f'Execução de pipeline encerrada: {self.pipeline}'
         url = self.url
-        payload = json.dumps({"message": f'Execução de pipeline encerrada: {self.pipeline}'})
+        payload = json.dumps({"message": message})
         headers = {
             'Content-Type': 'application/json'
         }
@@ -274,7 +278,7 @@ class WebhookNotifier:
                 return func(*args, **kwargs)
             except Exception as e:
                 self.pipeline_error(e)
-                raise e # Re-raise the exception after logging it
+                # raise e # Re-raise the exception after logging it
         return wrapper
 
 class DiscordNotifier(discord.Client): # Implementar o notificador via discord para diminuir o consumo da API do Notion e permitir a personalização do Bot.

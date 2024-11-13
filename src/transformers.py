@@ -157,6 +157,8 @@ class NotionTransformer():
                 extracted[key] = value[value['type']].get('name', '')
             elif value['type'] in ['created_time', 'last_edited_time']:
                 extracted[key] = value[value['type']]
+            elif value['type'] =='status':
+                extracted[key] = value[value['type']]['name']
             elif value['type'] == 'number':
                 extracted[key] = value['number']
             elif value['type'] == 'rich_text':
