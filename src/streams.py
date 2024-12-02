@@ -19,7 +19,7 @@ from src.writers import DataWriter
 from src.loaders import PostgresLoader
 from src.transformers import NotionTransformer
 from src.extractors import NotionDatabaseAPIExtractor, BenditoAPIExtractor, BitrixAPIExtractor
-from src.utils import Utils, WebhookNotifier, DiscordNotifier
+from src.utils import Utils, WebhookNotifier, Schema
 
 class NotionStream():
     
@@ -498,7 +498,10 @@ class BitrixStream():
             'output_name',
             self.source_name
             )
-        self.writer = DataWriter(
+    
+    @property
+    def writer(self):
+        return DataWriter(
             source=self.source,
             stream=self.source_name,
             compression = False,
@@ -539,6 +542,9 @@ class BitrixStream():
             bitrix_user_id = bitrix_user_id
             )
 
+    def set_schema(self):
+        self.schema = self.extractor.extract_schema(self.source_name)
+
     def extract_stream(self, **kwargs) -> None:
 
         separator = kwargs.get(
@@ -552,9 +558,7 @@ class BitrixStream():
             )
 
         records = self.extractor.run(
-            self.source_name,
-            separator = separator,
-            start = start
+            self.source_name
             )
             
         raw_data_path = self.writer.get_output_file_path(
@@ -608,7 +612,7 @@ class BitrixStream():
             dtype=str
             )
 
-        records.columns = records.columns.str.lower()
+        #records.columns = records.columns.str.lower()
 
         processed_data_path = self.writer.get_output_file_path(
             target_layer = 'processing'
@@ -655,19 +659,20 @@ class BitrixStream():
             )
 
         # Atualizando o nome das colunas conforme o mapping
-        if rename_columns:
-            mapping_file_path = kwargs.get('mapping_file_path',None)
-            if not mapping_file_path:
-                raise Exception('Caminho do arquivo mapping não foi informado')
+        # if rename_columns:
+        #     mapping_file_path = kwargs.get('mapping_file_path',None)
+        #     if not mapping_file_path:
+        #         raise Exception('Caminho do arquivo mapping não foi informado')
 
-            try:
-                with open (mapping_file_path) as f:
-                    mapping = json.load(f)
-                    processed_data = Utils.rename_columns(processed_data, mapping)
-            except Exception as e:
-                raise Exception(f'Erro ao ler o arquivo mapping: {e}') from e
+        #     try:
+        #         with open (mapping_file_path) as f:
+        #             mapping = json.load(f)
+        #             processed_data = Utils.rename_columns(processed_data, mapping)
+        #     except Exception as e:
+        #         raise Exception(f'Erro ao ler o arquivo mapping: {e}') from e
 
-        # Gravando os resultados na camada staging        
+        # Gravando os resultados na camada staging 
+               
         processed_data_path = self.writer.get_output_file_path(
             output_name = self.output_name,
             target_layer='staging'
@@ -685,15 +690,14 @@ class BitrixStream():
             encoding = 'utf-8'
             )
 
-    def set_loader(self, user, password, host, db_name, schema_file_path):
+    def set_loader(self, user, password, host, db_name, schema_file_type):
 
         self.loader = PostgresLoader(
             user = user,
             password = password,
             host = host,
             db_name = db_name,
-            schema_file_path = schema_file_path,
-            schema_file_type = 'template'
+            schema_file_type = schema_file_type
             )
     
     def load_stream(self, target_schema, target_table, **kwargs):
@@ -706,11 +710,6 @@ class BitrixStream():
         separator = kwargs.get(
             'separator',
             self.config.get('DEFAULT_CSV_SEPARATOR',';')
-            )
-
-        schema_file_path = kwargs.get(
-            'schema_file_path',
-            None
             )
 
         staged_data_path = self.writer.get_output_file_path(
@@ -727,5 +726,6 @@ class BitrixStream():
         self.loader.load_data(
             df = staged_data,
             target_table = target_table,
+            target_schema = target_schema,
             mode = mode,
-            target_schema = target_schema)
+            schema = self.schema.render_ddl(target_schema,target_table))

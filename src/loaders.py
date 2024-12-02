@@ -35,7 +35,7 @@ class PostgresLoader:
         jdbc_string (str): A string de conexão JDBC para o banco de dados PostgreSQL.
         engine: O engine do SQLAlchemy para conectar ao banco de dados PostgreSQL.
     """
-    def __init__(self, user: str, password: str, host: str, db_name: str, schema_file_path:str = None, schema_file_type = list ['template','info_schema']):
+    def __init__(self, user: str, password: str, host: str, db_name: str, schema_file_path:str = None, schema_file_type = list ['template','info_schema','schema']):
         """
         Inicializa o PostgresLoader com os parâmetros de conexão do banco de dados.
 
@@ -153,7 +153,7 @@ class PostgresLoader:
             logger.info(f'Schema {target_schema} criado com sucesso.')
 
 
-    def create_table(self, target_table: str, target_schema: str):
+    def create_table(self, sql_command):
         """
         Cria a tabela de destino com base no esquema SQL carregado.
 
@@ -164,23 +164,6 @@ class PostgresLoader:
             target_table (str): O nome da tabela de destino.
             target_schema (str): O esquema de destino onde a tabela será criada.
         """
-        if self.schema_file_type == 'info_schema':
-
-            sql_command = self.load_sql_schema(
-                target_table,
-                target_schema
-                )
-
-        elif self.schema_file_type == 'template':
-
-            sql_command = self.render_sql_template(
-                target_table,
-                target_schema
-                )
-
-        else:
-
-            raise ValueError("É obrigatório escolher entre um de 'info_schema' ou 'template'")
 
         if Utils.validate_sql(sql_command) == False:
 
@@ -199,7 +182,7 @@ class PostgresLoader:
 
                 elif isinstance(e.orig, psycopg2.errors.DuplicateTable):
 
-                    logger.warning(f"Table {target_table} already exists.")
+                    logger.warning(f"Table already exists.")
 
                 else:
 
@@ -315,7 +298,7 @@ class PostgresLoader:
 
             connection.execute(create_query)
 
-    def create_sql_schema(self,target_table: str, target_schema: str, primary_key: str = None, unique_columns: list = None):
+    def create_sql_schema(self,target_table: str, target_schema: str, **kwargs):
         """
         Cria o esquema SQL para a tabela de destino.
 
@@ -332,27 +315,48 @@ class PostgresLoader:
             f'loader.create_sql_schema, target_table: {target_table}, target_schema: {target_schema}'
         )
 
-        self.create_table(
-            target_table,
-            target_schema
-            )
+        schema = kwargs.get('schema')
+        if self.schema_file_type == 'info_schema':
 
-        if primary_key != None:
-            self.create_constraint(
+            sql_command = self.load_sql_schema(
                 target_table,
-                target_schema,
-                column,
-                kind="primary_key"
+                target_schema
+                )
+
+        elif self.schema_file_type == 'template':
+
+            sql_command = self.render_sql_template(
+                target_table,
+                target_schema
+                )
+
+        elif self.schema_file_type == 'schema':
+
+            sql_command = schema
+        
+        else:
+
+            raise ValueError("É obrigatório escolher entre um de 'info_schema', 'template' ou 'schema'")
+        
+        self.create_table(sql_command
             )
 
-        if unique_columns != None:
-            for column in unique_columns:
-                self.create_constraint(
-                    target_table,
-                    target_schema,
-                    column,
-                    kind = "unique_key"
-                )
+        # if primary_key != None:
+        #     self.create_constraint(
+        #         target_table,
+        #         target_schema,
+        #         column,
+        #         kind="primary_key"
+        #     )
+
+        # if unique_columns != None:
+        #     for column in unique_columns:
+        #         self.create_constraint(
+        #             target_table,
+        #             target_schema,
+        #             column,
+        #             kind = "unique_key"
+        #         )
 
         # ifself.create_update_updated_at_function()
         # logger.info(f'Função update_updated_at {target_table} criada.')
@@ -392,6 +396,9 @@ class PostgresLoader:
             target_schema (str): O esquema de destino onde a tabela está localizada.
             mode (tuple, optional): O modo de carregamento ('append' para adicionar, 'replace' para substituir).
         """
+        chunksize = kwargs.get('chunksize',1000)
+
+        schema = kwargs.get('schema',None)
 
         schema_exists = self.check_if_schema_exists(target_schema)
 
@@ -403,19 +410,19 @@ class PostgresLoader:
 
         tables = inspect(self.engine).get_table_names(schema=target_schema)
 
-        chunksize = kwargs.get('chunksize',1000)
-
         check = target_table in tables
 
         if not check:
 
-            if self.schema_file_path is None:
+            if schema is None:
 
-                raise Exception('Relação não existe no destino, caminho do arquivo de schema precisa estar presente.')
+                if self.schema_file_path is None:
+
+                    raise Exception('Relação não existe no destino, caminho do arquivo de schema precisa estar presente.')
 
             logger.info(f'Criando tabela {target_table} em {target_schema}')
 
-            self.create_sql_schema(target_table, target_schema)
+            self.create_sql_schema(target_table, target_schema, schema = schema)
 
         with self.engine.connect() as connection:
 
@@ -449,8 +456,8 @@ class PostgresLoader:
 
                 logger.info('Rollback pendente detectado, realizando operação.')
                 connection.execute("ROLLBACK;")
-                logger.info(f'Inserindo dados em {target_table}.')
 
+                logger.info(f'Inserindo dados em {target_table}.')
                 self.load_data(
                             df,
                             target_table = target_table,

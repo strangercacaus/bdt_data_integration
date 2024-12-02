@@ -16,6 +16,32 @@ from datetime import datetime, timedelta
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO) 
 
+class Schema:
+    "Schema precisa ser um dataframe com 3 colunas: 'column_name', 'source_type', 'destination_type'"
+    def __init__(self, schema_df: pd.DataFrame):
+        self.schema_df = schema_df
+
+    def render_ddl(self, target_schema, target_table):
+        columns = []
+        for i in range(len(self.schema_df)):
+            row = self.schema_df.iloc[i]
+            column_def = f""""{row.iloc[0]}" {row.iloc[2]}"""
+                # if row['maximum_length']:
+                #     column_def += f"({int(float(row['maximum_length']))})"
+            columns.append(column_def)    
+        if columns:
+
+            columns_definition = ',\n    '.join(columns)
+            string = f"CREATE TABLE IF NOT EXISTS {target_schema}.{target_table} (\n    {columns_definition}\n);"
+            return string
+
+        else:
+            raise ValueError(f"No columns found for table '{target_table}'")
+    
+    def render_result_df(self):
+        columns = self.schema_df['column_name'].tolist()
+        return pd.DataFrame(columns=columns)
+    
 class Utils:
     """
     Classe utilitária que fornece métodos estáticos para operações comuns.
@@ -281,7 +307,7 @@ class WebhookNotifier:
                 # raise e # Re-raise the exception after logging it
         return wrapper
 
-class DiscordNotifier(discord.Client): # Implementar o notificador via discord para diminuir o consumo da API do Notion e permitir a personalização do Bot.
+class DiscordNotifier(discord.Client): # Ainda não foi feito: Implementar o notificador via discord para diminuir o consumo da API do Notion e permitir a personalização do Bot.
 
     def __init__(self, token, channel_id, pipeline):
         self.token = token

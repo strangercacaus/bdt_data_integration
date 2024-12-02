@@ -8,7 +8,7 @@ import numpy as np
 from io import StringIO
 from typing import Tuple, Any
 from abc import ABC, abstractmethod
-from src.utils import Utils, WebhookNotifier
+from src.utils import Utils, WebhookNotifier, Schema
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -406,25 +406,37 @@ class BitrixAPIExtractor():
         self.writer = kwargs.get('writer') 
         self.bitrix_url = kwargs.get('bitrix_url')
         self.bitrix_user_id = kwargs.get('bitrix_user_id')
-
-    def get_data(self, url, params):
-        pass
     
-    def post_data(self, payload):
-        pass
+    @property
+    def _class_mapping(self):
+        return {
+                'integer': 'text',
+                'double': 'text',
+                'char': 'text',
+                'enumeration': 'text',
+                'datetime': 'text',
+                'file': 'text',
+                }
+
+    def _list_url(self, endpoint_id):
+        return f'https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/crm.{endpoint_id}.list.json'
+
+    def _fields_url(self, endpoint_id):
+        return f'https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/crm.{endpoint_id}.fields.json'
+    
+    def _get_url(self, endpoint_id, object_id):
+        return f'https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/crm.{endpoint_id}.get.json?ID={object_id}'
 
     def _get_endpoint(self, endpoint_id) -> str:
         url = f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/{endpoint_id}"
         logger.info(url)
         return url 
 
-    def _get_headers(self):
+    def _build_schema(self):
         pass
 
-    def fetch_paginated_results(self, endpoint_id='str', start=0, **kwargs):
+    def fetch_paginated(self, url, start=0, **kwargs):
         start = 0
-        records = []
-        url = self._get_endpoint(endpoint_id)
         while True:
             params = {
                 'start': start
@@ -441,8 +453,23 @@ class BitrixAPIExtractor():
             else:
                 raise Exception(f"Error: {response.status_code} - {response.text}")
                 break
+    
+    def extract_schema(self, endpoint_id, **kwargs):
+        url = self._fields_url(endpoint_id)
+        records = []
+        for response in self.fetch_paginated(url):
+            transformed_records = []
+            for key, record in response.items():
+                record['name'] = key
+                transformed_records.append(record)
+            records.extend(transformed_records)
+        df = pd.DataFrame(transformed_records)
+        df = df[['name', 'type']]
+        df.columns = ['column_name', 'origin_type']
+        df['destination_type'] = df['origin_type'].apply(lambda val: self._class_mapping.get(val, 'text'))
+        return Schema(df)
 
-    def run(self, endpoint_id, **kwargs):
+    def extract_list_data(self, endpoint_id, **kwargs):
         """
         Executa a rotina principal do extrator, consolidando os dados extraídos.
 
@@ -455,11 +482,11 @@ class BitrixAPIExtractor():
             pd.DataFrame: Um DataFrame contendo todos os dados extraídos e combinados.
         """
         records = []
-        
+        url = self._list_url(endpoint_id)
         start = kwargs.get('start',0)
         separator = kwargs.get('separator',';')
 
-        for response in self.fetch_paginated_results(endpoint_id, start=0):
+        for response in self.fetch_paginated(url, start=0):
             if isinstance(response,list):
                 if len(response) > 0:
                     if isinstance(response[0],dict):
@@ -469,13 +496,18 @@ class BitrixAPIExtractor():
                 else:
                     logger.info(f'Nenhum dado foi encontrado em {endpoint_id}')
                     break
-            elif isinstance(response,dict):
-                transformed_records = []
-                for key, record in response.items():
-                    record['name'] = key
-                    transformed_records.append(record)
-                records.extend(transformed_records)
             else:
                 print(type(response))
                 raise Exception('Invalid Result Format')
         return pd.DataFrame(records, dtype=str)
+    
+    def run(self, endpoint_id):
+        list_data = self.extract_list_data(endpoint_id)
+        result_list = []
+
+        # Iterate over the 'ID' column values
+        for object_id in list_data['ID']:
+            url = self._get_url(endpoint_id, object_id)
+            response = requests.get(url)
+            result_list.append(response.json()['result'])  # Add the response to result_list
+        return pd.DataFrame(result_list, dtype = str)
