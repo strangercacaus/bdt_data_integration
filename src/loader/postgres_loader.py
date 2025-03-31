@@ -12,13 +12,10 @@ from sqlalchemy.engine import URL
 from sqlalchemy.exc import SQLAlchemyError, PendingRollbackError, ProgrammingError, ObjectNotExecutableError
 
 sys.path.append(os.path.abspath('bdt_data_integration'))
-from src.utils import Utils
+from src.util import Utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-
-
 
 class PostgresLoader:
     """
@@ -485,4 +482,4 @@ class PostgresLoader:
             #             )
                     
 
-        logger.info(f'Fim do carregamento de dados em {target_table}, {loaded_rows} linhas inseridas.')
+        logger.info(f'Fim do carregamento de dados em {target_table}, {loaded_rows} linhas inseridas.') 

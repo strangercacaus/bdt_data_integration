@@ -4,7 +4,7 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 
-from src.utils import Utils
+from src.util import Utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

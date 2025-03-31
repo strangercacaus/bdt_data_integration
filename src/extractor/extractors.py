@@ -8,7 +8,7 @@ import numpy as np
 from io import StringIO
 from typing import Tuple, Any
 from abc import ABC, abstractmethod
-from src.utils import Utils, WebhookNotifier, Schema
+from src.util import Utils, WebhookNotifier, Schema
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

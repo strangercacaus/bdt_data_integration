@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # Importando módulos personalizadso
-from src.writers import DataWriter
-from src.loaders import PostgresLoader
-from src.transformers import NotionTransformer
-from src.extractors import NotionDatabaseAPIExtractor, BenditoAPIExtractor, BitrixAPIExtractor
-from src.utils import Utils, WebhookNotifier, Schema
+from writer.writers import DataWriter
+from loader.loaders import PostgresLoader
+from transformer.transformers import NotionTransformer
+from src.extractor import NotionDatabaseAPIExtractor, BenditoAPIExtractor, BitrixAPIExtractor
+from src.util import Utils, WebhookNotifier, Schema
 
 class NotionStream():
     
