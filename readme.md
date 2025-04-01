@@ -22,34 +22,28 @@ A configuração das chaves é realizada na seção integrations do Deepnote.
 ### Estrutura de Pastas
 
 ```
-BDT_SELENIUM_TESTES
+bdt_data_integration
 │
 ├── src (Código do projeto)
 │   │
-│   ├── ingestors.py - Gerenciar a ingestão de dados.
-│   ├── loaders.py - Gerencia o carregamento de dados para uma DW.
-│   ├── streams.py - Gerenciar fontes de dados.
-│   └── writers.py - Gerenciar escrita local de dados.
+│   ├── configuration/ - Gerenciador de configurações
+│   ├── extractor/ - Extratores de dados
+│   ├── loader/ - Carregadores de dados
+│   ├── stream/ - Gerenciadores de fontes de dados
+│   ├── transformer/ - Transformadores de dados
+│   ├── util/ - Utilitários diversos
+│   ├── writer/ - Gerenciadores de escrita de dados
+│   └── __init__.py - Importações e configurações do módulo
 │
-├── data (Dados em processamento e processados)
-│   │
-│   ├── raw - Dados no formato da fonte de origem.
-│   ├── processing - Dados em processamento interno.
-│   └── staging - Dados prontos para o carregamento no Data-Warehouse.
-│
-├── config (arquivos de configuração das integrações)
-│   │
-│   ├── notion 
-│   │   │
-│   │   ├──property_history.json - Histórico de formato de colunas da fonte
-│   │   └──config.yaml - Configurações da fonte de dados do notion
-│   │
-│   └── integration_metadata.yaml - Metadados gerais das integraçòes
-│
-├── requirements.txt
-├── init.ipynb
-└── notion_pipeline.ipynb
+├── requirements.txt - Dependências do projeto
+├── setup.py - Configuração do pacote Python
+├── MANIFEST.in - Configuração de arquivos adicionais para o pacote
+├── __init__.py - Arquivo de inicialização do pacote
+├── .gitignore - Arquivo para ignorar arquivos e diretórios que não devem ser versionados pelo Git
+└── readme.md - Documentação do projeto
 ```
+
+## Convenções de Nomenclatura
 
 ### Pascal Case (ExemploDeClasse):
 - Nomes de Classes Python
@@ -61,51 +55,42 @@ BDT_SELENIUM_TESTES
 
 ## Descrição dos Diretórios e Arquivos
 
-- src/main/: Contém classes e funções que dão apoio às rotinas de testes.
-
-- src/rotinas/: Contém as rotinas de testes automatizado
-
+- src/configuration/: Contém arquivos de configuração para as integrações.
+- src/extractor/: Contém classes para extração de dados de diferentes fontes.
+- src/loader/: Contém classes para carregamento de dados em bancos de dados.
+- src/stream/: Contém classes para gerenciar fluxos de dados.
+- src/transformer/: Contém classes para transformação de dados.
+- src/util/: Contém funções utilitárias.
+- src/writer/: Contém classes para escrita de dados.
+- pipelines/: Contém notebooks com pipelines de dados.
 - requirements.txt: Contém os módulos necessários para a execução do projeto.
-
+- setup.py: Configuração para instalação do projeto como pacote Python.
+- MANIFEST.in: Define arquivos adicionais a serem incluídos no pacote.
 - .gitignore: Arquivo para ignorar arquivos e diretórios que não devem ser versionados pelo Git.
+
+## Instalação como Pacote Python
+
+Este projeto pode ser instalado como um pacote Python, permitindo sua importação em outros projetos.
+
+### Instalação para Desenvolvimento
+
+```bash
+pip install -e .
+```
+
+### Construir o Pacote para Distribuição
+
+```bash
+pip install build
+python -m build
+```
+
+### Importar o Pacote
+
+```python
+import bdt_data_integration
+```
 
 ## Pré-requisitos
 Antes de executar os testes, certifique-se de ter instalado:
 - Interpretador Python 3.9 ou Superior
-- Navegador Google Chrome
-
-## Executando os Testes
-1. Clone o repositório:
-``` bash
-git clone https://github.com/strangercacaus/bdt_selenium_testes.git
-cd bdt_selenium_testes
-```
----
-2. Crie o seu ambiente virtual Python
-``` bash
-python -m venv .env
-```
----
-2. Ative o ambiente virtual Python
----
-
-```Bash:```
-
-``` bash
-source .env/bin/activate
-```
----
-```Powershell:```
-``` bash
-.env/Scripts/Activate
-```
----
-3. Instale os pacotes e módulos do projeto.
-``` bash
-pip install -r requirements.txt
-```
----
-4. Execute o arquivo main.py
-```bash
-python src/main/run_tests.py
-```

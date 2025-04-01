@@ -1,0 +1,257 @@
+import os
+import sys
+import json
+import pandas as pd
+import logging
+from io import StringIO
+
+from .base_stream import Stream
+from src.writer.writers import DataWriter
+from src.loader.postgres import PostgresLoader
+from src.extractor import BenditoAPIExtractor
+from src.utils import Utils
+
+logger = logging.getLogger(__name__)
+
+class BenditoStream(Stream):
+    
+    def __init__(self, source_name, config, **kwargs):
+        """
+        Initialize a BenditoStream with a source name and configuration.
+        
+        Args:
+            source_name (str): Name of the source stream
+            config (dict): Configuration dictionary
+            **kwargs: Additional arguments
+        """
+        super().__init__(source_name, config, **kwargs)
+        self.source = 'bendito'
+        self.output_name = kwargs.get('output_name', self.source_name)
+        self.writer = DataWriter(
+            source=self.source,
+            stream=self.source_name,
+            compression=False,
+            config=self.config
+        )
+    
+    def set_extractor(self, token, separator=';'):
+        """
+        Set up the BenditoAPIExtractor for this stream.
+        
+        Args:
+            token (str): Bendito API token
+            separator (str): CSV separator
+        """
+        self.extractor = BenditoAPIExtractor(token=token)
+        self.separator = separator
+    
+    def extract_stream(self, custom_query=None, page_size=500, **kwargs) -> None:
+        """
+        Extract data from Bendito API and write it to the raw layer.
+        
+        Args:
+            custom_query (str, optional): Custom SQL query to extract data
+            page_size (int): Number of records per page
+            **kwargs: Additional arguments for extraction
+        """
+        endpoint = kwargs.get('endpoint', None)
+        table = kwargs.get('table', self.source_name)
+        columns = kwargs.get('columns', None)
+        where = kwargs.get('where', None)
+        order_by = kwargs.get('order_by', None)
+        
+        if custom_query is not None:
+            data = self.extractor.run_query(
+                query=custom_query,
+                page_size=page_size
+            )
+        else:
+            data = self.extractor.extract_table(
+                table=table,
+                columns=columns,
+                where=where,
+                endpoint=endpoint,
+                order_by=order_by,
+                page_size=page_size
+            )
+            
+        if isinstance(data, pd.DataFrame):
+            raw_data_path = self.writer.get_output_file_path(target_layer='raw') + '.csv'
+            
+            os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
+            
+            data.to_csv(
+                raw_data_path,
+                sep=self.separator,
+                index=False,
+                encoding='utf-8'
+            )
+        else:
+            logging.error(f'Invalid data format: {type(data)}')
+            raise ValueError(f'Invalid data format: {type(data)}')
+
+    def transform_stream(self, **kwargs) -> None:
+        """
+        Transform the raw data and write it to the processing layer.
+        
+        Args:
+            **kwargs: Additional arguments for transformation
+        """
+        # Lendo o arquivo na camada raw
+        separator = kwargs.get('separator', self.separator)
+        
+        raw_data_path = self.writer.get_output_file_path(target_layer='raw') + '.csv'
+        
+        try:
+            raw_data = pd.read_csv(
+                raw_data_path,
+                sep=separator,
+                encoding='utf-8'
+            )
+        except Exception as e:
+            raise Exception(f'Error reading raw data: {e}') from e
+            
+        # Processamento específico para cada fonte de dados
+        source_transformers = {
+            'leads': self._transform_leads,
+            'accounts': self._transform_accounts
+        }
+        
+        transform_func = source_transformers.get(self.source_name, lambda x: x)
+        raw_data = transform_func(raw_data)
+            
+        # Gravando o arquivo na camada processing
+        processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
+        
+        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
+        
+        raw_data.to_csv(
+            processed_data_path,
+            sep=separator,
+            index=False,
+            encoding='utf-8'
+        )
+    
+    def stage_stream(self, rename_columns=False, **kwargs):
+        """
+        Process the transformed data and write it to the staging layer.
+        
+        Args:
+            rename_columns (bool): Whether to rename columns using a mapping file
+            **kwargs: Additional arguments for staging
+        """
+        # Lendo o arquivo na camada processing
+        separator = kwargs.get('separator', self.separator)
+        
+        processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
+        
+        processed_data = pd.read_csv(
+            processed_data_path,
+            sep=separator,
+            encoding='utf-8',
+            dtype=str
+        )
+        
+        if rename_columns:
+            mapping_file_path = kwargs.get('mapping_file_path', None)
+            if not mapping_file_path:
+                raise Exception('Caminho do arquivo mapping não foi informado')
+            try:
+                with open(mapping_file_path, 'r') as file:
+                    mapping = json.load(file)
+                    
+                processed_data = Utils.rename_columns(processed_data, mapping)
+            except Exception as e:
+                raise Exception(f'Erro ao ler o arquivo mapping: {e}') from e
+        else:
+            processed_data.columns = processed_data.columns.str.lower()
+            
+        staged_data_path = self.writer.get_output_file_path(
+            output_name=self.output_name,
+            target_layer='staging'
+        ) + '.csv'
+        
+        os.makedirs(os.path.dirname(staged_data_path), exist_ok=True)
+        
+        processed_data.to_csv(
+            staged_data_path,
+            sep=separator,
+            index=False,
+            encoding='utf-8'
+        )
+    
+    def set_loader(self, user, password, host, db_name, schema_file_path, schema_file_type):
+        """
+        Set up the PostgresLoader for this stream.
+        
+        Args:
+            user (str): Database username
+            password (str): Database password
+            host (str): Database host
+            db_name (str): Database name
+            schema_file_path (str): Path to schema file
+            schema_file_type (str): Type of schema file
+        """
+        self.loader = PostgresLoader(
+            user=user,
+            password=password,
+            host=host,
+            db_name=db_name,
+            schema_file_path=schema_file_path,
+            schema_file_type=schema_file_type
+        )
+    
+    def load_stream(self, target_schema, **kwargs):
+        """
+        Load the staged data into the target database.
+        
+        Args:
+            target_schema (str): Name of the target schema
+            **kwargs: Additional arguments for loading
+        """
+        mode = kwargs.get('mode', 'replace')
+        separator = kwargs.get('separator', self.separator)
+        
+        staged_data_path = self.writer.get_output_file_path(
+            output_name=self.output_name,
+            target_layer='staging'
+        ) + '.csv'
+        
+        staged_data = pd.read_csv(
+            staged_data_path,
+            sep=separator,
+            encoding='utf-8'
+        )
+        
+        self.loader.load_data(
+            df=staged_data,
+            schema_name=target_schema,
+            table_name=self.output_name,
+            mode=mode
+        )
+        
+    def _transform_leads(self, data):
+        """
+        Apply transformations specific to leads data.
+        
+        Args:
+            data (pd.DataFrame): Raw leads data
+            
+        Returns:
+            pd.DataFrame: Transformed leads data
+        """
+        # Apply leads-specific transformations here
+        return data
+        
+    def _transform_accounts(self, data):
+        """
+        Apply transformations specific to accounts data.
+        
+        Args:
+            data (pd.DataFrame): Raw accounts data
+            
+        Returns:
+            pd.DataFrame: Transformed accounts data
+        """
+        # Apply accounts-specific transformations here
+        return data 

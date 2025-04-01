@@ -4,7 +4,7 @@ from .loader import *
 from .transformer import *
 from .writer import *
 from .configuration import *
-from .util import *
+from .utils import *
 __all__ = [
     'stream',
     'extractor',
@@ -12,5 +12,5 @@ __all__ = [
     'transformer',
     'writer',
     'configuration',
-    'util'
+    'utils'
 ]

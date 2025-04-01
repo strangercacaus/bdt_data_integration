@@ -12,7 +12,7 @@ from sqlalchemy.engine import URL
 from sqlalchemy.exc import SQLAlchemyError, PendingRollbackError, ProgrammingError, ObjectNotExecutableError
 
 sys.path.append(os.path.abspath('bdt_data_integration'))
-from src.util import Utils
+from src.utils import Utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

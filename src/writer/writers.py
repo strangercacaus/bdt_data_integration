@@ -5,7 +5,7 @@ import logging
 import numpy as np
 import pandas as pd
 from typing import List
-from src.util import Utils
+from src.utils import Utils
 from abc import ABC, abstractmethod
 
 logger = logging.getLogger(__name__)

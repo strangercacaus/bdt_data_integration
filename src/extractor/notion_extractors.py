@@ -1,6 +1,6 @@
 import logging
 import requests
-from .base import GenericAPIExtractor
+from .base_extractor import GenericAPIExtractor
 
 logger = logging.getLogger(__name__)
 
