@@ -1,12 +1,14 @@
 import os
+import sys
 import json
 import pandas as pd
 import logging
+from io import StringIO
 
 from .base_stream import Stream
 from src.writers import DataWriter
-from src.loader.postgres_loader import PostgresLoader
-from src.extractor.bendito_extractor import BenditoAPIExtractor
+from src.loader.postgres import PostgresLoader
+from src.extractor import BenditoAPIExtractor
 from src.utils import Utils
 
 logger = logging.getLogger(__name__)

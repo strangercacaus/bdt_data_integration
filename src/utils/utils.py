@@ -128,10 +128,12 @@ class Utils:
         """
         if config_path := Utils.find_config_yaml():
             with open(config_path, 'r') as file:
+                logger.info('Configuração YAML carregada.')
                 return yaml.safe_load(file)
+                
+
         else:
-            return None
-        logger.info('Configuração YAML carregada.')
+            raise ValueError('Arquivo de configuração da integração não foi encontrado')
     
     @staticmethod
     def read_records(file_path):

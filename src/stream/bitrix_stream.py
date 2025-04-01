@@ -1,15 +1,13 @@
 import os
-import sys
 import json
 import pandas as pd
 import logging
-from io import StringIO
 import requests
 
 from .base_stream import Stream
-from src.writer.writers import DataWriter
-from src.loader.postgres import PostgresLoader
-from src.extractor import BitrixAPIExtractor
+from src.writers import DataWriter
+from src.loader.postgres_loader import PostgresLoader
+from src.extractor.bitrix_extractor import BitrixAPIExtractor
 from src.utils import Utils, Schema
 
 logger = logging.getLogger(__name__)

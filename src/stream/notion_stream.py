@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import pandas as pd
 import logging
@@ -7,10 +6,10 @@ import logging
 # Adicionando diretório dos módulos personalizados ao PATH
 
 from .base_stream import Stream
-from src.writer.writers import DataWriter
-from src.loader.postgres import PostgresLoader
-from src.transformer.transformers import NotionTransformer
-from src.extractor import NotionDatabaseAPIExtractor
+from src.writers import DataWriter
+from src.loader.postgres_loader import PostgresLoader
+from src.transformers import NotionTransformer
+from src.extractor.notion_extractor import NotionDatabaseAPIExtractor
 from src.utils import Utils
 
 logger = logging.getLogger(__name__)

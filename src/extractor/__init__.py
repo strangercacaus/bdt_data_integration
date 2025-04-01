@@ -15,7 +15,7 @@ Each extractor class provides methods for:
 """
 
 from .base_extractor import GenericAPIExtractor
-from .notion_extractors import NotionDatabaseAPIExtractor
+from .notion_extractor import NotionDatabaseAPIExtractor
 from .bendito_extractor import BenditoAPIExtractor
 from .bitrix_extractor import BitrixAPIExtractor
 

@@ -4,6 +4,7 @@ import logging
 import requests
 import pandas as pd
 from io import StringIO
+
 from .base_extractor import GenericAPIExtractor
 
 logger = logging.getLogger(__name__)

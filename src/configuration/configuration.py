@@ -1,10 +1,8 @@
 import logging
 import time
 import pandas as pd
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
-
-from src.utils import Utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -24,8 +22,7 @@ class MetadataHandler:
             try:
                 result = connection.execute(query)
                 # Convert result to a Pandas DataFrame
-                df = pd.DataFrame(result.fetchall(), columns=result.keys())
-                return df
+                return pd.DataFrame(result.fetchall(), columns=result.keys())
             except SQLAlchemyError as e:
                 logger.error(f"Error loading table metadata: {e}")
                 return None

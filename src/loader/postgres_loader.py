@@ -1,9 +1,6 @@
-import os
-import sys
 import csv
 import logging
 import psycopg2
-import warnings
 
 import pandas as pd
 from jinja2 import Template
@@ -11,13 +8,13 @@ from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import SQLAlchemyError, PendingRollbackError, ProgrammingError, ObjectNotExecutableError
 
-sys.path.append(os.path.abspath('bdt_data_integration'))
 from src.utils import Utils
+from src.loader.base_loader import BaseLoader
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-class PostgresLoader:
+class PostgresLoader(BaseLoader):
     """
     Classe para carregar dados em um banco de dados PostgreSQL.
 
