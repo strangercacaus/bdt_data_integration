@@ -4,6 +4,7 @@ import yaml
 import gzip
 import json
 import logging
+import requests
 import sqlparse
 import pandas as pd
 import numpy as np

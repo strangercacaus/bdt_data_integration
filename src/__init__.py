@@ -1,15 +1,16 @@
-from .stream import streams
-from .extractor import base, notion, bendito, bitrix
-from .loader import base, postgres
-from .transformer import base, notion, bendito, bitrix
-from .writer import writers
-
+from .stream import *
+from .extractor import *
+from .loader import *
+from .transformer import *
+from .writer import *
+from .configuration import *
+from .util import *
 __all__ = [
-    'streams',
-    'base',
-    'notion',
-    'bendito',
-    'bitrix',
-    'postgres',
-    'writers'
-] 
+    'stream',
+    'extractor',
+    'loader',
+    'transformer',
+    'writer',
+    'configuration',
+    'util'
+]
