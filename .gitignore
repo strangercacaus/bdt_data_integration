@@ -4,3 +4,5 @@ __pycache__/
 .env
 .ds_store
 bdt_data_integration.egg-info/
+work/
+main.py
