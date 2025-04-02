@@ -6,11 +6,11 @@ import logging
 # Adicionando diretório dos módulos personalizados ao PATH
 
 from .base_stream import Stream
-from src.writers import DataWriter
-from src.loader.postgres_loader import PostgresLoader
-from src.transformers import NotionTransformer
-from src.extractor.notion_extractor import NotionDatabaseAPIExtractor
-from src.utils import Utils
+from writers import DataWriter
+from loader.postgres_loader import PostgresLoader
+from transformers import NotionTransformer
+from extractor.notion_extractor import NotionDatabaseAPIExtractor
+from utils import Utils
 from sqlalchemy.sql import text
 
 logger = logging.getLogger(__name__)

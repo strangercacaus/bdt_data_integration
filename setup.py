@@ -3,7 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name="bdt_data_integration",
     version="0.1.0",
-    packages=find_packages(),
+    packages=find_packages(where='src'),  # Specify the source directory
+    package_dir={'': 'src'},  # Set the root package directory
     install_requires=[
         "psycopg2-binary",
         "sql-metadata==2.6.0",
@@ -28,4 +29,4 @@ setup(
     long_description=open("readme.md").read(),
     long_description_content_type="text/markdown",
     python_requires=">=3.10",
-) 
+)

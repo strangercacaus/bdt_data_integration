@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 
-from .utils import Utils
+from utils import Utils
 
 
 logger = logging.getLogger(__name__)

@@ -113,7 +113,7 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         
         return response.json()
 
-    def fetch_paginated_data(self, **kwargs):
+    def fetch_paginated(self, **kwargs):
         """
         Obtém dados paginados da API do Notion.
 
@@ -143,4 +143,4 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         Returns:
             tuple[list, str]: Uma tupla contendo a lista de registros extraídos e a data atual.
         """
-        return [record for page in self.fetch_paginated_data() for record in page] 
+        return [record for page in self.fetch_paginated() for record in page] 

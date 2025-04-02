@@ -41,28 +41,28 @@ class GenericAPIExtractor(ABC):
         """
         pass
 
+    # @abstractmethod
+    # def get_data(self, **kwargs) -> tuple[int, any]:
+    #     """
+    #     Método abstrato para realizar chamadas GET à API.
+
+    #     Returns:
+    #         tuple[int, any]: Um tupla contendo o código de status e os dados retornados.
+    #     """
+    #     pass
+
+    # @abstractmethod
+    # def post_data(self, **kwargs) -> tuple[int, any]:
+    #     """
+    #     Método abstrato para realizar chamadas POST à API.
+
+    #     Returns:
+    #         tuple[int, any]: Um tupla contendo o código de status e os dados retornados.
+    #     """
+    #     pass
+
     @abstractmethod
-    def get_data(self, **kwargs) -> tuple[int, any]:
-        """
-        Método abstrato para realizar chamadas GET à API.
-
-        Returns:
-            tuple[int, any]: Um tupla contendo o código de status e os dados retornados.
-        """
-        pass
-
-    @abstractmethod
-    def post_data(self, **kwargs) -> tuple[int, any]:
-        """
-        Método abstrato para realizar chamadas POST à API.
-
-        Returns:
-            tuple[int, any]: Um tupla contendo o código de status e os dados retornados.
-        """
-        pass
-
-    @abstractmethod
-    def fetch_paginated_data(self, **kwargs) -> dict:
+    def fetch_paginated(self, **kwargs) -> dict:
         """
         Método abstrato para implementar a lógica de paginação.
 

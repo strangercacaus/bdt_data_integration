@@ -14,8 +14,8 @@ from sqlalchemy.exc import (
     ObjectNotExecutableError,
 )
 
-from src.utils import Utils
-from src.loader.base_loader import BaseLoader
+from utils import Utils
+from loader.base_loader import BaseLoader
 
 # Create a named logger for this module
 logger = logging.getLogger("postgres_loader")
@@ -86,7 +86,9 @@ class PostgresLoader(BaseLoader):
             return f"CREATE TABLE {target_schema}.{target_table} (\n    {columns_definition}\n);"
 
         else:
-            raise ValueError(f"Nenhuma coluna encontrada para a tabela '{target_table}'")
+            raise ValueError(
+                f"Nenhuma coluna encontrada para a tabela '{target_table}'"
+            )
 
     def render_sql_template(self, target_table: str, target_schema: str):
         """
@@ -126,24 +128,24 @@ class PostgresLoader(BaseLoader):
         """
         with self.engine.connect() as connection:
             db_name = self.engine.url.database
-            connection.autocommit = True  # To allow session termination
-            terminate_query = text(f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity JOIN pg_roles ON pg_stat_activity.usename = pg_roles.rolname WHERE pid <> pg_backend_pid() AND datname = '{db_name}' AND NOT pg_roles.rolsuper;")
+            terminate_query = text(
+                f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity JOIN pg_roles ON pg_stat_activity.usename = pg_roles.rolname WHERE pid <> pg_backend_pid() AND datname = '{db_name}' AND NOT pg_roles.rolsuper;"
+            )
             connection.execute(terminate_query)
 
     def create_schema(self, target_schema):
         """
         Cria um novo schema no banco de dados.
-        
+
         Este método verifica se o schema já existe e, caso não exista, cria um novo schema
         com o nome especificado.
-        
+
         Args:
             target_schema (str): O nome do schema a ser criado.
         """
-        with self.engine.connect() as connection:
-
-            connection.autocommit = True  # To allow session termination
-            create_schema_query = text(f"CREATE SCHEMA {target_schema};")
+        with self.engine.begin() as connection:
+            create_schema_query = text(f"CREATE SCHEMA {target_schema}")
+            logger.debug(f'Executando query: {create_schema_query}')
             connection.execute(create_schema_query)
             logger.info(f"Schema {target_schema} criado com sucesso.")
 
@@ -157,28 +159,19 @@ class PostgresLoader(BaseLoader):
         Args:
             sql_command (str): O comando SQL para criar a tabela.
         """
-
         if Utils.validate_sql(sql_command) == False:
-
             raise ValueError(f"SQL Inválido em {__name__}: {sql_command}")
 
-        with self.engine.connect() as connection:
-
+        with self.engine.begin() as connection:
             try:
                 connection.execute(text(sql_command))
-
             except SQLAlchemyError as e:
-
                 if isinstance(e, ObjectNotExecutableError):
-
                     logger.error(f"O comando SQL não é executável: {sql_command}")
                 elif isinstance(e.orig, psycopg2.errors.DuplicateTable):
-
                     logger.error(f"{__name__}: A tabela já existe.")
                 else:
-
                     logger.error(f"Um erro ocorreu: {e}")
-
                 raise e
 
     def truncate_table(self, target_table: str, target_schema: str):
@@ -191,10 +184,8 @@ class PostgresLoader(BaseLoader):
             target_table (str): O nome da tabela de destino.
             target_schema (str): O esquema de destino onde a tabela está localizada.
         """
-        with self.engine.connect() as connection:
-
-            connection.execute(text("SET TRANSACTION ISOLATION LEVEL READ COMMITTED;"))
-            truncate_query = text(f"TRUNCATE TABLE {target_schema}.{target_table};")
+        with self.engine.begin() as connection:
+            truncate_query = text(f"TRUNCATE TABLE {target_schema}.{target_table}")
             connection.execute(truncate_query)
 
     def drop_table(self, target_table: str, target_schema: str):
@@ -205,10 +196,8 @@ class PostgresLoader(BaseLoader):
             target_table (str): O nome da tabela de destino.
             target_schema (str): O esquema de destino onde a tabela está localizada.
         """
-        with self.engine.connect() as connection:
-
-            connection.execute(text("SET TRANSACTION ISOLATION LEVEL READ COMMITTED;"))
-            drop_query = text(f"DROP TABLE {target_schema}.{target_table};")
+        with self.engine.begin() as connection:
+            drop_query = text(f"DROP TABLE {target_schema}.{target_table}")
             connection.execute(drop_query)
 
     def create_updated_at_trigger(self, target_table, target_schema):
@@ -222,28 +211,20 @@ class PostgresLoader(BaseLoader):
             target_table (str): O nome da tabela de destino.
             target_schema (str): O esquema de destino onde a tabela está localizada.
         """
-        with self.engine.connect() as connection:
-
+        with self.engine.begin() as connection:
             try:
-
-                connection.autocommit = True  # To allow session termination
-                create_query = text(f"CREATE TRIGGER set_updated_at_{target_table} BEFORE UPDATE ON {target_schema}.{target_table} FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();") 
+                create_query = text(
+                    f"CREATE TRIGGER set_updated_at_{target_table} BEFORE UPDATE ON {target_schema}.{target_table} FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+                )
                 connection.execute(create_query)
-
             except ProgrammingError as e:
-
                 if isinstance(e.orig, psycopg2.errors.DuplicateObject):
-
                     logger.warning(
                         f"O trigger set_updated_at_{target_table} já existe, pulando a criação."
                     )
-
                 else:
-
                     raise e
-
             except Exception as e:
-
                 raise e
 
     def create_update_updated_at_function(self):
@@ -253,10 +234,10 @@ class PostgresLoader(BaseLoader):
         Este método cria ou substitui uma função que define a coluna de data de modificação
         para o timestamp atual.
         """
-        with self.engine.connect() as connection:
-
-            connection.autocommit = True  # To allow session termination
-            create_query = text("CREATE OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $$ BEGIN NEW.__updated_at = CURRENT_TIMESTAMP; RETURN NEW; END; $$ LANGUAGE plpgsql;")
+        with self.engine.begin() as connection:
+            create_query = text(
+                "CREATE OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $$ BEGIN NEW.__updated_at = CURRENT_TIMESTAMP; RETURN NEW; END; $$ LANGUAGE plpgsql"
+            )
             connection.execute(create_query)
 
     def create_constraint(
@@ -278,20 +259,18 @@ class PostgresLoader(BaseLoader):
             column (str): O nome da coluna para a qual a restrição será aplicada.
             kind (list, optional): O tipo de restrição a ser criada ('primary_key' ou 'unique_key').
         """
-        with self.engine.connect() as connection:
-
-            connection.autocommit = True  # To allow session termination
-
+        with self.engine.begin() as connection:
             if kind == "primary_key":
-
-                create_query = text(f"""ALTER TABLE {target_schema}.{target_table} ADD CONSTRAINT {target_table}_pk PRIMARY KEY ("{column}");""")
+                create_query = text(
+                    f"""ALTER TABLE {target_schema}.{target_table} ADD CONSTRAINT {target_table}_pk PRIMARY KEY ("{column}")"""
+                )
             elif kind == "unique_key":
-
-                create_query = text(f"""ALTER TABLE {target_schema}.{target_table} ADD CONSTRAINT {target_table}__unique UNIQUE ("{column}");""")
-
+                create_query = text(
+                    f"""ALTER TABLE {target_schema}.{target_table} ADD CONSTRAINT {target_table}__unique UNIQUE ("{column}")"""
+                )
             connection.execute(create_query)
 
-    def create_sql_schema(self, target_table: str, target_schema: str, **kwargs):
+    def create_sql_schema(self, target_table: str, target_schema: str):
         """
         Cria o esquema SQL para a tabela de destino.
 
@@ -305,10 +284,9 @@ class PostgresLoader(BaseLoader):
                 - schema (str): Definição SQL da tabela quando schema_file_type='schema'.
         """
         logger.info(
-            f"loader.create_sql_schema, target_table: {target_table}, target_schema: {target_schema}"
+            f"loader.create_sql_schema, target_table: {target_table}, target_schema: {target_schema}, type: {self.schema_file_type}"
         )
 
-        table_definition = kwargs.get("schema")
         if self.schema_file_type == "info_schema":
 
             sql_command = self.load_sql_schema(target_table, target_schema)
@@ -317,12 +295,11 @@ class PostgresLoader(BaseLoader):
 
             sql_command = self.render_sql_template(target_table, target_schema)
 
-        elif self.schema_file_type == "schema":
+        elif self.schema:
 
-            sql_command = table_definition
+            sql_command = self.schema
 
         else:
-
             raise ValueError(
                 "É obrigatório escolher entre um de 'info_schema', 'template' ou 'schema'"
             )
@@ -332,20 +309,21 @@ class PostgresLoader(BaseLoader):
     def check_if_schema_exists(self, target_schema):
         """
         Verifica se um schema existe no banco de dados.
-        
+
         Este método consulta o catálogo do sistema para verificar se um schema
         com o nome especificado já existe no banco de dados.
-        
+
         Args:
             target_schema (str): O nome do schema a ser verificado.
-            
+
         Returns:
             bool: True se o schema existir, False caso contrário.
         """
         with self.engine.connect() as connection:
-
-            connection.autocommit = True  # To allow session termination
-            check_schema_query = text(f"SELECT schema_name FROM information_schema.schemata WHERE schema_name = '{target_schema}';")
+            # Consultas de leitura não precisam de transação explícita
+            check_schema_query = text(
+                f"SELECT schema_name FROM information_schema.schemata WHERE schema_name = '{target_schema}'"
+            )
             result = connection.execute(check_schema_query)
 
             # Fetch the first result
@@ -393,10 +371,9 @@ class PostgresLoader(BaseLoader):
         schema_exists = self.check_if_schema_exists(target_schema)
 
         # Se o schema não existe, cria o schema
-        if not schema_exists:
+        if schema_exists == False:
             logger.debug(f"Schema {target_schema} não existe, criando agora")
             self.create_schema(target_schema)
-            self.close_connections()
 
         # Verifica se a tabela existe no schema
         tables = inspect(self.engine).get_table_names(schema=target_schema)
@@ -427,7 +404,7 @@ class PostgresLoader(BaseLoader):
                 )
 
             logger.debug(f"Criando tabela {target_table} em {target_schema}")
-            self.create_sql_schema(target_table, target_schema, schema=table_definition)
+            self.create_sql_schema(target_table, target_schema)
 
         loaded_rows = 0
         logger.debug(f"Inserindo dados em {target_table}.")

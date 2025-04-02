@@ -5,267 +5,171 @@ import logging
 import requests
 
 from .base_stream import Stream
-from src.writers import DataWriter
-from src.loader.postgres_loader import PostgresLoader
-from src.extractor.bitrix_extractor import BitrixAPIExtractor
-from src.utils import Utils, Schema
+from writers import DataWriter
+from loader.postgres_loader import PostgresLoader
+from extractor.bitrix_extractor import BitrixAPIExtractor
+from utils import Utils
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)  # This will use the module's name
 
-class BitrixStream(Stream):
-    
+class BitrixStream:
     def __init__(self, source_name, config, **kwargs):
-        """
-        Initialize a BitrixStream with a source name and configuration.
-        
-        Args:
-            source_name (str): Name of the source stream
-            config (dict): Configuration dictionary
-            **kwargs: Additional arguments
-        """
-        super().__init__(source_name, config, **kwargs)
-        self.source = 'bitrix'
-        self.output_name = kwargs.get('output_name', self.source_name)
-        self._writer = None
-    
+        self.source = "bitrix"
+        self.config = config
+        self.source_name = source_name
+        self.output_name = kwargs.get("output_name", self.source_name)
+
     @property
     def writer(self):
-        """
-        Lazy-loaded writer property.
-        
-        Returns:
-            DataWriter: The writer instance
-        """
-        if self._writer is None:
-            self._writer = DataWriter(
-                source=self.source,
-                stream=self.source_name,
-                compression=False,
-                config=self.config
-            )
-        return self._writer
-    
+        return DataWriter(
+            source=self.source,
+            stream=self.source_name,
+            compression=False,
+            config=self.config,
+        )
+
     def set_extractor(self, **kwargs):
-        """
-        Set up the BitrixAPIExtractor for this stream.
-        
-        Args:
-            **kwargs: Arguments specific to the extractor
-        """
-        webhook_url = kwargs.get('webhook_url', None)
-        client_id = kwargs.get('client_id', None)
-        client_secret = kwargs.get('client_secret', None)
-        entity = kwargs.get('entity', self.source_name)
-        
-        if webhook_url:
-            self.extractor = BitrixAPIExtractor(
-                webhook_url=webhook_url,
-                entity=entity
+
+        separator = kwargs.get("separator", ";")
+
+        token = kwargs.get("token", None)
+
+        bitrix_url = kwargs.get("bitrix_url", None)
+
+        bitrix_user_id = kwargs.get("bitrix_user_id", None)
+
+        if any(var is None for var in [token, bitrix_url, bitrix_user_id]):
+            raise ValueError(
+                "Variável obrigatória omitida em BitrixStream.set_extractor"
             )
-        elif client_id and client_secret:
-            self.extractor = BitrixAPIExtractor(
-                client_id=client_id,
-                client_secret=client_secret,
-                entity=entity
-            )
-        else:
-            raise ValueError("Either webhook_url or client_id and client_secret must be provided")
-    
-    def set_schema(self):
-        """Set up schema information for this stream."""
-        self.schema = Schema()
-    
+
+        self.extractor = BitrixAPIExtractor(
+            source=self.source,
+            token=token,
+            writer=self.writer,
+            separator=separator,
+            bitrix_url=bitrix_url,
+            bitrix_user_id=bitrix_user_id,
+        )
+
     def extract_stream(self, **kwargs) -> None:
-        """
-        Extract data from Bitrix API and write it to the raw layer.
-        
-        Args:
-            **kwargs: Additional arguments for extraction
-        """
-        try:
-            if data := self.extractor.run():
-                # Convert to DataFrame if it's a list
-                if isinstance(data, list):
-                    data = pd.DataFrame(data)
 
-                # Write to raw layer
-                raw_data_path = self.writer.get_output_file_path(target_layer='raw') + '.csv'
+        separator = kwargs.get("separator", ";")
 
-                os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
+        mode = kwargs.get("mode", "table")
 
-                if isinstance(data, pd.DataFrame):
-                    data.to_csv(
-                        raw_data_path,
-                        sep=';',
-                        index=False,
-                        encoding='utf-8'
-                    )
-                else:
-                    logging.error(f'Invalid data format: {type(data)}')
-                    raise ValueError(f'Invalid data format: {type(data)}')
-            else:
-                logging.warning(f"No data returned from extractor for {self.source_name}")
+        #start = kwargs.get("start", 0)
 
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error during API request: {e}")
-            raise
-        except Exception as e:
-            logging.error(f"Error extracting data: {e}")
-            raise
-    
+        extract_function = self.extractor.get_extract_function(mode)
+        records = extract_function(self.source_name)
+
+        raw_data_path = (
+            self.writer.get_output_file_path(target_layer="raw", date=False) + ".csv"
+        )
+
+        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
+
+        records.to_csv(raw_data_path, index=False, sep=separator, encoding="utf-8")
+
+        return records
+
     def transform_stream(self, **kwargs) -> None:
-        """
-        Transform the raw data and write it to the processing layer.
-        
-        Args:
-            **kwargs: Additional arguments for transformation
-        """
-        # Lendo o arquivo na camada raw
-        raw_data_path = self.writer.get_output_file_path(target_layer='raw') + '.csv'
-        
+
+        separator = kwargs.get(
+            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
+        )
+        base_dir = os.path.join(os.getcwd(), 'data')
+        path = os.path.join(base_dir, 'raw', self.source)
+
+        extension = ".csv"
+
         try:
-            raw_data = pd.read_csv(
-                raw_data_path,
-                sep=';',
-                encoding='utf-8'
-            )
-        except Exception as e:
-            raise Exception(f'Error reading raw data: {e}') from e
-            
-        # Process specific transformations based on entity type
-        transformers = {
-            'leads': self._transform_leads,
-            'deals': self._transform_deals,
-            'contacts': self._transform_contacts
-        }
-        
-        transform_func = transformers.get(self.source_name, lambda x: x)
-        raw_data = transform_func(raw_data)
-            
-        # Write to processing layer
-        processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
-        
+            raw_data_path = Utils.get_latest_file(path, extension)
+
+        except Exception:
+            raw_data_path = path + extension
+
+        if raw_data_path is None:
+            raise Exception(f"No files found in the specified directory: {file_path}")
+
+        records = pd.read_csv(raw_data_path, sep=separator, dtype=str)
+
+        processed_data_path = (
+            self.writer.get_output_file_path(target_layer="processing") + ".csv"
+        )
+
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-        
-        raw_data.to_csv(
-            processed_data_path,
-            sep=';',
-            index=False,
-            encoding='utf-8'
+
+        records.to_csv(
+            processed_data_path, index=False, sep=separator, encoding="utf-8"
         )
-    
-    def stage_stream(self, rename_columns=False, **kwargs):
-        """
-        Process the transformed data and write it to the staging layer.
-        
-        Args:
-            rename_columns (bool): Whether to rename columns using a mapping file
-            **kwargs: Additional arguments for staging
-        """
-        # Lendo o arquivo na camada processing
-        processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
-        
+
+    def stage_stream(self, **kwargs):
+
+        separator = kwargs.get(
+            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
+        )
+
+        processed_data_path = (
+            self.writer.get_output_file_path(target_layer="processing") + ".csv"
+        )
+
+        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
+
         processed_data = pd.read_csv(
-            processed_data_path,
-            sep=';',
-            encoding='utf-8',
-            dtype=str
+            processed_data_path, sep=separator, encoding="utf-8", dtype=str
         )
-        
-        if rename_columns:
-            mapping_file_path = kwargs.get('mapping_file_path', None)
-            if not mapping_file_path:
-                raise Exception('Caminho do arquivo mapping não foi informado')
-            try:
-                with open(mapping_file_path, 'r') as file:
-                    mapping = json.load(file)
-                    
-                processed_data = Utils.rename_columns(processed_data, mapping)
-            except Exception as e:
-                raise Exception(f'Erro ao ler o arquivo mapping: {e}') from e
-        else:
-            processed_data.columns = processed_data.columns.str.lower()
-            
-        # Custom column transformations
-        date_columns = kwargs.get('date_columns', [])
-        for col in date_columns:
-            if col in processed_data.columns:
-                processed_data[col] = pd.to_datetime(processed_data[col], errors='coerce')
-                
-        # Write to staging layer
-        staged_data_path = self.writer.get_output_file_path(
-            output_name=self.output_name,
-            target_layer='staging'
-        ) + '.csv'
-        
-        os.makedirs(os.path.dirname(staged_data_path), exist_ok=True)
-        
+
+        processed_data_path = (
+            self.writer.get_output_file_path(
+                output_name=self.output_name, target_layer="staging"
+            )
+            + ".csv"
+        )
+
+        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
+
         processed_data.to_csv(
-            staged_data_path,
-            sep=';',
-            index=False,
-            encoding='utf-8'
+            processed_data_path, index=False, sep=separator, encoding="utf-8"
         )
-    
-    def set_loader(self, user, password, host, db_name, schema_file_type):
+
+    def set_loader(self, engine, schema_file_type = None, schema_file_path = None):
         """
-        Set up the PostgresLoader for this stream.
+        Configura o PostgresLoader para esta stream.
         
         Args:
-            user (str): Database username
-            password (str): Database password
-            host (str): Database host
-            db_name (str): Database name
-            schema_file_type (str): Type of schema file
+            engine (sqlalchemy.engine.Engine): SQLAlchemy engine para a conexão com o banco de dados
+            schema_file_path (str): Caminho para o arquivo de esquema para criar tabelas
+            schema_file_type (Literal["template", "info_schema", "schema"]): Tipo de arquivo de esquema
         """
-        schema_file_path = f'./config/{self.source}/{self.source_name}_schema.json'
-        
-        self.loader = PostgresLoader(
-            user=user,
-            password=password,
-            host=host,
-            db_name=db_name,
-            schema_file_path=schema_file_path,
-            schema_file_type=schema_file_type
-        )
-    
+        self.loader = PostgresLoader(engine, schema_file_path, schema_file_type)
+        self.loader.schema = self.schema
+
     def load_stream(self, target_schema, target_table, **kwargs):
-        """
-        Load the staged data into the target database.
-        
-        Args:
-            target_schema (str): Name of the target schema
-            target_table (str): Name of the target table
-            **kwargs: Additional arguments for loading
-        """
-        mode = kwargs.get('mode', 'replace')
-        
-        staged_data_path = self.writer.get_output_file_path(
-            output_name=self.output_name,
-            target_layer='staging'
-        ) + '.csv'
-        
+
+        mode = kwargs.get("mode", "replace")
+
+        separator = kwargs.get(
+            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
+        )
+
+        staged_data_path = (
+            self.writer.get_output_file_path(
+                output_name=self.output_name, target_layer="staging"
+            )
+            + ".csv"
+        )
+
         staged_data = pd.read_csv(
-            staged_data_path,
-            sep=';',
-            encoding='utf-8'
+            staged_data_path, sep=separator, encoding="utf-8", dtype=str
         )
         
+        logger.debug(f'Class Schema: {self.schema}')
+
         self.loader.load_data(
             df=staged_data,
-            schema_name=target_schema,
-            table_name=target_table or self.output_name,
-            mode=mode
+            target_table=target_table,
+            target_schema=target_schema,
+            mode=mode,
+            schema=self.schema,
         )
-        
-    def _transform_leads(self, data):
-        """Transform leads data"""
-        return data
-        
-    def _transform_deals(self, data):
-        """Transform deals data"""
-        return data
-        
-    def _transform_contacts(self, data):
-        """Transform contacts data"""
-        return data 

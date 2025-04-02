@@ -4,10 +4,10 @@ import pandas as pd
 import logging
 
 from .base_stream import Stream
-from src.writers import DataWriter
-from src.loader.postgres_loader import PostgresLoader
-from src.extractor.bendito_extractor import BenditoAPIExtractor
-from src.utils import Utils
+from writers import DataWriter
+from loader.postgres_loader import PostgresLoader
+from extractor.bendito_extractor import BenditoAPIExtractor
+from utils import Utils
 
 logger = logging.getLogger(__name__)
 
