@@ -20,7 +20,7 @@ class MetadataHandler:
         
         with self.engine.connect() as connection:
             try:
-                result = connection.execute(query)
+                result = connection.execute(text(query))
                 # Convert result to a Pandas DataFrame
                 return pd.DataFrame(result.fetchall(), columns=result.keys())
             except SQLAlchemyError as e:

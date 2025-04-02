@@ -128,7 +128,7 @@ class Utils:
         """
         if config_path := Utils.find_config_yaml():
             with open(config_path, 'r') as file:
-                logger.info('Configuração YAML carregada.')
+                logger.info('Configuração de ambiente carregada.')
                 return yaml.safe_load(file)
                 
 
@@ -148,7 +148,14 @@ class Utils:
 
         Returns:
             list: Uma lista de registros lidos do arquivo.
+            
+        Raises:
+            FileNotFoundError: Se o arquivo não existir.
         """
+        # Verificar se o arquivo existe
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"O arquivo não existe: {file_path}")
+            
         if file_path.endswith('.gz'):
             with gzip.open(file_path, 'rt') as f:
                 records = [json.loads(line) for line in f.read().splitlines()]

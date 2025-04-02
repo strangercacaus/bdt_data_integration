@@ -11,6 +11,7 @@ from src.loader.postgres_loader import PostgresLoader
 from src.transformers import NotionTransformer
 from src.extractor.notion_extractor import NotionDatabaseAPIExtractor
 from src.utils import Utils
+from sqlalchemy.sql import text
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +19,12 @@ class NotionStream(Stream):
     
     def __init__(self, source_name, config, **kwargs):
         """
-        Initialize a NotionStream with a source name and configuration.
+        Inicializa uma NotionStream com um nome de fonte e uma configuração.
         
         Args:
-            source_name (str): Name of the source stream
-            config (dict): Configuration dictionary
-            **kwargs: Additional arguments
+            source_name (str): Nome da fonte da stream
+            config (dict): Dicionário de configuração
+            **kwargs: Argumentos adicionais
         """
         super().__init__(source_name, config, **kwargs)
         self.source = 'notion'
@@ -37,11 +38,11 @@ class NotionStream(Stream):
     
     def set_extractor(self, database_id, token):
         """
-        Set up the NotionDatabaseAPIExtractor for this stream.
+        Configura o NotionDatabaseAPIExtractor para esta stream.
         
         Args:
-            database_id (str): Notion database ID
-            token (str): Notion API token
+            database_id (str): ID do banco de dados Notion
+            token (str): Token da API Notion
         """
         self.extractor = NotionDatabaseAPIExtractor(
             token=token,
@@ -50,7 +51,7 @@ class NotionStream(Stream):
     
     def extract_stream(self) -> None:
         """
-        Extract data from Notion API and write it to the raw layer.
+        Extrai dados da API Notion e escreve para a camada raw.
         """
         records = self.extractor.run()
 
@@ -62,11 +63,11 @@ class NotionStream(Stream):
 
     def transform_stream(self, entity: str = None, **kwargs) -> None:
         """
-        Transform the raw data and write it to the processing layer.
+        Transforma os dados brutos e escreve para a camada processing.
         
         Args:
-            entity (str, optional): Type of entity to transform ('pages' or 'users')
-            **kwargs: Additional arguments for transformation
+            entity (str, optional): Tipo de entidade a ser transformada ('pages' ou 'users')
+            **kwargs: Argumentos adicionais para a transformação
         """
         separator = kwargs.get(
             'separator',
@@ -77,7 +78,12 @@ class NotionStream(Stream):
 
         source_name = kwargs.get('source_stream', self.source_name)
 
-        path = f'/work/data/raw/{self.source}/{source_name}'
+        # Usar caminho relativo em vez de absoluto
+        base_dir = os.path.join(os.getcwd(), 'data')
+        path = os.path.join(base_dir, 'raw', self.source, source_name)
+        
+        # Criar diretórios se não existirem
+        os.makedirs(os.path.dirname(path), exist_ok=True)
 
         extension = '.txt'
         
@@ -92,11 +98,17 @@ class NotionStream(Stream):
         if raw_data_path is None:
             raise Exception(f'{__name__}: raw_data_path é vazio.')
 
+        # Verificar se o arquivo existe antes de tentar lê-lo
+        if not os.path.exists(raw_data_path):
+            raise Exception(
+                f'Arquivo não encontrado: {raw_data_path}. Execute extract_stream() antes de transform_stream().'
+            )
+
         try:
             records = Utils.read_records(raw_data_path)
         except Exception as e:
             raise Exception(
-                f'No files found in the specified directory: {raw_data_path} ({e})'
+                f'Nenhum arquivo encontrado no diretório especificado: {raw_data_path} ({e})'
             ) from e
 
         if entity == 'pages':
@@ -134,11 +146,11 @@ class NotionStream(Stream):
     
     def stage_stream(self, rename_columns:bool = False, **kwargs):
         """
-        Process the transformed data and write it to the staging layer.
+        Processa os dados transformados e escreve para a camada staging.
         
         Args:
-            rename_columns (bool): Whether to rename columns using a mapping file
-            **kwargs: Additional arguments for staging
+            rename_columns (bool): Se deve renomear colunas usando um arquivo de mapeamento
+            **kwargs: Argumentos adicionais para a etapa de staging
         """
         separator = kwargs.get(
             'separator',
@@ -187,41 +199,31 @@ class NotionStream(Stream):
             encoding='utf-8'
         )
     
-    def set_loader(self, user, password, host, db_name, schema_file_path, schema_file_type):
+    def set_loader(self, engine, schema_file_path, schema_file_type):
         """
-        Set up the PostgresLoader for this stream.
+        Configura o PostgresLoader para esta stream.
         
         Args:
-            user (str): Database username
-            password (str): Database password
-            host (str): Database host
-            db_name (str): Database name
-            schema_file_path (str): Path to schema file
-            schema_file_type (str): Type of schema file
+            engine (sqlalchemy.engine.Engine): SQLAlchemy engine para a conexão com o banco de dados
+            schema_file_path (str): Caminho para o arquivo de esquema para criar tabelas
+            schema_file_type (Literal["template", "info_schema", "schema"]): Tipo de arquivo de esquema
         """
-        self.loader = PostgresLoader(
-            user=user,
-            password=password,
-            host=host,
-            db_name=db_name,
-            schema_file_path=schema_file_path,
-            schema_file_type='template'
-        )
+        self.loader = PostgresLoader(engine, schema_file_path, schema_file_type)
     
     def load_stream(self, target_schema, **kwargs):
         """
-        Load the staged data into the target database.
+        Carrega os dados na camada staging no banco de dados de destino.
         
         Args:
-            target_schema (str): Name of the target schema
-            **kwargs: Additional arguments for loading
+            target_schema (str): Nome do esquema de destino
+            **kwargs: Argumentos adicionais para o carregamento
         """
         mode = kwargs.get('mode', 'replace')
+        
         separator = kwargs.get(
             'separator',
             self.config.get('DEFAULT_CSV_SEPARATOR', ';')
         )
-        schema_file_path = kwargs.get('schema_file_path', None)
 
         staged_data_path = self.writer.get_output_file_path(
             output_name=self.output_name,
@@ -233,10 +235,10 @@ class NotionStream(Stream):
             sep=separator,
             encoding='utf-8'
         )
-
+        logger.info(f'Chamando load_data com staged_data.shape: {staged_data.shape}')
         self.loader.load_data(
             df=staged_data,
-            schema_name=target_schema,
-            table_name=self.output_name,
+            target_schema=target_schema,
+            target_table=self.output_name,
             mode=mode
         ) 

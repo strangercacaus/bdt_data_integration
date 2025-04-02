@@ -218,7 +218,7 @@ class BitrixStream(Stream):
             db_name (str): Database name
             schema_file_type (str): Type of schema file
         """
-        schema_file_path = f'/work/config/{self.source}/{self.source_name}_schema.json'
+        schema_file_path = f'./config/{self.source}/{self.source_name}_schema.json'
         
         self.loader = PostgresLoader(
             user=user,
