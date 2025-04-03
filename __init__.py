@@ -1,4 +1,6 @@
 from .src import *
+
 __all__ = [
-    'src'
+    'src',
+    'scripts'
 ]
