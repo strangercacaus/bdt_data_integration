@@ -55,10 +55,10 @@ load_dotenv()
 schema = "notion"
 token = os.environ["NOTION_APIKEY"]
 database_id = os.environ["NOTION_DATABASE_ID"]
-host = os.environ["NEON_HOST"]
-user = os.environ["NEON_ROOT_USER"]
-password = os.environ["NEON_ROOT_PASSWORD"]
-db_name = os.environ["NEON_DB_NAME"]
+host = os.environ["DESTINATIONHOST"]
+user = os.environ["DESTINATIONROOT_USER"]
+password = os.environ["DESTINATIONROOT_PASSWORD"]
+db_name = os.environ["DESTINATIONDB_NAME"]
 notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
 
 

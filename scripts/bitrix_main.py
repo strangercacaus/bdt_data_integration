@@ -16,6 +16,7 @@ from bdt_data_integration.src.streams.bitrix_stream import BitrixStream
 from bdt_data_integration.src.utils.utils import Utils
 from bdt_data_integration.src.utils.notifiers import WebhookNotifier
 from bdt_data_integration.src.configuration.configuration import MetadataHandler
+from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
 # Set up the root logger
@@ -57,10 +58,10 @@ schema = "bitrix"
 token = os.environ["BITRIX_TOKEN"]
 bitrix_url = os.environ["BITRIX_URL"]
 bitrix_user_id = os.environ["BITRIX_USER_ID"]
-host = os.environ["NEON_HOST"]
-user = os.environ["NEON_ROOT_USER"]
-password = os.environ["NEON_ROOT_PASSWORD"]
-db_name = os.environ["NEON_DB_NAME"]
+host = os.environ["DESTINATION_HOST"]
+user = os.environ["DESTINATION_ROOT_USER"]
+password = os.environ["DESTINATION_ROOT_PASSWORD"]
+db_name = os.environ["DESTINATION_DB_NAME"]
 notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
 
 
@@ -89,12 +90,13 @@ bitrix_data["mode"] = bitrix_data["vars"].apply(
 active_tables = bitrix_data[["table_name", "target_name", "mode"]].copy()
 
 
-#@notifier.error_handler
+@notifier.error_handler
 def replicate_table(source_name, target_table_name, mode="table"):
 
     logger = logging.getLogger("replicate_database")
 
     stream = BitrixStream(source_name=source_name, config=config)
+
     stream.set_extractor(
         token=token, bitrix_url=bitrix_url, bitrix_user_id=bitrix_user_id
     )
@@ -120,13 +122,14 @@ def replicate_table(source_name, target_table_name, mode="table"):
     stream.load_stream(
         source_name=source_name,
         target_table=target_table_name,
-        target_schema=schema,
+        target_schema='raw',
         chunksize=1000,
         schema_file_type=mode,
     )
 
 
 total = 0
+
 success = 0
 
 for i, table in active_tables.iterrows():
@@ -135,14 +138,45 @@ for i, table in active_tables.iterrows():
     target_table_name = table["target_name"] or table["table_name"]
     mode = table["mode"]
     meta.update_table_meta(table_name, last_sync_attempt_at=datetime.datetime.now())
-    replicate_table(
+    try:
+        replicate_table(
         source_name=table_name, target_table_name=target_table_name, mode=mode
     )
-    success += 1
-    meta.update_table_meta(table_name, last_successful_sync_at=datetime.datetime.now())
-    # except Exception as e:
-    #     success += 0
-    #     logger.error(f"Error replicating table {table_name}: {str(e)}")
+        success += 1
+        meta.update_table_meta(table_name, last_successful_sync_at=datetime.datetime.now())
+    except Exception as e:
+        success += 0
+        bitrix_logger.error(f"Error replicating table {table_name}: {str(e)}")
+
+# Execute dbt transformations for bitrix models after all tables have been loaded
+logger = logging.getLogger("dbt_runner")
+logger.info("Executando transformações dbt para os modelos do Bitrix")
+
+dbt_project_dir = Path(__file__).parent.parent / "dbt"
+dbt_profiles_dir = dbt_project_dir
+
+# Verificar se o diretório existe
+if not dbt_project_dir.exists():
+    logger.error(f"Diretório do projeto dbt não encontrado: {dbt_project_dir}")
+else:
+    logger.info(f"Usando diretório de projeto dbt: {dbt_project_dir}")
+
+    # Verificar se existem modelos SQL na pasta bitrix
+    bitrix_models_dir = dbt_project_dir / "models" / "bitrix"
+    if not bitrix_models_dir.exists():
+        logger.error(f"Diretório de modelos bitrix não encontrado: {bitrix_models_dir}")
+    else:
+        sql_files = list(bitrix_models_dir.glob("*.sql"))
+        logger.info(
+            f"Encontrados {len(sql_files)} arquivos SQL no diretório {bitrix_models_dir}"
+        )
+
+dbt_runner = DBTRunner(
+    project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
+)
+
+# Run only Bitrix models
+dbt_success = dbt_runner.run(models="bitrix")
 
 notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")
 
@@ -159,6 +193,6 @@ hours, minutes, seconds = (
 )
 elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
-#notifier.pipeline_end(
+# notifier.pipeline_end(
 #    text=f"Execução de pipeline encerrada: bitrix_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-#) 
+# )

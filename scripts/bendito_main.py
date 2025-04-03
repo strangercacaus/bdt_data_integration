@@ -55,10 +55,10 @@ os.makedirs(schema_dir, exist_ok=True)
 load_dotenv()
 
 schema = "bendito"
-host = os.environ["NEON_HOST"]
-user = os.environ["NEON_ROOT_USER"]
-password = os.environ["NEON_ROOT_PASSWORD"]
-db_name = os.environ["NEON_DB_NAME"]
+host = os.environ["DESTINATION_HOST"]
+user = os.environ["DESTINATION_ROOT_USER"]
+password = os.environ["DESTINATION_ROOT_PASSWORD"]
+db_name = os.environ["DESTINATION_DB_NAME"]
 notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
 
 

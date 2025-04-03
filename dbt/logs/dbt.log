@@ -1,0 +1,1562 @@
+[0m14:34:56.529611 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108d5ba10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109267110>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109266d80>]}
+
+
+============================== 14:34:56.532516 | 2527845e-8618-4bba-831f-7cc4f5184c78 ==============================
+[0m14:34:56.532516 [info ] [MainThread]: Running with dbt=1.9.4
+[0m14:34:56.532876 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'fail_fast': 'False', 'warn_error': 'None', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'debug': 'False', 'version_check': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'False', 'log_format': 'default', 'invocation_command': 'dbt run --project-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --profiles-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --models bitrix', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'introspect': 'True', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m14:34:56.631436 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '2527845e-8618-4bba-831f-7cc4f5184c78', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108d5baa0>]}
+[0m14:34:56.658368 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '2527845e-8618-4bba-831f-7cc4f5184c78', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1083e4920>]}
+[0m14:34:56.659162 [info ] [MainThread]: Registered adapter: postgres=1.9.0
+[0m14:34:56.751816 [debug] [MainThread]: checksum: b5597158181700c50f5bc1c71fe28b37a6fb85633dc5323885263678b6bc782c, vars: {}, profile: , target: , version: 1.9.4
+[0m14:34:56.752368 [info ] [MainThread]: Unable to do partial parsing because saved manifest not found. Starting full parse.
+[0m14:34:56.752574 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': '2527845e-8618-4bba-831f-7cc4f5184c78', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109292930>]}
+[0m14:34:57.069658 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 2 unused configuration paths:
+- models.bdt_transformations.bitrix
+- models.bdt_transformations.notion
+[0m14:34:57.072240 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '2527845e-8618-4bba-831f-7cc4f5184c78', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109e6d700>]}
+[0m14:34:57.089531 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m14:34:57.091247 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m14:34:57.101498 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '2527845e-8618-4bba-831f-7cc4f5184c78', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109e80aa0>]}
+[0m14:34:57.101829 [info ] [MainThread]: Found 433 macros
+[0m14:34:57.102055 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '2527845e-8618-4bba-831f-7cc4f5184c78', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109e241a0>]}
+[0m14:34:57.102371 [warn ] [MainThread]: The selection criterion 'bitrix' does not match any enabled nodes
+[0m14:34:57.102921 [warn ] [MainThread]: Nothing to do. Try checking your model configs and model specification args
+[0m14:34:57.103208 [debug] [MainThread]: Command end result
+[0m14:34:57.112401 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m14:34:57.113384 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m14:34:57.115017 [debug] [MainThread]: Wrote artifact RunExecutionResult to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/run_results.json
+[0m14:34:57.145194 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": true, "command_wall_clock_time": 0.6528586, "process_in_blocks": "0", "process_kernel_time": 0.166319, "process_mem_max_rss": "106053632", "process_out_blocks": "0", "process_user_time": 1.112716}
+[0m14:34:57.145579 [debug] [MainThread]: Command `dbt run` succeeded at 14:34:57.145527 after 0.65 seconds
+[0m14:34:57.145821 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104ecede0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108b751f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1096978f0>]}
+[0m14:34:57.146036 [debug] [MainThread]: Flushing usage events
+[0m14:34:57.836886 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m14:37:55.359255 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106dd3500>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107036960>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1070366f0>]}
+
+
+============================== 14:37:55.362309 | 1b680223-4108-473b-9afc-bd205cff094f ==============================
+[0m14:37:55.362309 [info ] [MainThread]: Running with dbt=1.9.4
+[0m14:37:55.362670 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'fail_fast': 'False', 'version_check': 'True', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'debug': 'False', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'invocation_command': 'dbt debug', 'log_format': 'default', 'target_path': 'None', 'introspect': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m14:37:55.372266 [info ] [MainThread]: dbt version: 1.9.4
+[0m14:37:55.372555 [info ] [MainThread]: python version: 3.12.3
+[0m14:37:55.372709 [info ] [MainThread]: python path: /Users/cauemausec/Documents/code/workspace/env/bin/python3.12
+[0m14:37:55.372856 [info ] [MainThread]: os info: macOS-14.7.4-arm64-arm-64bit
+[0m14:37:55.411498 [info ] [MainThread]: Using profiles dir at /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt
+[0m14:37:55.411815 [info ] [MainThread]: Using profiles.yml file at /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/profiles.yml
+[0m14:37:55.411976 [info ] [MainThread]: Using dbt_project.yml file at /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/dbt_project.yml
+[0m14:37:55.412383 [info ] [MainThread]: adapter type: postgres
+[0m14:37:55.412664 [info ] [MainThread]: adapter version: 1.9.0
+[0m14:37:55.461782 [info ] [MainThread]: Configuration:
+[0m14:37:55.462197 [info ] [MainThread]:   profiles.yml file [[32mOK found and valid[0m]
+[0m14:37:55.462359 [info ] [MainThread]:   dbt_project.yml file [[32mOK found and valid[0m]
+[0m14:37:55.462505 [info ] [MainThread]: Required dependencies:
+[0m14:37:55.462715 [debug] [MainThread]: Executing "git --help"
+[0m14:37:55.479804 [debug] [MainThread]: STDOUT: "b"usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]\n           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]\n           [--super-prefix=<path>] [--config-env=<name>=<envvar>]\n           <command> [<args>]\n\nThese are common Git commands used in various situations:\n\nstart a working area (see also: git help tutorial)\n   clone     Clone a repository into a new directory\n   init      Create an empty Git repository or reinitialize an existing one\n\nwork on the current change (see also: git help everyday)\n   add       Add file contents to the index\n   mv        Move or rename a file, a directory, or a symlink\n   restore   Restore working tree files\n   rm        Remove files from the working tree and from the index\n\nexamine the history and state (see also: git help revisions)\n   bisect    Use binary search to find the commit that introduced a bug\n   diff      Show changes between commits, commit and working tree, etc\n   grep      Print lines matching a pattern\n   log       Show commit logs\n   show      Show various types of objects\n   status    Show the working tree status\n\ngrow, mark and tweak your common history\n   branch    List, create, or delete branches\n   commit    Record changes to the repository\n   merge     Join two or more development histories together\n   rebase    Reapply commits on top of another base tip\n   reset     Reset current HEAD to the specified state\n   switch    Switch branches\n   tag       Create, list, delete or verify a tag object signed with GPG\n\ncollaborate (see also: git help workflows)\n   fetch     Download objects and refs from another repository\n   pull      Fetch from and integrate with another repository or a local branch\n   push      Update remote refs along with associated objects\n\n'git help -a' and 'git help -g' list available subcommands and some\nconcept guides. See 'git help <command>' or 'git help <concept>'\nto read about a specific subcommand or concept.\nSee 'git help git' for an overview of the system.\n""
+[0m14:37:55.480464 [debug] [MainThread]: STDERR: "b''"
+[0m14:37:55.480685 [info ] [MainThread]:  - git [[32mOK found[0m]
+
+[0m14:37:55.480881 [info ] [MainThread]: Connection:
+[0m14:37:55.481076 [info ] [MainThread]:   host: ep-royal-snow-a5l2z05g.us-east-2.aws.neon.tech
+[0m14:37:55.481222 [info ] [MainThread]:   port: 5432
+[0m14:37:55.481355 [info ] [MainThread]:   user: bendito_home_owner
+[0m14:37:55.481483 [info ] [MainThread]:   database: bendito_intelligence_dev
+[0m14:37:55.481606 [info ] [MainThread]:   schema: transformed
+[0m14:37:55.481731 [info ] [MainThread]:   connect_timeout: 10
+[0m14:37:55.481861 [info ] [MainThread]:   role: None
+[0m14:37:55.481987 [info ] [MainThread]:   search_path: None
+[0m14:37:55.482113 [info ] [MainThread]:   keepalives_idle: 0
+[0m14:37:55.482237 [info ] [MainThread]:   sslmode: None
+[0m14:37:55.482358 [info ] [MainThread]:   sslcert: None
+[0m14:37:55.482481 [info ] [MainThread]:   sslkey: None
+[0m14:37:55.482596 [info ] [MainThread]:   sslrootcert: None
+[0m14:37:55.482712 [info ] [MainThread]:   application_name: dbt
+[0m14:37:55.482829 [info ] [MainThread]:   retries: 1
+[0m14:37:55.483443 [info ] [MainThread]: Registered adapter: postgres=1.9.0
+[0m14:37:55.540997 [debug] [MainThread]: Acquiring new postgres connection 'debug'
+[0m14:37:55.566243 [debug] [MainThread]: Using postgres connection "debug"
+[0m14:37:55.566533 [debug] [MainThread]: On debug: select 1 as id
+[0m14:37:55.566691 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m14:37:56.834500 [debug] [MainThread]: SQL status: SELECT 1 in 1.268 seconds
+[0m14:37:56.836593 [debug] [MainThread]: On debug: Close
+[0m14:37:56.837366 [info ] [MainThread]:   Connection test: [[32mOK connection ok[0m]
+
+[0m14:37:56.837769 [info ] [MainThread]: [32mAll checks passed![0m
+[0m14:37:56.842401 [debug] [MainThread]: Resource report: {"command_name": "debug", "command_success": true, "command_wall_clock_time": 1.5219626, "process_in_blocks": "0", "process_kernel_time": 0.182456, "process_mem_max_rss": "115310592", "process_out_blocks": "0", "process_user_time": 0.817209}
+[0m14:37:56.843124 [debug] [MainThread]: Command `dbt debug` succeeded at 14:37:56.842989 after 1.52 seconds
+[0m14:37:56.843528 [debug] [MainThread]: Connection 'debug' was properly closed.
+[0m14:37:56.843938 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106d50ad0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106ef48f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106ef4830>]}
+[0m14:37:56.844522 [debug] [MainThread]: Flushing usage events
+[0m14:37:57.485318 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m14:38:02.403059 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104a62d50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105036db0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105036b40>]}
+
+
+============================== 14:38:02.405876 | e40123ec-4e5f-40eb-8cac-0637a87c1b53 ==============================
+[0m14:38:02.405876 [info ] [MainThread]: Running with dbt=1.9.4
+[0m14:38:02.406326 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'version_check': 'True', 'debug': 'False', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'warn_error': 'None', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'log_format': 'default', 'invocation_command': 'dbt compile --models bitrix', 'target_path': 'None', 'introspect': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m14:38:02.505835 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'e40123ec-4e5f-40eb-8cac-0637a87c1b53', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105036d80>]}
+[0m14:38:02.532744 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': 'e40123ec-4e5f-40eb-8cac-0637a87c1b53', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1044da840>]}
+[0m14:38:02.533613 [info ] [MainThread]: Registered adapter: postgres=1.9.0
+[0m14:38:02.593588 [debug] [MainThread]: checksum: b5597158181700c50f5bc1c71fe28b37a6fb85633dc5323885263678b6bc782c, vars: {}, profile: , target: , version: 1.9.4
+[0m14:38:02.633665 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 3 files added, 0 files changed.
+[0m14:38:02.633986 [debug] [MainThread]: Partial parsing: added file: bdt_transformations://bitrix/t_processed_deal_stage.sql
+[0m14:38:02.634162 [debug] [MainThread]: Partial parsing: added file: bdt_transformations://bitrix/t_processed_dealcategory.sql
+[0m14:38:02.634313 [debug] [MainThread]: Partial parsing: added file: bdt_transformations://bitrix/t_processed_activity.sql
+[0m14:38:02.756868 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 2 unused configuration paths:
+- models.bdt_transformations.bitrix
+- models.bdt_transformations.notion
+[0m14:38:02.759562 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': 'e40123ec-4e5f-40eb-8cac-0637a87c1b53', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105eb6120>]}
+[0m14:38:02.786161 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m14:38:02.788611 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m14:38:02.799898 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': 'e40123ec-4e5f-40eb-8cac-0637a87c1b53', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105d77200>]}
+[0m14:38:02.800226 [info ] [MainThread]: Found 3 models, 433 macros
+[0m14:38:02.800408 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': 'e40123ec-4e5f-40eb-8cac-0637a87c1b53', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105f6a630>]}
+[0m14:38:02.800717 [warn ] [MainThread]: The selection criterion 'bitrix' does not match any enabled nodes
+[0m14:38:02.801302 [warn ] [MainThread]: Nothing to do. Try checking your model configs and model specification args
+[0m14:38:02.801573 [debug] [MainThread]: Command end result
+[0m14:38:02.810634 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m14:38:02.811506 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m14:38:02.813109 [debug] [MainThread]: Wrote artifact RunExecutionResult to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/run_results.json
+[0m14:38:02.814230 [debug] [MainThread]: Resource report: {"command_name": "compile", "command_success": true, "command_wall_clock_time": 0.44899982, "process_in_blocks": "0", "process_kernel_time": 0.154903, "process_mem_max_rss": "113344512", "process_out_blocks": "0", "process_user_time": 0.986128}
+[0m14:38:02.814484 [debug] [MainThread]: Command `dbt compile` succeeded at 14:38:02.814435 after 0.45 seconds
+[0m14:38:02.814691 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105eb6030>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105eb67b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104a62d50>]}
+[0m14:38:02.814883 [debug] [MainThread]: Flushing usage events
+[0m14:38:03.415488 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m14:39:07.220274 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x111885d30>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x111c3aba0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x111c3a900>]}
+
+
+============================== 14:39:07.223848 | 8b1b6ccb-16e7-46dd-96fe-4a622c8da296 ==============================
+[0m14:39:07.223848 [info ] [MainThread]: Running with dbt=1.9.4
+[0m14:39:07.224329 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'debug': 'False', 'fail_fast': 'False', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'version_check': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'False', 'log_format': 'default', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'target_path': 'None', 'invocation_command': 'dbt compile --models bitrix', 'send_anonymous_usage_stats': 'True'}
+[0m14:39:07.336004 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '8b1b6ccb-16e7-46dd-96fe-4a622c8da296', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x110d14680>]}
+[0m14:39:07.363683 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '8b1b6ccb-16e7-46dd-96fe-4a622c8da296', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107515a90>]}
+[0m14:39:07.364522 [info ] [MainThread]: Registered adapter: postgres=1.9.0
+[0m14:39:07.424265 [debug] [MainThread]: checksum: b5597158181700c50f5bc1c71fe28b37a6fb85633dc5323885263678b6bc782c, vars: {}, profile: , target: , version: 1.9.4
+[0m14:39:07.456384 [info ] [MainThread]: Unable to do partial parsing because a project config has changed
+[0m14:39:07.456742 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': '8b1b6ccb-16e7-46dd-96fe-4a622c8da296', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1116634d0>]}
+[0m14:39:07.871350 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 1 unused configuration paths:
+- models.bdt_transformations.notion
+[0m14:39:07.873986 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '8b1b6ccb-16e7-46dd-96fe-4a622c8da296', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1129d9130>]}
+[0m14:39:07.899420 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m14:39:07.901506 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m14:39:07.914144 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '8b1b6ccb-16e7-46dd-96fe-4a622c8da296', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x11294c380>]}
+[0m14:39:07.914475 [info ] [MainThread]: Found 3 models, 433 macros
+[0m14:39:07.914658 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '8b1b6ccb-16e7-46dd-96fe-4a622c8da296', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1129f7c50>]}
+[0m14:39:07.915454 [info ] [MainThread]: 
+[0m14:39:07.915638 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m14:39:07.915906 [info ] [MainThread]: 
+[0m14:39:07.916270 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m14:39:07.918204 [debug] [ThreadPool]: Acquiring new postgres connection 'list_bendito_intelligence_dev_transformed_transformed'
+[0m14:39:07.978077 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_transformed_transformed"
+[0m14:39:07.978380 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_transformed: BEGIN
+[0m14:39:07.978544 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m14:39:09.404191 [debug] [ThreadPool]: SQL status: BEGIN in 1.425 seconds
+[0m14:39:09.405042 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_transformed_transformed"
+[0m14:39:09.405400 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_transformed: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev_transformed_transformed"} */
+select
+      'bendito_intelligence_dev' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'transformed_transformed'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'transformed_transformed'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'transformed_transformed'
+  
+[0m14:39:09.577844 [debug] [ThreadPool]: SQL status: SELECT 0 in 0.172 seconds
+[0m14:39:09.580036 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_transformed: ROLLBACK
+[0m14:39:09.732790 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_transformed: Close
+[0m14:39:09.739387 [debug] [MainThread]: Using postgres connection "master"
+[0m14:39:09.739771 [debug] [MainThread]: On master: BEGIN
+[0m14:39:09.740045 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m14:39:10.959925 [debug] [MainThread]: SQL status: BEGIN in 1.220 seconds
+[0m14:39:10.960411 [debug] [MainThread]: Using postgres connection "master"
+[0m14:39:10.960763 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "master"} */
+with relation as (
+        select
+            pg_rewrite.ev_class as class,
+            pg_rewrite.oid as id
+        from pg_rewrite
+    ),
+    class as (
+        select
+            oid as id,
+            relname as name,
+            relnamespace as schema,
+            relkind as kind
+        from pg_class
+    ),
+    dependency as (
+        select distinct
+            pg_depend.objid as id,
+            pg_depend.refobjid as ref
+        from pg_depend
+    ),
+    schema as (
+        select
+            pg_namespace.oid as id,
+            pg_namespace.nspname as name
+        from pg_namespace
+        where nspname != 'information_schema' and nspname not like 'pg\_%'
+    ),
+    referenced as (
+        select
+            relation.id AS id,
+            referenced_class.name ,
+            referenced_class.schema ,
+            referenced_class.kind
+        from relation
+        join class as referenced_class on relation.class=referenced_class.id
+        where referenced_class.kind in ('r', 'v', 'm')
+    ),
+    relationships as (
+        select
+            referenced.name as referenced_name,
+            referenced.schema as referenced_schema_id,
+            dependent_class.name as dependent_name,
+            dependent_class.schema as dependent_schema_id,
+            referenced.kind as kind
+        from referenced
+        join dependency on referenced.id=dependency.id
+        join class as dependent_class on dependency.ref=dependent_class.id
+        where
+            (referenced.name != dependent_class.name or
+             referenced.schema != dependent_class.schema)
+    )
+
+    select
+        referenced_schema.name as referenced_schema,
+        relationships.referenced_name as referenced_name,
+        dependent_schema.name as dependent_schema,
+        relationships.dependent_name as dependent_name
+    from relationships
+    join schema as dependent_schema on relationships.dependent_schema_id=dependent_schema.id
+    join schema as referenced_schema on relationships.referenced_schema_id=referenced_schema.id
+    group by referenced_schema, referenced_name, dependent_schema, dependent_name
+    order by referenced_schema, referenced_name, dependent_schema, dependent_name;
+[0m14:39:11.169735 [debug] [MainThread]: SQL status: SELECT 0 in 0.208 seconds
+[0m14:39:11.172023 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '8b1b6ccb-16e7-46dd-96fe-4a622c8da296', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x112893ec0>]}
+[0m14:39:11.172734 [debug] [MainThread]: On master: ROLLBACK
+[0m14:39:11.322424 [debug] [MainThread]: On master: Close
+[0m14:39:11.328967 [debug] [Thread-1 (]: Began running node model.bdt_transformations.t_processed_activity
+[0m14:39:11.329385 [debug] [Thread-2 (]: Began running node model.bdt_transformations.t_processed_deal_stage
+[0m14:39:11.329772 [debug] [Thread-3 (]: Began running node model.bdt_transformations.t_processed_dealcategory
+[0m14:39:11.330173 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev_transformed_transformed, now model.bdt_transformations.t_processed_activity)
+[0m14:39:11.330608 [debug] [Thread-2 (]: Acquiring new postgres connection 'model.bdt_transformations.t_processed_deal_stage'
+[0m14:39:11.331299 [debug] [Thread-3 (]: Acquiring new postgres connection 'model.bdt_transformations.t_processed_dealcategory'
+[0m14:39:11.331717 [debug] [Thread-1 (]: Began compiling node model.bdt_transformations.t_processed_activity
+[0m14:39:11.332041 [debug] [Thread-2 (]: Began compiling node model.bdt_transformations.t_processed_deal_stage
+[0m14:39:11.332326 [debug] [Thread-3 (]: Began compiling node model.bdt_transformations.t_processed_dealcategory
+[0m14:39:11.339814 [debug] [Thread-1 (]: Writing injected SQL for node "model.bdt_transformations.t_processed_activity"
+[0m14:39:11.341915 [debug] [Thread-2 (]: Writing injected SQL for node "model.bdt_transformations.t_processed_deal_stage"
+[0m14:39:11.343689 [debug] [Thread-3 (]: Writing injected SQL for node "model.bdt_transformations.t_processed_dealcategory"
+[0m14:39:11.345142 [debug] [Thread-1 (]: Began executing node model.bdt_transformations.t_processed_activity
+[0m14:39:11.345563 [debug] [Thread-3 (]: Began executing node model.bdt_transformations.t_processed_dealcategory
+[0m14:39:11.346203 [debug] [Thread-1 (]: Finished running node model.bdt_transformations.t_processed_activity
+[0m14:39:11.346444 [debug] [Thread-2 (]: Began executing node model.bdt_transformations.t_processed_deal_stage
+[0m14:39:11.346913 [debug] [Thread-3 (]: Finished running node model.bdt_transformations.t_processed_dealcategory
+[0m14:39:11.347710 [debug] [Thread-2 (]: Finished running node model.bdt_transformations.t_processed_deal_stage
+[0m14:39:11.348639 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m14:39:11.348902 [debug] [MainThread]: Connection 'model.bdt_transformations.t_processed_activity' was properly closed.
+[0m14:39:11.349113 [debug] [MainThread]: Connection 'model.bdt_transformations.t_processed_deal_stage' was properly closed.
+[0m14:39:11.349300 [debug] [MainThread]: Connection 'model.bdt_transformations.t_processed_dealcategory' was properly closed.
+[0m14:39:11.349917 [debug] [MainThread]: Command end result
+[0m14:39:11.363043 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m14:39:11.363973 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m14:39:11.368234 [debug] [MainThread]: Wrote artifact RunExecutionResult to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/run_results.json
+[0m14:39:11.368546 [debug] [MainThread]: Excluded node 't_processed_activity' from results
+[0m14:39:11.368715 [debug] [MainThread]: Excluded node 't_processed_dealcategory' from results
+[0m14:39:11.368864 [debug] [MainThread]: Excluded node 't_processed_deal_stage' from results
+[0m14:39:11.370620 [debug] [MainThread]: Resource report: {"command_name": "compile", "command_success": true, "command_wall_clock_time": 4.196539, "process_in_blocks": "0", "process_kernel_time": 0.226075, "process_mem_max_rss": "124567552", "process_out_blocks": "0", "process_user_time": 1.391737}
+[0m14:39:11.371000 [debug] [MainThread]: Command `dbt compile` succeeded at 14:39:11.370924 after 4.20 seconds
+[0m14:39:11.371228 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1109b36e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x111c3ac00>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x111c3a900>]}
+[0m14:39:11.371447 [debug] [MainThread]: Flushing usage events
+[0m14:39:11.971511 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m14:39:16.690483 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1081e20f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108e96cc0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108e96a50>]}
+
+
+============================== 14:39:16.693649 | 68cd4bb1-7ee5-4f95-834b-595e41848e01 ==============================
+[0m14:39:16.693649 [info ] [MainThread]: Running with dbt=1.9.4
+[0m14:39:16.693994 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'fail_fast': 'False', 'version_check': 'True', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'debug': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'static_parser': 'True', 'introspect': 'True', 'invocation_command': 'dbt run --models bitrix', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'send_anonymous_usage_stats': 'True'}
+[0m14:39:16.781038 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106c74b00>]}
+[0m14:39:16.808808 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1084c2840>]}
+[0m14:39:16.809579 [info ] [MainThread]: Registered adapter: postgres=1.9.0
+[0m14:39:16.873825 [debug] [MainThread]: checksum: b5597158181700c50f5bc1c71fe28b37a6fb85633dc5323885263678b6bc782c, vars: {}, profile: , target: , version: 1.9.4
+[0m14:39:16.922334 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m14:39:16.922611 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m14:39:16.925330 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 1 unused configuration paths:
+- models.bdt_transformations.notion
+[0m14:39:16.935297 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1093cea20>]}
+[0m14:39:16.962491 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m14:39:16.964672 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m14:39:16.976457 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109b0cad0>]}
+[0m14:39:16.976715 [info ] [MainThread]: Found 3 models, 433 macros
+[0m14:39:16.976887 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109a1c7a0>]}
+[0m14:39:16.977643 [info ] [MainThread]: 
+[0m14:39:16.977833 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m14:39:16.977969 [info ] [MainThread]: 
+[0m14:39:16.978208 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m14:39:16.980133 [debug] [ThreadPool]: Acquiring new postgres connection 'list_bendito_intelligence_dev'
+[0m14:39:17.009106 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev"
+[0m14:39:17.009418 [debug] [ThreadPool]: On list_bendito_intelligence_dev: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m14:39:17.009579 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m14:39:18.270775 [debug] [ThreadPool]: SQL status: SELECT 62 in 1.261 seconds
+[0m14:39:18.273234 [debug] [ThreadPool]: On list_bendito_intelligence_dev: Close
+[0m14:39:18.274464 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev, now create_bendito_intelligence_dev_transformed_transformed)
+[0m14:39:18.276337 [debug] [ThreadPool]: Creating schema "database: "bendito_intelligence_dev"
+schema: "transformed_transformed"
+"
+[0m14:39:18.282186 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_transformed_transformed"
+[0m14:39:18.282588 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_transformed: BEGIN
+[0m14:39:18.282823 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m14:39:19.516114 [debug] [ThreadPool]: SQL status: BEGIN in 1.233 seconds
+[0m14:39:19.516689 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_transformed_transformed"
+[0m14:39:19.516936 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_transformed: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "create_bendito_intelligence_dev_transformed_transformed"} */
+create schema if not exists "transformed_transformed"
+[0m14:39:19.684773 [debug] [ThreadPool]: SQL status: CREATE SCHEMA in 0.168 seconds
+[0m14:39:19.685612 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_transformed: COMMIT
+[0m14:39:19.685845 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_transformed_transformed"
+[0m14:39:19.686033 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_transformed: COMMIT
+[0m14:39:19.844008 [debug] [ThreadPool]: SQL status: COMMIT in 0.158 seconds
+[0m14:39:19.844941 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_transformed: Close
+[0m14:39:19.846693 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly create_bendito_intelligence_dev_transformed_transformed, now list_bendito_intelligence_dev_transformed_transformed)
+[0m14:39:19.852222 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_transformed_transformed"
+[0m14:39:19.852549 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_transformed: BEGIN
+[0m14:39:19.852791 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m14:39:21.083170 [debug] [ThreadPool]: SQL status: BEGIN in 1.230 seconds
+[0m14:39:21.083964 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_transformed_transformed"
+[0m14:39:21.084377 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_transformed: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev_transformed_transformed"} */
+select
+      'bendito_intelligence_dev' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'transformed_transformed'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'transformed_transformed'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'transformed_transformed'
+  
+[0m14:39:21.236749 [debug] [ThreadPool]: SQL status: SELECT 0 in 0.152 seconds
+[0m14:39:21.238739 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_transformed: ROLLBACK
+[0m14:39:21.389837 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_transformed: Close
+[0m14:39:21.396727 [debug] [MainThread]: Using postgres connection "master"
+[0m14:39:21.397313 [debug] [MainThread]: On master: BEGIN
+[0m14:39:21.397634 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m14:39:22.627277 [debug] [MainThread]: SQL status: BEGIN in 1.230 seconds
+[0m14:39:22.627662 [debug] [MainThread]: Using postgres connection "master"
+[0m14:39:22.627973 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "master"} */
+with relation as (
+        select
+            pg_rewrite.ev_class as class,
+            pg_rewrite.oid as id
+        from pg_rewrite
+    ),
+    class as (
+        select
+            oid as id,
+            relname as name,
+            relnamespace as schema,
+            relkind as kind
+        from pg_class
+    ),
+    dependency as (
+        select distinct
+            pg_depend.objid as id,
+            pg_depend.refobjid as ref
+        from pg_depend
+    ),
+    schema as (
+        select
+            pg_namespace.oid as id,
+            pg_namespace.nspname as name
+        from pg_namespace
+        where nspname != 'information_schema' and nspname not like 'pg\_%'
+    ),
+    referenced as (
+        select
+            relation.id AS id,
+            referenced_class.name ,
+            referenced_class.schema ,
+            referenced_class.kind
+        from relation
+        join class as referenced_class on relation.class=referenced_class.id
+        where referenced_class.kind in ('r', 'v', 'm')
+    ),
+    relationships as (
+        select
+            referenced.name as referenced_name,
+            referenced.schema as referenced_schema_id,
+            dependent_class.name as dependent_name,
+            dependent_class.schema as dependent_schema_id,
+            referenced.kind as kind
+        from referenced
+        join dependency on referenced.id=dependency.id
+        join class as dependent_class on dependency.ref=dependent_class.id
+        where
+            (referenced.name != dependent_class.name or
+             referenced.schema != dependent_class.schema)
+    )
+
+    select
+        referenced_schema.name as referenced_schema,
+        relationships.referenced_name as referenced_name,
+        dependent_schema.name as dependent_schema,
+        relationships.dependent_name as dependent_name
+    from relationships
+    join schema as dependent_schema on relationships.dependent_schema_id=dependent_schema.id
+    join schema as referenced_schema on relationships.referenced_schema_id=referenced_schema.id
+    group by referenced_schema, referenced_name, dependent_schema, dependent_name
+    order by referenced_schema, referenced_name, dependent_schema, dependent_name;
+[0m14:39:22.789540 [debug] [MainThread]: SQL status: SELECT 0 in 0.161 seconds
+[0m14:39:22.790532 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109321760>]}
+[0m14:39:22.790854 [debug] [MainThread]: On master: ROLLBACK
+[0m14:39:22.940427 [debug] [MainThread]: Using postgres connection "master"
+[0m14:39:22.940911 [debug] [MainThread]: On master: BEGIN
+[0m14:39:23.243828 [debug] [MainThread]: SQL status: BEGIN in 0.303 seconds
+[0m14:39:23.244540 [debug] [MainThread]: On master: COMMIT
+[0m14:39:23.244830 [debug] [MainThread]: Using postgres connection "master"
+[0m14:39:23.245047 [debug] [MainThread]: On master: COMMIT
+[0m14:39:23.394884 [debug] [MainThread]: SQL status: COMMIT in 0.150 seconds
+[0m14:39:23.395297 [debug] [MainThread]: On master: Close
+[0m14:39:23.398497 [debug] [Thread-1 (]: Began running node model.bdt_transformations.t_processed_activity
+[0m14:39:23.398831 [debug] [Thread-2 (]: Began running node model.bdt_transformations.t_processed_deal_stage
+[0m14:39:23.399405 [debug] [Thread-3 (]: Began running node model.bdt_transformations.t_processed_dealcategory
+[0m14:39:23.399196 [info ] [Thread-1 (]: 1 of 3 START sql table model transformed_transformed.t_processed_activity ...... [RUN]
+[0m14:39:23.399732 [info ] [Thread-2 (]: 2 of 3 START sql table model transformed_transformed.t_processed_deal_stage .... [RUN]
+[0m14:39:23.400114 [info ] [Thread-3 (]: 3 of 3 START sql table model transformed_transformed.t_processed_dealcategory .. [RUN]
+[0m14:39:23.400404 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev_transformed_transformed, now model.bdt_transformations.t_processed_activity)
+[0m14:39:23.400680 [debug] [Thread-2 (]: Acquiring new postgres connection 'model.bdt_transformations.t_processed_deal_stage'
+[0m14:39:23.400923 [debug] [Thread-3 (]: Acquiring new postgres connection 'model.bdt_transformations.t_processed_dealcategory'
+[0m14:39:23.401121 [debug] [Thread-1 (]: Began compiling node model.bdt_transformations.t_processed_activity
+[0m14:39:23.401304 [debug] [Thread-2 (]: Began compiling node model.bdt_transformations.t_processed_deal_stage
+[0m14:39:23.401478 [debug] [Thread-3 (]: Began compiling node model.bdt_transformations.t_processed_dealcategory
+[0m14:39:23.405886 [debug] [Thread-1 (]: Writing injected SQL for node "model.bdt_transformations.t_processed_activity"
+[0m14:39:23.407384 [debug] [Thread-2 (]: Writing injected SQL for node "model.bdt_transformations.t_processed_deal_stage"
+[0m14:39:23.408741 [debug] [Thread-3 (]: Writing injected SQL for node "model.bdt_transformations.t_processed_dealcategory"
+[0m14:39:23.409331 [debug] [Thread-1 (]: Began executing node model.bdt_transformations.t_processed_activity
+[0m14:39:23.415207 [debug] [Thread-2 (]: Began executing node model.bdt_transformations.t_processed_deal_stage
+[0m14:39:23.433305 [debug] [Thread-2 (]: Writing runtime sql for node "model.bdt_transformations.t_processed_deal_stage"
+[0m14:39:23.434672 [debug] [Thread-1 (]: Writing runtime sql for node "model.bdt_transformations.t_processed_activity"
+[0m14:39:23.434932 [debug] [Thread-3 (]: Began executing node model.bdt_transformations.t_processed_dealcategory
+[0m14:39:23.436734 [debug] [Thread-3 (]: Writing runtime sql for node "model.bdt_transformations.t_processed_dealcategory"
+[0m14:39:23.437396 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.t_processed_dealcategory"
+[0m14:39:23.437644 [debug] [Thread-1 (]: Using postgres connection "model.bdt_transformations.t_processed_activity"
+[0m14:39:23.437869 [debug] [Thread-2 (]: Using postgres connection "model.bdt_transformations.t_processed_deal_stage"
+[0m14:39:23.438065 [debug] [Thread-3 (]: On model.bdt_transformations.t_processed_dealcategory: BEGIN
+[0m14:39:23.438249 [debug] [Thread-1 (]: On model.bdt_transformations.t_processed_activity: BEGIN
+[0m14:39:23.438418 [debug] [Thread-2 (]: On model.bdt_transformations.t_processed_deal_stage: BEGIN
+[0m14:39:23.438590 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m14:39:23.438754 [debug] [Thread-1 (]: Opening a new connection, currently in state closed
+[0m14:39:23.438940 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m14:39:24.669199 [debug] [Thread-1 (]: SQL status: BEGIN in 1.230 seconds
+[0m14:39:24.669593 [debug] [Thread-1 (]: Using postgres connection "model.bdt_transformations.t_processed_activity"
+[0m14:39:24.669841 [debug] [Thread-1 (]: On model.bdt_transformations.t_processed_activity: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_activity"} */
+
+  
+    
+
+  create  table "bendito_intelligence_dev"."transformed_transformed"."t_processed_activity__dbt_tmp"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'SUBJECT')::varchar as subject,
+  ("CONTENT"->>'DESCRIPTION')::varchar as description,
+  ("CONTENT"->>'TYPE_ID')::varchar as type_id,
+  ("CONTENT"->>'PROVIDER_ID')::varchar as provider_id,
+  ("CONTENT"->>'PROVIDER_TYPE_ID')::varchar as provider_type_id,
+  ("CONTENT"->>'PRIORITY')::varchar as priority,
+  ("CONTENT"->>'OWNER_ID')::integer as owner_id,
+  ("CONTENT"->>'OWNER_TYPE_ID')::varchar as owner_type_id,
+  ("CONTENT"->>'RESPONSIBLE_ID')::integer as responsible_id,
+  ("CONTENT"->>'COMPLETED')::boolean as completed,
+  ("CONTENT"->>'STATUS')::integer as status,
+  ("CONTENT"->>'CREATED')::timestamp as created,
+  ("CONTENT"->>'LAST_UPDATED')::timestamp as last_updated
+FROM bitrix.t_raw_activity
+  );
+  
+[0m14:39:24.670771 [debug] [Thread-2 (]: SQL status: BEGIN in 1.232 seconds
+[0m14:39:24.671113 [debug] [Thread-2 (]: Using postgres connection "model.bdt_transformations.t_processed_deal_stage"
+[0m14:39:24.671362 [debug] [Thread-2 (]: On model.bdt_transformations.t_processed_deal_stage: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_deal_stage"} */
+
+  
+    
+
+  create  table "bendito_intelligence_dev"."transformed_transformed"."t_processed_deal_stage__dbt_tmp"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'NAME')::varchar as name,
+  ("CONTENT"->>'SORT')::int4 as sort,
+  ("CONTENT"->>'STATUS_ID')::varchar as status_id
+FROM bitrix.t_raw_deal_stage
+  );
+  
+[0m14:39:24.685253 [debug] [Thread-3 (]: SQL status: BEGIN in 1.247 seconds
+[0m14:39:24.685568 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.t_processed_dealcategory"
+[0m14:39:24.685798 [debug] [Thread-3 (]: On model.bdt_transformations.t_processed_dealcategory: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_dealcategory"} */
+
+  
+    
+
+  create  table "bendito_intelligence_dev"."transformed_transformed"."t_processed_dealcategory__dbt_tmp"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'NAME')::varchar as name,
+  ("CONTENT"->>'SORT')::int4 as sort,
+  ("CONTENT"->>'CREATED_DATE')::timestamp as created_date
+FROM bitrix.t_raw_dealcategory
+  );
+  
+[0m14:39:24.858724 [debug] [Thread-2 (]: SQL status: SELECT 11 in 0.187 seconds
+[0m14:39:24.866226 [debug] [Thread-3 (]: SQL status: SELECT 4 in 0.180 seconds
+[0m14:39:24.866113 [debug] [Thread-2 (]: Using postgres connection "model.bdt_transformations.t_processed_deal_stage"
+[0m14:39:24.869323 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.t_processed_dealcategory"
+[0m14:39:24.869880 [debug] [Thread-2 (]: On model.bdt_transformations.t_processed_deal_stage: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_deal_stage"} */
+alter table "bendito_intelligence_dev"."transformed_transformed"."t_processed_deal_stage__dbt_tmp" rename to "t_processed_deal_stage"
+[0m14:39:24.870214 [debug] [Thread-3 (]: On model.bdt_transformations.t_processed_dealcategory: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_dealcategory"} */
+alter table "bendito_intelligence_dev"."transformed_transformed"."t_processed_dealcategory__dbt_tmp" rename to "t_processed_dealcategory"
+[0m14:39:25.022257 [debug] [Thread-2 (]: SQL status: ALTER TABLE in 0.151 seconds
+[0m14:39:25.029284 [debug] [Thread-3 (]: SQL status: ALTER TABLE in 0.159 seconds
+[0m14:39:25.042960 [debug] [Thread-3 (]: On model.bdt_transformations.t_processed_dealcategory: COMMIT
+[0m14:39:25.041605 [debug] [Thread-2 (]: On model.bdt_transformations.t_processed_deal_stage: COMMIT
+[0m14:39:25.043539 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.t_processed_dealcategory"
+[0m14:39:25.043890 [debug] [Thread-2 (]: Using postgres connection "model.bdt_transformations.t_processed_deal_stage"
+[0m14:39:25.044150 [debug] [Thread-3 (]: On model.bdt_transformations.t_processed_dealcategory: COMMIT
+[0m14:39:25.044387 [debug] [Thread-2 (]: On model.bdt_transformations.t_processed_deal_stage: COMMIT
+[0m14:39:25.202458 [debug] [Thread-2 (]: SQL status: COMMIT in 0.158 seconds
+[0m14:39:25.209358 [debug] [Thread-3 (]: SQL status: COMMIT in 0.165 seconds
+[0m14:39:25.208956 [debug] [Thread-2 (]: Applying DROP to: "bendito_intelligence_dev"."transformed_transformed"."t_processed_deal_stage__dbt_backup"
+[0m14:39:25.212035 [debug] [Thread-3 (]: Applying DROP to: "bendito_intelligence_dev"."transformed_transformed"."t_processed_dealcategory__dbt_backup"
+[0m14:39:25.216838 [debug] [Thread-2 (]: Using postgres connection "model.bdt_transformations.t_processed_deal_stage"
+[0m14:39:25.217442 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.t_processed_dealcategory"
+[0m14:39:25.217741 [debug] [Thread-2 (]: On model.bdt_transformations.t_processed_deal_stage: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_deal_stage"} */
+drop table if exists "bendito_intelligence_dev"."transformed_transformed"."t_processed_deal_stage__dbt_backup" cascade
+[0m14:39:25.218027 [debug] [Thread-3 (]: On model.bdt_transformations.t_processed_dealcategory: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_dealcategory"} */
+drop table if exists "bendito_intelligence_dev"."transformed_transformed"."t_processed_dealcategory__dbt_backup" cascade
+[0m14:39:25.371524 [debug] [Thread-3 (]: SQL status: DROP TABLE in 0.153 seconds
+[0m14:39:25.372253 [debug] [Thread-2 (]: SQL status: DROP TABLE in 0.154 seconds
+[0m14:39:25.375862 [debug] [Thread-3 (]: On model.bdt_transformations.t_processed_dealcategory: Close
+[0m14:39:25.377695 [debug] [Thread-2 (]: On model.bdt_transformations.t_processed_deal_stage: Close
+[0m14:39:25.381726 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109f18320>]}
+[0m14:39:25.382206 [debug] [Thread-2 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109b0f620>]}
+[0m14:39:25.382998 [info ] [Thread-3 (]: 3 of 3 OK created sql table model transformed_transformed.t_processed_dealcategory  [[32mSELECT 4[0m in 1.98s]
+[0m14:39:25.383577 [info ] [Thread-2 (]: 2 of 3 OK created sql table model transformed_transformed.t_processed_deal_stage  [[32mSELECT 11[0m in 1.98s]
+[0m14:39:25.384135 [debug] [Thread-3 (]: Finished running node model.bdt_transformations.t_processed_dealcategory
+[0m14:39:25.384599 [debug] [Thread-2 (]: Finished running node model.bdt_transformations.t_processed_deal_stage
+[0m14:39:25.565558 [debug] [Thread-1 (]: SQL status: SELECT 1833 in 0.895 seconds
+[0m14:39:25.568272 [debug] [Thread-1 (]: Using postgres connection "model.bdt_transformations.t_processed_activity"
+[0m14:39:25.568648 [debug] [Thread-1 (]: On model.bdt_transformations.t_processed_activity: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_activity"} */
+alter table "bendito_intelligence_dev"."transformed_transformed"."t_processed_activity__dbt_tmp" rename to "t_processed_activity"
+[0m14:39:25.718615 [debug] [Thread-1 (]: SQL status: ALTER TABLE in 0.149 seconds
+[0m14:39:25.721696 [debug] [Thread-1 (]: On model.bdt_transformations.t_processed_activity: COMMIT
+[0m14:39:25.722486 [debug] [Thread-1 (]: Using postgres connection "model.bdt_transformations.t_processed_activity"
+[0m14:39:25.722871 [debug] [Thread-1 (]: On model.bdt_transformations.t_processed_activity: COMMIT
+[0m14:39:25.875201 [debug] [Thread-1 (]: SQL status: COMMIT in 0.152 seconds
+[0m14:39:25.879707 [debug] [Thread-1 (]: Applying DROP to: "bendito_intelligence_dev"."transformed_transformed"."t_processed_activity__dbt_backup"
+[0m14:39:25.880427 [debug] [Thread-1 (]: Using postgres connection "model.bdt_transformations.t_processed_activity"
+[0m14:39:25.880773 [debug] [Thread-1 (]: On model.bdt_transformations.t_processed_activity: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.t_processed_activity"} */
+drop table if exists "bendito_intelligence_dev"."transformed_transformed"."t_processed_activity__dbt_backup" cascade
+[0m14:39:26.031814 [debug] [Thread-1 (]: SQL status: DROP TABLE in 0.151 seconds
+[0m14:39:26.033614 [debug] [Thread-1 (]: On model.bdt_transformations.t_processed_activity: Close
+[0m14:39:26.034459 [debug] [Thread-1 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '68cd4bb1-7ee5-4f95-834b-595e41848e01', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x109fa7ec0>]}
+[0m14:39:26.035051 [info ] [Thread-1 (]: 1 of 3 OK created sql table model transformed_transformed.t_processed_activity . [[32mSELECT 1833[0m in 2.63s]
+[0m14:39:26.035555 [debug] [Thread-1 (]: Finished running node model.bdt_transformations.t_processed_activity
+[0m14:39:26.036720 [debug] [MainThread]: Using postgres connection "master"
+[0m14:39:26.037001 [debug] [MainThread]: On master: BEGIN
+[0m14:39:26.037236 [debug] [MainThread]: Opening a new connection, currently in state closed
+[0m14:39:27.258589 [debug] [MainThread]: SQL status: BEGIN in 1.221 seconds
+[0m14:39:27.258963 [debug] [MainThread]: On master: COMMIT
+[0m14:39:27.259156 [debug] [MainThread]: Using postgres connection "master"
+[0m14:39:27.259332 [debug] [MainThread]: On master: COMMIT
+[0m14:39:27.410110 [debug] [MainThread]: SQL status: COMMIT in 0.151 seconds
+[0m14:39:27.410539 [debug] [MainThread]: On master: Close
+[0m14:39:27.411027 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m14:39:27.411256 [debug] [MainThread]: Connection 'model.bdt_transformations.t_processed_activity' was properly closed.
+[0m14:39:27.411460 [debug] [MainThread]: Connection 'model.bdt_transformations.t_processed_deal_stage' was properly closed.
+[0m14:39:27.411672 [debug] [MainThread]: Connection 'model.bdt_transformations.t_processed_dealcategory' was properly closed.
+[0m14:39:27.411949 [info ] [MainThread]: 
+[0m14:39:27.412223 [info ] [MainThread]: Finished running 3 table models in 0 hours 0 minutes and 10.43 seconds (10.43s).
+[0m14:39:27.412939 [debug] [MainThread]: Command end result
+[0m14:39:27.427205 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m14:39:27.428426 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m14:39:27.432884 [debug] [MainThread]: Wrote artifact RunExecutionResult to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/run_results.json
+[0m14:39:27.433163 [info ] [MainThread]: 
+[0m14:39:27.433408 [info ] [MainThread]: [32mCompleted successfully[0m
+[0m14:39:27.433598 [info ] [MainThread]: 
+[0m14:39:27.433804 [info ] [MainThread]: Done. PASS=3 WARN=0 ERROR=0 SKIP=0 TOTAL=3
+[0m14:39:27.435854 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": true, "command_wall_clock_time": 10.780506, "process_in_blocks": "0", "process_kernel_time": 0.214766, "process_mem_max_rss": "123518976", "process_out_blocks": "0", "process_user_time": 1.157984}
+[0m14:39:27.436280 [debug] [MainThread]: Command `dbt run` succeeded at 14:39:27.436213 after 10.78 seconds
+[0m14:39:27.436645 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104b02c90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1081e2cf0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1081e3770>]}
+[0m14:39:27.436913 [debug] [MainThread]: Flushing usage events
+[0m14:39:28.045763 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m17:12:38.272843 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104bf4740>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10316ecc0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104e76bd0>]}
+
+
+============================== 17:12:38.275565 | 45a5e6a2-5a71-4566-95ee-7852320a9334 ==============================
+[0m17:12:38.275565 [info ] [MainThread]: Running with dbt=1.9.4
+[0m17:12:38.275911 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'debug': 'False', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'fail_fast': 'False', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'invocation_command': 'dbt run --project-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --profiles-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --models bitrix', 'static_parser': 'True', 'introspect': 'True', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'send_anonymous_usage_stats': 'True'}
+[0m17:12:38.365977 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105323d40>]}
+[0m17:12:38.391429 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1049cae10>]}
+[0m17:12:38.392088 [info ] [MainThread]: Registered adapter: postgres=1.9.0
+[0m17:12:38.487607 [debug] [MainThread]: checksum: b5597158181700c50f5bc1c71fe28b37a6fb85633dc5323885263678b6bc782c, vars: {}, profile: , target: , version: 1.9.4
+[0m17:12:38.517639 [info ] [MainThread]: Unable to do partial parsing because a project config has changed
+[0m17:12:38.517969 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105a4c9b0>]}
+[0m17:12:38.911039 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 1 unused configuration paths:
+- models.bdt_transformations.notion
+[0m17:12:38.913393 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105c1bdd0>]}
+[0m17:12:38.937792 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m17:12:38.939664 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m17:12:38.951921 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105c1b4d0>]}
+[0m17:12:38.952235 [info ] [MainThread]: Found 4 models, 433 macros
+[0m17:12:38.952410 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105c48290>]}
+[0m17:12:38.953302 [info ] [MainThread]: 
+[0m17:12:38.953510 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m17:12:38.953653 [info ] [MainThread]: 
+[0m17:12:38.953922 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m17:12:38.955775 [debug] [ThreadPool]: Acquiring new postgres connection 'list_bendito_intelligence_dev'
+[0m17:12:39.020740 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev"
+[0m17:12:39.021017 [debug] [ThreadPool]: On list_bendito_intelligence_dev: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m17:12:39.021177 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m17:12:40.258289 [debug] [ThreadPool]: SQL status: SELECT 63 in 1.237 seconds
+[0m17:12:40.260052 [debug] [ThreadPool]: On list_bendito_intelligence_dev: Close
+[0m17:12:40.260954 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev, now create_bendito_intelligence_dev_transformed_bitrix)
+[0m17:12:40.261678 [debug] [ThreadPool]: Creating schema "database: "bendito_intelligence_dev"
+schema: "transformed_bitrix"
+"
+[0m17:12:40.266406 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_transformed_bitrix"
+[0m17:12:40.266714 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_bitrix: BEGIN
+[0m17:12:40.266951 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m17:12:41.483731 [debug] [ThreadPool]: SQL status: BEGIN in 1.217 seconds
+[0m17:12:41.484686 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_transformed_bitrix"
+[0m17:12:41.485110 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_bitrix: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "create_bendito_intelligence_dev_transformed_bitrix"} */
+create schema if not exists "transformed_bitrix"
+[0m17:12:41.663581 [debug] [ThreadPool]: SQL status: CREATE SCHEMA in 0.178 seconds
+[0m17:12:41.668161 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_bitrix: COMMIT
+[0m17:12:41.669139 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_transformed_bitrix"
+[0m17:12:41.669611 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_bitrix: COMMIT
+[0m17:12:41.820220 [debug] [ThreadPool]: SQL status: COMMIT in 0.150 seconds
+[0m17:12:41.822619 [debug] [ThreadPool]: On create_bendito_intelligence_dev_transformed_bitrix: Close
+[0m17:12:41.825623 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly create_bendito_intelligence_dev_transformed_bitrix, now list_bendito_intelligence_dev_transformed_bitrix)
+[0m17:12:41.833941 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_transformed_bitrix"
+[0m17:12:41.834431 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_bitrix: BEGIN
+[0m17:12:41.834808 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m17:12:43.087424 [debug] [ThreadPool]: SQL status: BEGIN in 1.252 seconds
+[0m17:12:43.089627 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_transformed_bitrix"
+[0m17:12:43.090739 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_bitrix: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev_transformed_bitrix"} */
+select
+      'bendito_intelligence_dev' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'transformed_bitrix'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'transformed_bitrix'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'transformed_bitrix'
+  
+[0m17:12:43.260700 [debug] [ThreadPool]: SQL status: SELECT 0 in 0.169 seconds
+[0m17:12:43.266069 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_bitrix: ROLLBACK
+[0m17:12:43.427430 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_bitrix: Close
+[0m17:12:43.437934 [debug] [MainThread]: Using postgres connection "master"
+[0m17:12:43.438544 [debug] [MainThread]: On master: BEGIN
+[0m17:12:43.438972 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m17:12:44.671768 [debug] [MainThread]: SQL status: BEGIN in 1.232 seconds
+[0m17:12:44.674183 [debug] [MainThread]: Using postgres connection "master"
+[0m17:12:44.675049 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "master"} */
+with relation as (
+        select
+            pg_rewrite.ev_class as class,
+            pg_rewrite.oid as id
+        from pg_rewrite
+    ),
+    class as (
+        select
+            oid as id,
+            relname as name,
+            relnamespace as schema,
+            relkind as kind
+        from pg_class
+    ),
+    dependency as (
+        select distinct
+            pg_depend.objid as id,
+            pg_depend.refobjid as ref
+        from pg_depend
+    ),
+    schema as (
+        select
+            pg_namespace.oid as id,
+            pg_namespace.nspname as name
+        from pg_namespace
+        where nspname != 'information_schema' and nspname not like 'pg\_%'
+    ),
+    referenced as (
+        select
+            relation.id AS id,
+            referenced_class.name ,
+            referenced_class.schema ,
+            referenced_class.kind
+        from relation
+        join class as referenced_class on relation.class=referenced_class.id
+        where referenced_class.kind in ('r', 'v', 'm')
+    ),
+    relationships as (
+        select
+            referenced.name as referenced_name,
+            referenced.schema as referenced_schema_id,
+            dependent_class.name as dependent_name,
+            dependent_class.schema as dependent_schema_id,
+            referenced.kind as kind
+        from referenced
+        join dependency on referenced.id=dependency.id
+        join class as dependent_class on dependency.ref=dependent_class.id
+        where
+            (referenced.name != dependent_class.name or
+             referenced.schema != dependent_class.schema)
+    )
+
+    select
+        referenced_schema.name as referenced_schema,
+        relationships.referenced_name as referenced_name,
+        dependent_schema.name as dependent_schema,
+        relationships.dependent_name as dependent_name
+    from relationships
+    join schema as dependent_schema on relationships.dependent_schema_id=dependent_schema.id
+    join schema as referenced_schema on relationships.referenced_schema_id=referenced_schema.id
+    group by referenced_schema, referenced_name, dependent_schema, dependent_name
+    order by referenced_schema, referenced_name, dependent_schema, dependent_name;
+[0m17:12:44.852945 [debug] [MainThread]: SQL status: SELECT 0 in 0.177 seconds
+[0m17:12:44.858873 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105a956a0>]}
+[0m17:12:44.859921 [debug] [MainThread]: On master: ROLLBACK
+[0m17:12:45.010632 [debug] [MainThread]: Using postgres connection "master"
+[0m17:12:45.012554 [debug] [MainThread]: On master: BEGIN
+[0m17:12:45.313377 [debug] [MainThread]: SQL status: BEGIN in 0.300 seconds
+[0m17:12:45.315666 [debug] [MainThread]: On master: COMMIT
+[0m17:12:45.316804 [debug] [MainThread]: Using postgres connection "master"
+[0m17:12:45.317709 [debug] [MainThread]: On master: COMMIT
+[0m17:12:45.468174 [debug] [MainThread]: SQL status: COMMIT in 0.149 seconds
+[0m17:12:45.468965 [debug] [MainThread]: On master: Close
+[0m17:12:45.473736 [debug] [Thread-1 (]: Began running node model.bdt_transformations.btx_processed_activity
+[0m17:12:45.474149 [debug] [Thread-2 (]: Began running node model.bdt_transformations.btx_processed_deal
+[0m17:12:45.474548 [debug] [Thread-3 (]: Began running node model.bdt_transformations.btx_processed_deal_stage
+[0m17:12:45.474934 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev_transformed_bitrix, now model.bdt_transformations.btx_processed_activity)
+[0m17:12:45.475253 [debug] [Thread-4 (]: Began running node model.bdt_transformations.btx_processed_dealcategory
+[0m17:12:45.475638 [debug] [Thread-2 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_deal'
+[0m17:12:45.476113 [info ] [Thread-3 (]: 1 of 2 START sql incremental model transformed_bitrix.btx_processed_deal_stage . [RUN]
+[0m17:12:45.476439 [debug] [Thread-1 (]: Began compiling node model.bdt_transformations.btx_processed_activity
+[0m17:12:45.476780 [info ] [Thread-4 (]: 2 of 2 START sql incremental model transformed_bitrix.btx_processed_dealcategory  [RUN]
+[0m17:12:45.477057 [debug] [Thread-2 (]: Began compiling node model.bdt_transformations.btx_processed_deal
+[0m17:12:45.477376 [debug] [Thread-3 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_deal_stage'
+[0m17:12:45.484735 [debug] [Thread-1 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_activity"
+[0m17:12:45.485375 [debug] [Thread-4 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_dealcategory'
+[0m17:12:45.488467 [debug] [Thread-2 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_deal"
+[0m17:12:45.488841 [debug] [Thread-3 (]: Began compiling node model.bdt_transformations.btx_processed_deal_stage
+[0m17:12:45.489505 [debug] [Thread-4 (]: Began compiling node model.bdt_transformations.btx_processed_dealcategory
+[0m17:12:45.492136 [debug] [Thread-3 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:12:45.495250 [debug] [Thread-4 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:12:45.495859 [debug] [Thread-1 (]: Finished running node model.bdt_transformations.btx_processed_activity
+[0m17:12:45.496692 [debug] [Thread-2 (]: Finished running node model.bdt_transformations.btx_processed_deal
+[0m17:12:45.497095 [debug] [Thread-4 (]: Began executing node model.bdt_transformations.btx_processed_dealcategory
+[0m17:12:45.497333 [debug] [Thread-3 (]: Began executing node model.bdt_transformations.btx_processed_deal_stage
+[0m17:12:45.532000 [debug] [Thread-4 (]: Writing runtime sql for node "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:12:45.534004 [debug] [Thread-3 (]: Writing runtime sql for node "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:12:45.534565 [debug] [Thread-4 (]: Using postgres connection "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:12:45.534789 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: BEGIN
+[0m17:12:45.534969 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m17:12:45.535273 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:12:45.535473 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: BEGIN
+[0m17:12:45.535646 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m17:12:46.752478 [debug] [Thread-4 (]: SQL status: BEGIN in 1.217 seconds
+[0m17:12:46.752881 [debug] [Thread-4 (]: Using postgres connection "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:12:46.753170 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.btx_processed_dealcategory"} */
+
+      
+  
+    
+
+  create  table "bendito_intelligence_dev"."transformed_bitrix"."btx_processed_dealcategory"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'NAME')::varchar as name,
+  ("CONTENT"->>'SORT')::int4 as sort,
+  ("CONTENT"->>'CREATED_DATE')::timestamp as created_date
+FROM bitrix.t_raw_dealcategory
+  );
+  
+  
+[0m17:12:46.758440 [debug] [Thread-3 (]: SQL status: BEGIN in 1.223 seconds
+[0m17:12:46.758740 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:12:46.759028 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.btx_processed_deal_stage"} */
+
+      
+  
+    
+
+  create  table "bendito_intelligence_dev"."transformed_bitrix"."btx_processed_deal_stage"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'NAME')::varchar as name,
+  ("CONTENT"->>'SORT')::int4 as sort,
+  ("CONTENT"->>'STATUS_ID')::varchar as status_id
+FROM bitrix.t_raw_deal_stage
+  );
+  
+  
+[0m17:12:46.914924 [debug] [Thread-4 (]: Postgres adapter: Postgres error: relation "bitrix.t_raw_dealcategory" does not exist
+LINE 20: FROM bitrix.t_raw_dealcategory
+              ^
+
+[0m17:12:46.917565 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: ROLLBACK
+[0m17:12:46.920740 [debug] [Thread-3 (]: Postgres adapter: Postgres error: relation "bitrix.t_raw_deal_stage" does not exist
+LINE 20: FROM bitrix.t_raw_deal_stage
+              ^
+
+[0m17:12:46.924302 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: ROLLBACK
+[0m17:12:47.068575 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: Close
+[0m17:12:47.076353 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: Close
+[0m17:12:47.079421 [debug] [Thread-4 (]: Database Error in model btx_processed_dealcategory (models/bitrix/btx_processed_dealcategory.sql)
+  relation "bitrix.t_raw_dealcategory" does not exist
+  LINE 20: FROM bitrix.t_raw_dealcategory
+                ^
+  compiled code at target/run/bdt_transformations/models/bitrix/btx_processed_dealcategory.sql
+[0m17:12:47.081642 [debug] [Thread-3 (]: Database Error in model btx_processed_deal_stage (models/bitrix/btx_processed_deal_stage.sql)
+  relation "bitrix.t_raw_deal_stage" does not exist
+  LINE 20: FROM bitrix.t_raw_deal_stage
+                ^
+  compiled code at target/run/bdt_transformations/models/bitrix/btx_processed_deal_stage.sql
+[0m17:12:47.082145 [debug] [Thread-4 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105fbb140>]}
+[0m17:12:47.082407 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '45a5e6a2-5a71-4566-95ee-7852320a9334', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105c01be0>]}
+[0m17:12:47.082912 [error] [Thread-4 (]: 2 of 2 ERROR creating sql incremental model transformed_bitrix.btx_processed_dealcategory  [[31mERROR[0m in 1.59s]
+[0m17:12:47.083379 [error] [Thread-3 (]: 1 of 2 ERROR creating sql incremental model transformed_bitrix.btx_processed_deal_stage  [[31mERROR[0m in 1.60s]
+[0m17:12:47.083760 [debug] [Thread-4 (]: Finished running node model.bdt_transformations.btx_processed_dealcategory
+[0m17:12:47.084086 [debug] [Thread-3 (]: Finished running node model.bdt_transformations.btx_processed_deal_stage
+[0m17:12:47.084392 [debug] [Thread-7 (]: Marking all children of 'model.bdt_transformations.btx_processed_dealcategory' to be skipped because of status 'error'.  Reason: Database Error in model btx_processed_dealcategory (models/bitrix/btx_processed_dealcategory.sql)
+  relation "bitrix.t_raw_dealcategory" does not exist
+  LINE 20: FROM bitrix.t_raw_dealcategory
+                ^
+  compiled code at target/run/bdt_transformations/models/bitrix/btx_processed_dealcategory.sql.
+[0m17:12:47.085093 [debug] [Thread-7 (]: Marking all children of 'model.bdt_transformations.btx_processed_deal_stage' to be skipped because of status 'error'.  Reason: Database Error in model btx_processed_deal_stage (models/bitrix/btx_processed_deal_stage.sql)
+  relation "bitrix.t_raw_deal_stage" does not exist
+  LINE 20: FROM bitrix.t_raw_deal_stage
+                ^
+  compiled code at target/run/bdt_transformations/models/bitrix/btx_processed_deal_stage.sql.
+[0m17:12:47.085857 [debug] [MainThread]: Using postgres connection "master"
+[0m17:12:47.086100 [debug] [MainThread]: On master: BEGIN
+[0m17:12:47.086293 [debug] [MainThread]: Opening a new connection, currently in state closed
+[0m17:12:48.345560 [debug] [MainThread]: SQL status: BEGIN in 1.258 seconds
+[0m17:12:48.347877 [debug] [MainThread]: On master: COMMIT
+[0m17:12:48.348881 [debug] [MainThread]: Using postgres connection "master"
+[0m17:12:48.350062 [debug] [MainThread]: On master: COMMIT
+[0m17:12:48.502872 [debug] [MainThread]: SQL status: COMMIT in 0.150 seconds
+[0m17:12:48.505266 [debug] [MainThread]: On master: Close
+[0m17:12:48.506697 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m17:12:48.507201 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_activity' was properly closed.
+[0m17:12:48.507628 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_deal' was properly closed.
+[0m17:12:48.508023 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_deal_stage' was properly closed.
+[0m17:12:48.508395 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_dealcategory' was properly closed.
+[0m17:12:48.509111 [info ] [MainThread]: 
+[0m17:12:48.509739 [info ] [MainThread]: Finished running 2 incremental models in 0 hours 0 minutes and 9.56 seconds (9.56s).
+[0m17:12:48.510914 [debug] [MainThread]: Command end result
+[0m17:12:48.534437 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m17:12:48.536423 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m17:12:48.541570 [debug] [MainThread]: Wrote artifact RunExecutionResult to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/run_results.json
+[0m17:12:48.541813 [info ] [MainThread]: 
+[0m17:12:48.542066 [info ] [MainThread]: [31mCompleted with 2 errors, 0 partial successes, and 0 warnings:[0m
+[0m17:12:48.542282 [info ] [MainThread]: 
+[0m17:12:48.542542 [error] [MainThread]:   Database Error in model btx_processed_dealcategory (models/bitrix/btx_processed_dealcategory.sql)
+  relation "bitrix.t_raw_dealcategory" does not exist
+  LINE 20: FROM bitrix.t_raw_dealcategory
+                ^
+  compiled code at target/run/bdt_transformations/models/bitrix/btx_processed_dealcategory.sql
+[0m17:12:48.542751 [info ] [MainThread]: 
+[0m17:12:48.542985 [error] [MainThread]:   Database Error in model btx_processed_deal_stage (models/bitrix/btx_processed_deal_stage.sql)
+  relation "bitrix.t_raw_deal_stage" does not exist
+  LINE 20: FROM bitrix.t_raw_deal_stage
+                ^
+  compiled code at target/run/bdt_transformations/models/bitrix/btx_processed_deal_stage.sql
+[0m17:12:48.543180 [info ] [MainThread]: 
+[0m17:12:48.543395 [info ] [MainThread]: Done. PASS=0 WARN=0 ERROR=2 SKIP=0 TOTAL=2
+[0m17:12:48.582322 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": false, "command_wall_clock_time": 10.344008, "process_in_blocks": "0", "process_kernel_time": 0.22893, "process_mem_max_rss": "124387328", "process_out_blocks": "0", "process_user_time": 1.543143}
+[0m17:12:48.582816 [debug] [MainThread]: Command `dbt run` failed at 17:12:48.582742 after 10.34 seconds
+[0m17:12:48.583153 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x100aded50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104bf4740>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1052fe0f0>]}
+[0m17:12:48.583468 [debug] [MainThread]: Flushing usage events
+[0m17:12:49.211073 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m17:15:58.492894 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1065c3f50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106a96ff0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106a96b70>]}
+
+
+============================== 17:15:58.495808 | 08907238-2f80-4afd-b425-e7098330370d ==============================
+[0m17:15:58.495808 [info ] [MainThread]: Running with dbt=1.9.4
+[0m17:15:58.496164 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'debug': 'False', 'version_check': 'True', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'fail_fast': 'False', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'introspect': 'True', 'invocation_command': 'dbt run --project-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --profiles-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --models bitrix', 'log_format': 'default', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m17:15:58.575543 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '08907238-2f80-4afd-b425-e7098330370d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104874890>]}
+[0m17:15:58.600472 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '08907238-2f80-4afd-b425-e7098330370d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1068b1af0>]}
+[0m17:15:58.601476 [info ] [MainThread]: Registered adapter: postgres=1.9.0
+[0m17:15:58.663502 [debug] [MainThread]: checksum: b5597158181700c50f5bc1c71fe28b37a6fb85633dc5323885263678b6bc782c, vars: {}, profile: , target: , version: 1.9.4
+[0m17:15:58.709081 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 3 files changed.
+[0m17:15:58.709439 [debug] [MainThread]: Partial parsing: updated file: bdt_transformations://models/bitrix/btx_processed_dealcategory.sql
+[0m17:15:58.709644 [debug] [MainThread]: Partial parsing: updated file: bdt_transformations://models/bitrix/btx_processed_activity.sql
+[0m17:15:58.709834 [debug] [MainThread]: Partial parsing: updated file: bdt_transformations://models/bitrix/btx_processed_deal_stage.sql
+[0m17:15:58.822049 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 1 unused configuration paths:
+- models.bdt_transformations.notion
+[0m17:15:58.824456 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '08907238-2f80-4afd-b425-e7098330370d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107a08950>]}
+[0m17:15:58.850729 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m17:15:58.852932 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m17:15:58.864601 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '08907238-2f80-4afd-b425-e7098330370d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107e510d0>]}
+[0m17:15:58.864918 [info ] [MainThread]: Found 4 models, 433 macros
+[0m17:15:58.865096 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '08907238-2f80-4afd-b425-e7098330370d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107a9f020>]}
+[0m17:15:58.865885 [info ] [MainThread]: 
+[0m17:15:58.866080 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m17:15:58.866223 [info ] [MainThread]: 
+[0m17:15:58.866474 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m17:15:58.868392 [debug] [ThreadPool]: Acquiring new postgres connection 'list_bendito_intelligence_dev'
+[0m17:15:58.906127 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev"
+[0m17:15:58.906435 [debug] [ThreadPool]: On list_bendito_intelligence_dev: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m17:15:58.906617 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m17:16:00.163329 [debug] [ThreadPool]: SQL status: SELECT 64 in 1.257 seconds
+[0m17:16:00.165074 [debug] [ThreadPool]: On list_bendito_intelligence_dev: Close
+[0m17:16:00.166405 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev, now list_bendito_intelligence_dev_transformed_bitrix)
+[0m17:16:00.172034 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_transformed_bitrix"
+[0m17:16:00.172377 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_bitrix: BEGIN
+[0m17:16:00.172627 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m17:16:01.392526 [debug] [ThreadPool]: SQL status: BEGIN in 1.220 seconds
+[0m17:16:01.393351 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_transformed_bitrix"
+[0m17:16:01.393741 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_bitrix: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev_transformed_bitrix"} */
+select
+      'bendito_intelligence_dev' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'transformed_bitrix'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'transformed_bitrix'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'transformed_bitrix'
+  
+[0m17:16:01.545200 [debug] [ThreadPool]: SQL status: SELECT 0 in 0.150 seconds
+[0m17:16:01.550173 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_bitrix: ROLLBACK
+[0m17:16:01.700016 [debug] [ThreadPool]: On list_bendito_intelligence_dev_transformed_bitrix: Close
+[0m17:16:01.712679 [debug] [MainThread]: Using postgres connection "master"
+[0m17:16:01.713377 [debug] [MainThread]: On master: BEGIN
+[0m17:16:01.713768 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m17:16:02.933629 [debug] [MainThread]: SQL status: BEGIN in 1.219 seconds
+[0m17:16:02.935808 [debug] [MainThread]: Using postgres connection "master"
+[0m17:16:02.936793 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "master"} */
+with relation as (
+        select
+            pg_rewrite.ev_class as class,
+            pg_rewrite.oid as id
+        from pg_rewrite
+    ),
+    class as (
+        select
+            oid as id,
+            relname as name,
+            relnamespace as schema,
+            relkind as kind
+        from pg_class
+    ),
+    dependency as (
+        select distinct
+            pg_depend.objid as id,
+            pg_depend.refobjid as ref
+        from pg_depend
+    ),
+    schema as (
+        select
+            pg_namespace.oid as id,
+            pg_namespace.nspname as name
+        from pg_namespace
+        where nspname != 'information_schema' and nspname not like 'pg\_%'
+    ),
+    referenced as (
+        select
+            relation.id AS id,
+            referenced_class.name ,
+            referenced_class.schema ,
+            referenced_class.kind
+        from relation
+        join class as referenced_class on relation.class=referenced_class.id
+        where referenced_class.kind in ('r', 'v', 'm')
+    ),
+    relationships as (
+        select
+            referenced.name as referenced_name,
+            referenced.schema as referenced_schema_id,
+            dependent_class.name as dependent_name,
+            dependent_class.schema as dependent_schema_id,
+            referenced.kind as kind
+        from referenced
+        join dependency on referenced.id=dependency.id
+        join class as dependent_class on dependency.ref=dependent_class.id
+        where
+            (referenced.name != dependent_class.name or
+             referenced.schema != dependent_class.schema)
+    )
+
+    select
+        referenced_schema.name as referenced_schema,
+        relationships.referenced_name as referenced_name,
+        dependent_schema.name as dependent_schema,
+        relationships.dependent_name as dependent_name
+    from relationships
+    join schema as dependent_schema on relationships.dependent_schema_id=dependent_schema.id
+    join schema as referenced_schema on relationships.referenced_schema_id=referenced_schema.id
+    group by referenced_schema, referenced_name, dependent_schema, dependent_name
+    order by referenced_schema, referenced_name, dependent_schema, dependent_name;
+[0m17:16:03.105338 [debug] [MainThread]: SQL status: SELECT 0 in 0.167 seconds
+[0m17:16:03.110175 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '08907238-2f80-4afd-b425-e7098330370d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10701af30>]}
+[0m17:16:03.111326 [debug] [MainThread]: On master: ROLLBACK
+[0m17:16:03.262164 [debug] [MainThread]: Using postgres connection "master"
+[0m17:16:03.266796 [debug] [MainThread]: On master: BEGIN
+[0m17:16:03.566257 [debug] [MainThread]: SQL status: BEGIN in 0.298 seconds
+[0m17:16:03.568699 [debug] [MainThread]: On master: COMMIT
+[0m17:16:03.569873 [debug] [MainThread]: Using postgres connection "master"
+[0m17:16:03.570846 [debug] [MainThread]: On master: COMMIT
+[0m17:16:03.720252 [debug] [MainThread]: SQL status: COMMIT in 0.148 seconds
+[0m17:16:03.722566 [debug] [MainThread]: On master: Close
+[0m17:16:03.730626 [debug] [Thread-1 (]: Began running node model.bdt_transformations.btx_processed_activity
+[0m17:16:03.731283 [debug] [Thread-2 (]: Began running node model.bdt_transformations.btx_processed_deal
+[0m17:16:03.732107 [debug] [Thread-3 (]: Began running node model.bdt_transformations.btx_processed_deal_stage
+[0m17:16:03.732633 [debug] [Thread-4 (]: Began running node model.bdt_transformations.btx_processed_dealcategory
+[0m17:16:03.733230 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev_transformed_bitrix, now model.bdt_transformations.btx_processed_activity)
+[0m17:16:03.733847 [debug] [Thread-2 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_deal'
+[0m17:16:03.734560 [info ] [Thread-3 (]: 1 of 2 START sql incremental model transformed_bitrix.btx_processed_deal_stage . [RUN]
+[0m17:16:03.735220 [info ] [Thread-4 (]: 2 of 2 START sql incremental model transformed_bitrix.btx_processed_dealcategory  [RUN]
+[0m17:16:03.735696 [debug] [Thread-1 (]: Began compiling node model.bdt_transformations.btx_processed_activity
+[0m17:16:03.736106 [debug] [Thread-2 (]: Began compiling node model.bdt_transformations.btx_processed_deal
+[0m17:16:03.736625 [debug] [Thread-3 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_deal_stage'
+[0m17:16:03.737122 [debug] [Thread-4 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_dealcategory'
+[0m17:16:03.745148 [debug] [Thread-1 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_activity"
+[0m17:16:03.748087 [debug] [Thread-2 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_deal"
+[0m17:16:03.748482 [debug] [Thread-3 (]: Began compiling node model.bdt_transformations.btx_processed_deal_stage
+[0m17:16:03.748804 [debug] [Thread-4 (]: Began compiling node model.bdt_transformations.btx_processed_dealcategory
+[0m17:16:03.751352 [debug] [Thread-3 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:16:03.753310 [debug] [Thread-4 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:16:03.754138 [debug] [Thread-1 (]: Finished running node model.bdt_transformations.btx_processed_activity
+[0m17:16:03.754759 [debug] [Thread-2 (]: Finished running node model.bdt_transformations.btx_processed_deal
+[0m17:16:03.755146 [debug] [Thread-3 (]: Began executing node model.bdt_transformations.btx_processed_deal_stage
+[0m17:16:03.755722 [debug] [Thread-4 (]: Began executing node model.bdt_transformations.btx_processed_dealcategory
+[0m17:16:03.803913 [debug] [Thread-3 (]: Writing runtime sql for node "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:16:03.805141 [debug] [Thread-4 (]: Writing runtime sql for node "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:16:03.805633 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:16:03.805845 [debug] [Thread-4 (]: Using postgres connection "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:16:03.806033 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: BEGIN
+[0m17:16:03.806211 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: BEGIN
+[0m17:16:03.806383 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m17:16:03.806546 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m17:16:05.015841 [debug] [Thread-3 (]: SQL status: BEGIN in 1.206 seconds
+[0m17:16:05.017594 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:16:05.018449 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.btx_processed_deal_stage"} */
+
+      
+  
+    
+
+  create  table "bendito_intelligence_dev"."transformed_bitrix"."btx_processed_deal_stage"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'NAME')::varchar as name,
+  ("CONTENT"->>'SORT')::int4 as sort,
+  ("CONTENT"->>'STATUS_ID')::varchar as status_id
+FROM bitrix.btx_raw_deal_stage
+  );
+  
+  
+[0m17:16:05.026840 [debug] [Thread-4 (]: SQL status: BEGIN in 1.220 seconds
+[0m17:16:05.027814 [debug] [Thread-4 (]: Using postgres connection "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:16:05.028440 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.btx_processed_dealcategory"} */
+
+      
+  
+    
+
+  create  table "bendito_intelligence_dev"."transformed_bitrix"."btx_processed_dealcategory"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'NAME')::varchar as name,
+  ("CONTENT"->>'SORT')::int4 as sort,
+  ("CONTENT"->>'CREATED_DATE')::timestamp as created_date
+FROM bitrix.btx_raw_dealcategory
+  );
+  
+  
+[0m17:16:05.215858 [debug] [Thread-4 (]: SQL status: SELECT 4 in 0.187 seconds
+[0m17:16:05.216481 [debug] [Thread-3 (]: SQL status: SELECT 11 in 0.197 seconds
+[0m17:16:05.240284 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: COMMIT
+[0m17:16:05.241379 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: COMMIT
+[0m17:16:05.241700 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:16:05.241976 [debug] [Thread-4 (]: Using postgres connection "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:16:05.242229 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: COMMIT
+[0m17:16:05.242469 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: COMMIT
+[0m17:16:05.391671 [debug] [Thread-3 (]: SQL status: COMMIT in 0.149 seconds
+[0m17:16:05.392413 [debug] [Thread-4 (]: SQL status: COMMIT in 0.150 seconds
+[0m17:16:05.395491 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: Close
+[0m17:16:05.396377 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: Close
+[0m17:16:05.400031 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '08907238-2f80-4afd-b425-e7098330370d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10484f7d0>]}
+[0m17:16:05.400511 [debug] [Thread-4 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '08907238-2f80-4afd-b425-e7098330370d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x105ddc9b0>]}
+[0m17:16:05.401332 [info ] [Thread-3 (]: 1 of 2 OK created sql incremental model transformed_bitrix.btx_processed_deal_stage  [[32mSELECT 11[0m in 1.66s]
+[0m17:16:05.401964 [info ] [Thread-4 (]: 2 of 2 OK created sql incremental model transformed_bitrix.btx_processed_dealcategory  [[32mSELECT 4[0m in 1.66s]
+[0m17:16:05.402536 [debug] [Thread-3 (]: Finished running node model.bdt_transformations.btx_processed_deal_stage
+[0m17:16:05.403022 [debug] [Thread-4 (]: Finished running node model.bdt_transformations.btx_processed_dealcategory
+[0m17:16:05.404548 [debug] [MainThread]: Using postgres connection "master"
+[0m17:16:05.404895 [debug] [MainThread]: On master: BEGIN
+[0m17:16:05.405195 [debug] [MainThread]: Opening a new connection, currently in state closed
+[0m17:16:06.661395 [debug] [MainThread]: SQL status: BEGIN in 1.255 seconds
+[0m17:16:06.664749 [debug] [MainThread]: On master: COMMIT
+[0m17:16:06.665311 [debug] [MainThread]: Using postgres connection "master"
+[0m17:16:06.665790 [debug] [MainThread]: On master: COMMIT
+[0m17:16:06.817326 [debug] [MainThread]: SQL status: COMMIT in 0.150 seconds
+[0m17:16:06.819848 [debug] [MainThread]: On master: Close
+[0m17:16:06.821794 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m17:16:06.822561 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_activity' was properly closed.
+[0m17:16:06.822999 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_deal' was properly closed.
+[0m17:16:06.823340 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_deal_stage' was properly closed.
+[0m17:16:06.823653 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_dealcategory' was properly closed.
+[0m17:16:06.824178 [info ] [MainThread]: 
+[0m17:16:06.824620 [info ] [MainThread]: Finished running 2 incremental models in 0 hours 0 minutes and 7.96 seconds (7.96s).
+[0m17:16:06.825612 [debug] [MainThread]: Command end result
+[0m17:16:06.843899 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m17:16:06.845607 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m17:16:06.850039 [debug] [MainThread]: Wrote artifact RunExecutionResult to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/run_results.json
+[0m17:16:06.850317 [info ] [MainThread]: 
+[0m17:16:06.850570 [info ] [MainThread]: [32mCompleted successfully[0m
+[0m17:16:06.850776 [info ] [MainThread]: 
+[0m17:16:06.851006 [info ] [MainThread]: Done. PASS=2 WARN=0 ERROR=0 SKIP=0 TOTAL=2
+[0m17:16:06.853100 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": true, "command_wall_clock_time": 8.394784, "process_in_blocks": "0", "process_kernel_time": 0.217879, "process_mem_max_rss": "127942656", "process_out_blocks": "0", "process_user_time": 1.251658}
+[0m17:16:06.853482 [debug] [MainThread]: Command `dbt run` succeeded at 17:16:06.853414 after 8.40 seconds
+[0m17:16:06.853772 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1026fed50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106a50a70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107a31100>]}
+[0m17:16:06.854048 [debug] [MainThread]: Flushing usage events
+[0m17:16:07.470659 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m17:36:43.313538 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x107c090d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108887020>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x108886c60>]}
+
+
+============================== 17:36:43.316166 | 582c31ed-5c7d-425e-a28a-638cc6ddbb0e ==============================
+[0m17:36:43.316166 [info ] [MainThread]: Running with dbt=1.9.4
+[0m17:36:43.316509 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'fail_fast': 'False', 'debug': 'False', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'version_check': 'True', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'static_parser': 'True', 'introspect': 'True', 'invocation_command': 'dbt run --project-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --profiles-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --models bitrix', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'send_anonymous_usage_stats': 'True'}
+[0m17:36:43.343972 [error] [MainThread]: Encountered an error:
+Runtime Error
+  Credentials in profile "bdt_transformations", target "dev" invalid: 'schema' is a required property
+[0m17:36:43.345153 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": false, "command_wall_clock_time": 0.06344621, "process_in_blocks": "0", "process_kernel_time": 0.106101, "process_mem_max_rss": "95535104", "process_out_blocks": "0", "process_user_time": 0.648565}
+[0m17:36:43.345423 [debug] [MainThread]: Command `dbt run` failed at 17:36:43.345371 after 0.06 seconds
+[0m17:36:43.345616 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1044eed50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x104533170>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10824a6f0>]}
+[0m17:36:43.345814 [debug] [MainThread]: Flushing usage events
+[0m17:36:44.028503 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m17:39:10.019529 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x10538c740>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106033140>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106032d50>]}
+
+
+============================== 17:39:10.022281 | c0a73845-e291-4524-bae7-35feb6e7a7a6 ==============================
+[0m17:39:10.022281 [info ] [MainThread]: Running with dbt=1.9.4
+[0m17:39:10.022621 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'debug': 'False', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'False', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'invocation_command': 'dbt run --project-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --profiles-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --models bitrix', 'introspect': 'True', 'log_format': 'default', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m17:39:10.049752 [error] [MainThread]: Encountered an error:
+Runtime Error
+  Credentials in profile "bdt_transformations", target "dev" invalid: 'schema' is a required property
+[0m17:39:10.051237 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": false, "command_wall_clock_time": 0.063632086, "process_in_blocks": "0", "process_kernel_time": 0.108124, "process_mem_max_rss": "96026624", "process_out_blocks": "0", "process_user_time": 0.649845}
+[0m17:39:10.051508 [debug] [MainThread]: Command `dbt run` failed at 17:39:10.051453 after 0.06 seconds
+[0m17:39:10.051701 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x100a66d50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1055b26f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1060b09b0>]}
+[0m17:39:10.051892 [debug] [MainThread]: Flushing usage events
+[0m17:39:10.675218 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m17:51:10.467510 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x103d130e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x120a36de0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x120a36a80>]}
+
+
+============================== 17:51:10.470680 | e93cb27f-2007-4b1e-a8f5-f0ae741479b0 ==============================
+[0m17:51:10.470680 [info ] [MainThread]: Running with dbt=1.9.4
+[0m17:51:10.471047 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'debug': 'False', 'profiles_dir': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt', 'log_path': '/Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/logs', 'version_check': 'True', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'False', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'invocation_command': 'dbt run --project-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --profiles-dir /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt --models bitrix', 'log_format': 'default', 'target_path': 'None', 'introspect': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m17:51:10.570032 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x120a36db0>]}
+[0m17:51:10.595629 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x120a36930>]}
+[0m17:51:10.596337 [info ] [MainThread]: Registered adapter: postgres=1.9.0
+[0m17:51:10.653044 [debug] [MainThread]: checksum: b5597158181700c50f5bc1c71fe28b37a6fb85633dc5323885263678b6bc782c, vars: {}, profile: , target: , version: 1.9.4
+[0m17:51:10.683080 [info ] [MainThread]: Unable to do partial parsing because profile has changed
+[0m17:51:10.683398 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x121764530>]}
+[0m17:51:11.102416 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 1 unused configuration paths:
+- models.bdt_transformations.notion
+[0m17:51:11.105117 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1217a5ac0>]}
+[0m17:51:11.131975 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m17:51:11.134300 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m17:51:11.146969 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1217c5100>]}
+[0m17:51:11.147305 [info ] [MainThread]: Found 4 models, 433 macros
+[0m17:51:11.147539 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x122046810>]}
+[0m17:51:11.148578 [info ] [MainThread]: 
+[0m17:51:11.148855 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m17:51:11.149015 [info ] [MainThread]: 
+[0m17:51:11.149269 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m17:51:11.151081 [debug] [ThreadPool]: Acquiring new postgres connection 'list_bendito_intelligence_dev'
+[0m17:51:11.212080 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev"
+[0m17:51:11.212376 [debug] [ThreadPool]: On list_bendito_intelligence_dev: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m17:51:11.212538 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m17:51:12.474136 [debug] [ThreadPool]: SQL status: SELECT 65 in 1.261 seconds
+[0m17:51:12.475807 [debug] [ThreadPool]: On list_bendito_intelligence_dev: Close
+[0m17:51:12.476608 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev, now create_bendito_intelligence_dev_processed_bitrix)
+[0m17:51:12.477058 [debug] [ThreadPool]: Creating schema "database: "bendito_intelligence_dev"
+schema: "processed_bitrix"
+"
+[0m17:51:12.481676 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_processed_bitrix"
+[0m17:51:12.482004 [debug] [ThreadPool]: On create_bendito_intelligence_dev_processed_bitrix: BEGIN
+[0m17:51:12.482266 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m17:51:13.722233 [debug] [ThreadPool]: SQL status: BEGIN in 1.240 seconds
+[0m17:51:13.722729 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_processed_bitrix"
+[0m17:51:13.723055 [debug] [ThreadPool]: On create_bendito_intelligence_dev_processed_bitrix: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "create_bendito_intelligence_dev_processed_bitrix"} */
+create schema if not exists "processed_bitrix"
+[0m17:51:13.879328 [debug] [ThreadPool]: SQL status: CREATE SCHEMA in 0.156 seconds
+[0m17:51:13.880088 [debug] [ThreadPool]: On create_bendito_intelligence_dev_processed_bitrix: COMMIT
+[0m17:51:13.880283 [debug] [ThreadPool]: Using postgres connection "create_bendito_intelligence_dev_processed_bitrix"
+[0m17:51:13.880437 [debug] [ThreadPool]: On create_bendito_intelligence_dev_processed_bitrix: COMMIT
+[0m17:51:14.032244 [debug] [ThreadPool]: SQL status: COMMIT in 0.151 seconds
+[0m17:51:14.033512 [debug] [ThreadPool]: On create_bendito_intelligence_dev_processed_bitrix: Close
+[0m17:51:14.035834 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly create_bendito_intelligence_dev_processed_bitrix, now list_bendito_intelligence_dev_processed_bitrix)
+[0m17:51:14.043500 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_processed_bitrix"
+[0m17:51:14.044075 [debug] [ThreadPool]: On list_bendito_intelligence_dev_processed_bitrix: BEGIN
+[0m17:51:14.044453 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m17:51:15.268448 [debug] [ThreadPool]: SQL status: BEGIN in 1.223 seconds
+[0m17:51:15.270885 [debug] [ThreadPool]: Using postgres connection "list_bendito_intelligence_dev_processed_bitrix"
+[0m17:51:15.271948 [debug] [ThreadPool]: On list_bendito_intelligence_dev_processed_bitrix: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "list_bendito_intelligence_dev_processed_bitrix"} */
+select
+      'bendito_intelligence_dev' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'processed_bitrix'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'processed_bitrix'
+    union all
+    select
+      'bendito_intelligence_dev' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'processed_bitrix'
+  
+[0m17:51:15.426642 [debug] [ThreadPool]: SQL status: SELECT 0 in 0.153 seconds
+[0m17:51:15.432150 [debug] [ThreadPool]: On list_bendito_intelligence_dev_processed_bitrix: ROLLBACK
+[0m17:51:15.581062 [debug] [ThreadPool]: On list_bendito_intelligence_dev_processed_bitrix: Close
+[0m17:51:15.589812 [debug] [MainThread]: Using postgres connection "master"
+[0m17:51:15.590518 [debug] [MainThread]: On master: BEGIN
+[0m17:51:15.590903 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m17:51:16.951084 [debug] [MainThread]: SQL status: BEGIN in 1.360 seconds
+[0m17:51:16.953449 [debug] [MainThread]: Using postgres connection "master"
+[0m17:51:16.954505 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "connection_name": "master"} */
+with relation as (
+        select
+            pg_rewrite.ev_class as class,
+            pg_rewrite.oid as id
+        from pg_rewrite
+    ),
+    class as (
+        select
+            oid as id,
+            relname as name,
+            relnamespace as schema,
+            relkind as kind
+        from pg_class
+    ),
+    dependency as (
+        select distinct
+            pg_depend.objid as id,
+            pg_depend.refobjid as ref
+        from pg_depend
+    ),
+    schema as (
+        select
+            pg_namespace.oid as id,
+            pg_namespace.nspname as name
+        from pg_namespace
+        where nspname != 'information_schema' and nspname not like 'pg\_%'
+    ),
+    referenced as (
+        select
+            relation.id AS id,
+            referenced_class.name ,
+            referenced_class.schema ,
+            referenced_class.kind
+        from relation
+        join class as referenced_class on relation.class=referenced_class.id
+        where referenced_class.kind in ('r', 'v', 'm')
+    ),
+    relationships as (
+        select
+            referenced.name as referenced_name,
+            referenced.schema as referenced_schema_id,
+            dependent_class.name as dependent_name,
+            dependent_class.schema as dependent_schema_id,
+            referenced.kind as kind
+        from referenced
+        join dependency on referenced.id=dependency.id
+        join class as dependent_class on dependency.ref=dependent_class.id
+        where
+            (referenced.name != dependent_class.name or
+             referenced.schema != dependent_class.schema)
+    )
+
+    select
+        referenced_schema.name as referenced_schema,
+        relationships.referenced_name as referenced_name,
+        dependent_schema.name as dependent_schema,
+        relationships.dependent_name as dependent_name
+    from relationships
+    join schema as dependent_schema on relationships.dependent_schema_id=dependent_schema.id
+    join schema as referenced_schema on relationships.referenced_schema_id=referenced_schema.id
+    group by referenced_schema, referenced_name, dependent_schema, dependent_name
+    order by referenced_schema, referenced_name, dependent_schema, dependent_name;
+[0m17:51:17.130742 [debug] [MainThread]: SQL status: SELECT 0 in 0.175 seconds
+[0m17:51:17.132546 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x122129f70>]}
+[0m17:51:17.133132 [debug] [MainThread]: On master: ROLLBACK
+[0m17:51:17.289952 [debug] [MainThread]: Using postgres connection "master"
+[0m17:51:17.290559 [debug] [MainThread]: On master: BEGIN
+[0m17:51:17.599753 [debug] [MainThread]: SQL status: BEGIN in 0.308 seconds
+[0m17:51:17.601971 [debug] [MainThread]: On master: COMMIT
+[0m17:51:17.602755 [debug] [MainThread]: Using postgres connection "master"
+[0m17:51:17.604275 [debug] [MainThread]: On master: COMMIT
+[0m17:51:17.762231 [debug] [MainThread]: SQL status: COMMIT in 0.157 seconds
+[0m17:51:17.762822 [debug] [MainThread]: On master: Close
+[0m17:51:17.766758 [debug] [Thread-1 (]: Began running node model.bdt_transformations.btx_processed_activity
+[0m17:51:17.767270 [debug] [Thread-2 (]: Began running node model.bdt_transformations.btx_processed_deal
+[0m17:51:17.767845 [debug] [Thread-3 (]: Began running node model.bdt_transformations.btx_processed_deal_stage
+[0m17:51:17.768244 [debug] [Thread-4 (]: Began running node model.bdt_transformations.btx_processed_dealcategory
+[0m17:51:17.768616 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly list_bendito_intelligence_dev_processed_bitrix, now model.bdt_transformations.btx_processed_activity)
+[0m17:51:17.769047 [debug] [Thread-2 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_deal'
+[0m17:51:17.769509 [info ] [Thread-3 (]: 1 of 2 START sql incremental model processed_bitrix.btx_processed_deal_stage ... [RUN]
+[0m17:51:17.769943 [info ] [Thread-4 (]: 2 of 2 START sql incremental model processed_bitrix.btx_processed_dealcategory . [RUN]
+[0m17:51:17.770246 [debug] [Thread-1 (]: Began compiling node model.bdt_transformations.btx_processed_activity
+[0m17:51:17.770501 [debug] [Thread-2 (]: Began compiling node model.bdt_transformations.btx_processed_deal
+[0m17:51:17.770835 [debug] [Thread-3 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_deal_stage'
+[0m17:51:17.771150 [debug] [Thread-4 (]: Acquiring new postgres connection 'model.bdt_transformations.btx_processed_dealcategory'
+[0m17:51:17.776874 [debug] [Thread-1 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_activity"
+[0m17:51:17.779149 [debug] [Thread-2 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_deal"
+[0m17:51:17.779442 [debug] [Thread-3 (]: Began compiling node model.bdt_transformations.btx_processed_deal_stage
+[0m17:51:17.779692 [debug] [Thread-4 (]: Began compiling node model.bdt_transformations.btx_processed_dealcategory
+[0m17:51:17.781878 [debug] [Thread-3 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:51:17.785163 [debug] [Thread-4 (]: Writing injected SQL for node "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:51:17.785972 [debug] [Thread-1 (]: Finished running node model.bdt_transformations.btx_processed_activity
+[0m17:51:17.786563 [debug] [Thread-2 (]: Finished running node model.bdt_transformations.btx_processed_deal
+[0m17:51:17.786982 [debug] [Thread-3 (]: Began executing node model.bdt_transformations.btx_processed_deal_stage
+[0m17:51:17.793863 [debug] [Thread-4 (]: Began executing node model.bdt_transformations.btx_processed_dealcategory
+[0m17:51:17.821625 [debug] [Thread-4 (]: Writing runtime sql for node "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:51:17.822024 [debug] [Thread-3 (]: Writing runtime sql for node "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:51:17.822651 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:51:17.822905 [debug] [Thread-4 (]: Using postgres connection "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:51:17.823096 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: BEGIN
+[0m17:51:17.823288 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: BEGIN
+[0m17:51:17.823470 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m17:51:17.823642 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m17:51:19.035252 [debug] [Thread-4 (]: SQL status: BEGIN in 1.211 seconds
+[0m17:51:19.035665 [debug] [Thread-4 (]: Using postgres connection "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:51:19.035946 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.btx_processed_dealcategory"} */
+
+      
+  
+    
+
+  create  table "bendito_intelligence_dev"."processed_bitrix"."btx_processed_dealcategory"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'NAME')::varchar as name,
+  ("CONTENT"->>'SORT')::int4 as sort,
+  ("CONTENT"->>'CREATED_DATE')::timestamp as created_date
+FROM bitrix.btx_raw_dealcategory
+  );
+  
+  
+[0m17:51:19.071402 [debug] [Thread-3 (]: SQL status: BEGIN in 1.248 seconds
+[0m17:51:19.071704 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:51:19.071987 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "bdt_transformations", "target_name": "dev", "node_id": "model.bdt_transformations.btx_processed_deal_stage"} */
+
+      
+  
+    
+
+  create  table "bendito_intelligence_dev"."processed_bitrix"."btx_processed_deal_stage"
+  
+  
+    as
+  
+  (
+    
+
+SELECT 
+  "ID" as id,
+  ("CONTENT"->>'NAME')::varchar as name,
+  ("CONTENT"->>'SORT')::int4 as sort,
+  ("CONTENT"->>'STATUS_ID')::varchar as status_id
+FROM bitrix.btx_raw_deal_stage
+  );
+  
+  
+[0m17:51:19.196277 [debug] [Thread-4 (]: SQL status: SELECT 4 in 0.159 seconds
+[0m17:51:19.221853 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: COMMIT
+[0m17:51:19.222591 [debug] [Thread-4 (]: Using postgres connection "model.bdt_transformations.btx_processed_dealcategory"
+[0m17:51:19.222928 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: COMMIT
+[0m17:51:19.236832 [debug] [Thread-3 (]: SQL status: SELECT 11 in 0.164 seconds
+[0m17:51:19.238909 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: COMMIT
+[0m17:51:19.239349 [debug] [Thread-3 (]: Using postgres connection "model.bdt_transformations.btx_processed_deal_stage"
+[0m17:51:19.239694 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: COMMIT
+[0m17:51:19.375991 [debug] [Thread-4 (]: SQL status: COMMIT in 0.152 seconds
+[0m17:51:19.382443 [debug] [Thread-4 (]: On model.bdt_transformations.btx_processed_dealcategory: Close
+[0m17:51:19.387229 [debug] [Thread-4 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x103e0f650>]}
+[0m17:51:19.388517 [info ] [Thread-4 (]: 2 of 2 OK created sql incremental model processed_bitrix.btx_processed_dealcategory  [[32mSELECT 4[0m in 1.61s]
+[0m17:51:19.389300 [debug] [Thread-4 (]: Finished running node model.bdt_transformations.btx_processed_dealcategory
+[0m17:51:19.392484 [debug] [Thread-3 (]: SQL status: COMMIT in 0.152 seconds
+[0m17:51:19.393470 [debug] [Thread-3 (]: On model.bdt_transformations.btx_processed_deal_stage: Close
+[0m17:51:19.394453 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': 'e93cb27f-2007-4b1e-a8f5-f0ae741479b0', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x12212ba40>]}
+[0m17:51:19.395206 [info ] [Thread-3 (]: 1 of 2 OK created sql incremental model processed_bitrix.btx_processed_deal_stage  [[32mSELECT 11[0m in 1.62s]
+[0m17:51:19.395986 [debug] [Thread-3 (]: Finished running node model.bdt_transformations.btx_processed_deal_stage
+[0m17:51:19.397450 [debug] [MainThread]: Using postgres connection "master"
+[0m17:51:19.397833 [debug] [MainThread]: On master: BEGIN
+[0m17:51:19.398150 [debug] [MainThread]: Opening a new connection, currently in state closed
+[0m17:51:20.629413 [debug] [MainThread]: SQL status: BEGIN in 1.231 seconds
+[0m17:51:20.631966 [debug] [MainThread]: On master: COMMIT
+[0m17:51:20.633084 [debug] [MainThread]: Using postgres connection "master"
+[0m17:51:20.634035 [debug] [MainThread]: On master: COMMIT
+[0m17:51:20.785384 [debug] [MainThread]: SQL status: COMMIT in 0.150 seconds
+[0m17:51:20.786503 [debug] [MainThread]: On master: Close
+[0m17:51:20.787465 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m17:51:20.787799 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_activity' was properly closed.
+[0m17:51:20.788085 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_deal' was properly closed.
+[0m17:51:20.788351 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_deal_stage' was properly closed.
+[0m17:51:20.788612 [debug] [MainThread]: Connection 'model.bdt_transformations.btx_processed_dealcategory' was properly closed.
+[0m17:51:20.789020 [info ] [MainThread]: 
+[0m17:51:20.789375 [info ] [MainThread]: Finished running 2 incremental models in 0 hours 0 minutes and 9.64 seconds (9.64s).
+[0m17:51:20.790221 [debug] [MainThread]: Command end result
+[0m17:51:20.810332 [debug] [MainThread]: Wrote artifact WritableManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/manifest.json
+[0m17:51:20.811769 [debug] [MainThread]: Wrote artifact SemanticManifest to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/semantic_manifest.json
+[0m17:51:20.815654 [debug] [MainThread]: Wrote artifact RunExecutionResult to /Users/cauemausec/Documents/code/workspace/bdt_data_integration/dbt/target/run_results.json
+[0m17:51:20.815912 [info ] [MainThread]: 
+[0m17:51:20.816175 [info ] [MainThread]: [32mCompleted successfully[0m
+[0m17:51:20.816371 [info ] [MainThread]: 
+[0m17:51:20.816568 [info ] [MainThread]: Done. PASS=2 WARN=0 ERROR=0 SKIP=0 TOTAL=2
+[0m17:51:20.818059 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": true, "command_wall_clock_time": 10.386646, "process_in_blocks": "0", "process_kernel_time": 0.243619, "process_mem_max_rss": "125599744", "process_out_blocks": "0", "process_user_time": 1.597571}
+[0m17:51:20.818342 [debug] [MainThread]: Command `dbt run` succeeded at 17:51:20.818287 after 10.39 seconds
+[0m17:51:20.818576 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1201da720>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1224e7a70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1224e4b30>]}
+[0m17:51:20.818814 [debug] [MainThread]: Flushing usage events
+[0m17:51:21.594870 [debug] [MainThread]: An error was encountered while trying to flush usage events

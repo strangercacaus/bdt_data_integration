@@ -2,10 +2,11 @@ import json
 import logging
 import requests
 import pandas as pd
-from .base_extractor import GenericAPIExtractor
+from bdt_data_integration.src.extractors.base_extractor import GenericAPIExtractor
 from utils import Schema
 
 logger = logging.getLogger(__name__)  # This will also use the module's name
+
 
 class BitrixAPIExtractor(GenericAPIExtractor):
     """
@@ -26,7 +27,7 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             **kwargs: Argumentos nomeados, incluindo 'token', 'bitrix_url', 'bitrix_user_id' e 'writer'.
         """
         # Forçar que o source seja sempre 'bitrix', independente do que foi passado
-        kwargs['source'] = 'bitrix'
+        kwargs["source"] = "bitrix"
         super().__init__(*args, **kwargs)
         self.token = kwargs.get("token")
         self.writer = kwargs.get("writer")
@@ -61,12 +62,10 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             else:
                 break
 
-    def extract_list_data(self, endpoint_id, **kwargs):
+    def fetch_list(self, endpoint_id, **kwargs):
 
         records = []
         url = self._list_url(endpoint_id)
-        start = kwargs.get("start", 0)
-        separator = kwargs.get("separator", ";")
 
         for response in self.fetch_paginated(url, start=0):
             if isinstance(response, list):
@@ -83,8 +82,10 @@ class BitrixAPIExtractor(GenericAPIExtractor):
                 raise Exception("Invalid Result Format")
         return pd.DataFrame(records, dtype=str)
 
-    def extract_table(self, endpoint_id):
-        list_data = self.extract_list_data(endpoint_id)
+    def extract_as_table(self, endpoint_id):
+        list_data = self.fetch_list(endpoint_id)
+        if list_data.empty:
+            return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"])
         results = pd.DataFrame(list_data["ID"])
         results["SUCCESS"] = None
         results["CONTENT"] = None
@@ -120,64 +121,99 @@ class BitrixAPIExtractor(GenericAPIExtractor):
 
         return pd.DataFrame(results, dtype=str)
 
-    def extract_endpoint(self, endpoint_id, **kwargs):
+    def extract_as_enum(self, endpoint_id):
         url = self._get_endpoint(endpoint_id)
-        start = kwargs.get("start", 0)
-        separator = kwargs.get("separator", ";")
-        results = pd.DataFrame(dtype="str")
-        results["ID"] = None
-        results["SUCCESS"] = None
-        results["CONTENT"] = None
+        response = requests.get(url)
+        response.raise_for_status()
+        if response.json().get("result"):
+            results = [
+                {"ID": i, "SUCCESS": True, "CONTENT": json.dumps(result)}
+                for i, result in enumerate(response.json()["result"])
+            ]
+            return pd.DataFrame(results)
+        else:
+            logger.warning(f"WARNING: Nenhum dado presente em {url}")
+            return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"])
 
-        for response in self.fetch_paginated(url, start=0):
-            if isinstance(response, list):
-                if len(response) > 0:
-                    if not isinstance(response[0], dict):
-                        raise Exception(
-                            "Formato de resultado inválido (esperado dicionário dentro da lista)"
-                        )
-                    for record in response:
-                        try:
-                            record_id = record["ID"]
-                            results.at[0, "ÍD"] = record_id
+    def extract_as_list(self, endpoint_id):
+        list_data = self.fetch_list(endpoint_id)
+        
+        # Converter o DataFrame inteiro para JSON com tratamento de NaN
+        list_json = list_data.replace({pd.NA: None}).to_json(orient='records')
+        # Parsear de volta para ter uma lista de dicionários Python
+        list_records = json.loads(list_json)
+        
+        data = [
+            {
+                "ID": str(record.get("ID", i)),
+                "CONTENT": json.dumps(record),
+                "SUCCESS": True
+            }
+            for i, record in enumerate(list_records)
+        ]
+        
+        return pd.DataFrame(data, dtype=str)
 
-                            if "result" in record:
-                                results.at[record_id, "CONTENT"] = json.dumps(
-                                    record
-                                )
-                                results.at[record_id, "SUCCESS"] = True
-                            else:
-                                # Caso não tenha a chave 'result', armazena um erro estruturado
-                                results.at[record_id, "SUCCESS"] = False
-                                results.at[record_id, "CONTENT"] = json.dumps(
-                                    {
-                                        "ERROR": 'Chave "result" não encontrada na resposta',
-                                        "URL": f"{url}",
-                                        "STATUS_CODE": response.status_code,
-                                    }
-                                )
-                        except ValueError as e:
-                            results.at[record_id, "CONTENT"] = json.dumps(
-                                {
-                                    "ERROR": "JSON Inválido",
-                                    "DATA": response,
-                                    "EXCEPTION": str(e),
-                                }
-                            )
-                else:
-                    logger.info(f"Nenhum dado foi encontrado em {url}")
-                    break
-            else:
-                print(f"Tipo inesperado de resposta: {type(response)}")
-                raise Exception("Formato de resultado inválido")
+    # def extract_as_endpoint(self, endpoint_id, **kwargs):
+    #     url = self._get_endpoint(endpoint_id)
+    #     results = pd.DataFrame(dtype="str")
+    #     results["ID"] = None
+    #     results["SUCCESS"] = None
+    #     results["CONTENT"] = None
 
-        return results
+    #     for response in self.fetch_paginated(url, start=0):
+    #         if isinstance(response, list):
+    #             if len(response) > 0:
+    #                 if not isinstance(response[0], dict):
+    #                     raise Exception(
+    #                         "Formato de resultado inválido (esperado dicionário dentro da lista)"
+    #                     )
+    #                 for record in response:
+    #                     try:
+    #                         record_id = record["ID"]
+    #                         results.at[0, "ÍD"] = record_id
+
+    #                         if "result" in record:
+    #                             results.at[record_id, "CONTENT"] = json.dumps(record)
+    #                             results.at[record_id, "SUCCESS"] = True
+    #                         else:
+    #                             # Caso não tenha a chave 'result', armazena um erro estruturado
+    #                             results.at[record_id, "SUCCESS"] = False
+    #                             results.at[record_id, "CONTENT"] = json.dumps(
+    #                                 {
+    #                                     "ERROR": 'Chave "result" não encontrada na resposta',
+    #                                     "URL": f"{url}",
+    #                                     "STATUS_CODE": response.status_code,
+    #                                 }
+    #                             )
+    #                     except ValueError as e:
+    #                         results.at[record_id, "CONTENT"] = json.dumps(
+    #                             {
+    #                                 "ERROR": "JSON Inválido",
+    #                                 "DATA": response,
+    #                                 "EXCEPTION": str(e),
+    #                             }
+    #                         )
+    #             else:
+    #                 logger.info(f"Nenhum dado foi encontrado em {url}")
+    #                 break
+    #         else:
+    #             print(f"Tipo inesperado de resposta: {type(response)}")
+    #             raise Exception("Formato de resultado inválido")
+
+    #     return results
 
     def get_extract_function(self, mode=("table", "endpoint")):
         if mode == "table":
-            return self.extract_table
-        elif mode == "fields":
-            return self.extract_endpoint
-    
+            return self.extract_as_table
+        # elif mode == "endpoint":
+        #     return self.extract_as_list
+        elif mode == "list":
+            return self.extract_as_list
+        elif mode == "enum":
+            return self.extract_as_enum
+        else:
+            raise ValueError(f"Modo de extração inválido: {mode}")
+
     def run(self, **kwargs):
         pass
