@@ -16,7 +16,7 @@ setup(
         "ratelimit==2.2.1",
         "python-dotenv==1.0.0",
         "numpy==2.2.4",
-        "pandas==2.2.3",
+        "pandas==2.2",
         "pytz==2025.2",
         "tzdata==2025.2",
         "requests==2.31.0",
