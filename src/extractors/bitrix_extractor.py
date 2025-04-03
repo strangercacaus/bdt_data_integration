@@ -178,3 +178,6 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             return self.extract_table
         elif mode == "fields":
             return self.extract_endpoint
+    
+    def run(self, **kwargs):
+        pass
