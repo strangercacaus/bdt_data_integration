@@ -10,21 +10,22 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
     Extrator para a extração de dados da API Database Query do Notion.
 
     Atributos:
-        - identifier (str): Identificador do extrator, neste caso, 'notion'.
         - base_endpoint (str): URL base da API do Notion, 'https://api.notion.com/v1'.
+        - database_id (str): ID do banco de dados do Notion.
         - token (str): Bearer Token da conta conectada à integração.
     """
-    def __init__(self, database_id, **kwargs):
+    def __init__(self, token, database_id, **kwargs):
         """
         Inicializa um extrator para a API do Notion.
 
         Args:
-            *args: Argumentos posicionais para a classe pai.
-            **kwargs: Argumentos nomeados, incluindo 'identifier', 'database_id' e 'writer'.
+            token (str): Token de acesso à API do Notion.
+            database_id (str): ID do banco de dados do Notion.
+            **kwargs: Argumentos nomeados adicionais.
         """
-        super().__init__(database_id, **kwargs)
+        # Definir o source diretamente - não usar kwargs para isso
+        super().__init__(source='notion', token=token, **kwargs)
         self.base_endpoint = 'https://api.notion.com/v1/databases'
-        self.source = 'notion'
         self.database_id = database_id
         self.writer = kwargs.get("writer")
 

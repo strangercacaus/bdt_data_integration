@@ -15,7 +15,7 @@ from sqlalchemy.exc import (
 )
 
 from utils import Utils
-from loader.base_loader import BaseLoader
+from loaders.base_loader import BaseLoader
 
 # Create a named logger for this module
 logger = logging.getLogger("postgres_loader")
@@ -407,7 +407,8 @@ class PostgresLoader(BaseLoader):
             self.create_sql_schema(target_table, target_schema)
 
         loaded_rows = 0
-        logger.debug(f"Inserindo dados em {target_table}.")
+        logger.debug(f"Inserindo dados em {target_table}")
+        
         loaded_rows = df.to_sql(
             target_table,
             con=self.engine,

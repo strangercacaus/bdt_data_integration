@@ -7,14 +7,14 @@ from utils import Schema
 
 logger = logging.getLogger(__name__)  # This will also use the module's name
 
-class BitrixAPIExtractor:
+class BitrixAPIExtractor(GenericAPIExtractor):
     """
-    Extrator para a extração de dados da API Database Query do Notion.
+    Extrator para a extração de dados da API do Bitrix24.
 
     Atributos:
-        - identifier (str): Identificador do extrator, neste caso, 'notion'.
-        - base_endpoint (str): URL base da API do Notion, 'https://api.notion.com/v1'.
-        - token (str): Bearer Token da conta conectada à integração.
+        - token (str): Token da API Bitrix.
+        - bitrix_url (str): URL da instância Bitrix.
+        - bitrix_user_id (str): ID do usuário Bitrix.
     """
 
     def __init__(self, *args, **kwargs):
@@ -23,9 +23,11 @@ class BitrixAPIExtractor:
 
         Args:
             *args: Argumentos posicionais para a classe pai.
-            **kwargs: Argumentos nomeados, incluindo 'token', 'identifier' e 'writer'.
+            **kwargs: Argumentos nomeados, incluindo 'token', 'bitrix_url', 'bitrix_user_id' e 'writer'.
         """
-        self.source = "bitrix"
+        # Forçar que o source seja sempre 'bitrix', independente do que foi passado
+        kwargs['source'] = 'bitrix'
+        super().__init__(*args, **kwargs)
         self.token = kwargs.get("token")
         self.writer = kwargs.get("writer")
         self.bitrix_url = kwargs.get("bitrix_url")

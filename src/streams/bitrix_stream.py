@@ -6,8 +6,8 @@ import requests
 
 from .base_stream import Stream
 from writers import DataWriter
-from loader.postgres_loader import PostgresLoader
-from extractor.bitrix_extractor import BitrixAPIExtractor
+from loaders.postgres_loader import PostgresLoader
+from extractors.bitrix_extractor import BitrixAPIExtractor
 from utils import Utils
 
 logger = logging.getLogger(__name__)  # This will use the module's name

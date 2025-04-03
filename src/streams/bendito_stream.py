@@ -5,8 +5,8 @@ import logging
 
 from .base_stream import Stream
 from writers import DataWriter
-from loader.postgres_loader import PostgresLoader
-from extractor.bendito_extractor import BenditoAPIExtractor
+from loaders.postgres_loader import PostgresLoader
+from extractors.bendito_extractor import BenditoAPIExtractor
 from utils import Utils
 
 logger = logging.getLogger(__name__)
@@ -104,20 +104,12 @@ class BenditoStream(Stream):
             raw_data = pd.read_csv(
                 raw_data_path,
                 sep=separator,
-                encoding='utf-8'
+                encoding='utf-8',
+                dtype=str
             )
         except Exception as e:
 # sourcery skip: raise-specific-error
             raise Exception(f'Error reading raw data: {e}') from e
-            
-        # Processamento específico para cada fonte de dados
-        source_transformers = { 
-            'leads': self._transform_leads,
-            'accounts': self._transform_accounts
-        }
-        
-        transform_func = source_transformers.get(self.source_name, lambda x: x)
-        raw_data = transform_func(raw_data)
             
         # Gravando o arquivo na camada processing
         processed_data_path = self.writer.get_output_file_path(target_layer='processing') + '.csv'
@@ -179,7 +171,7 @@ class BenditoStream(Stream):
             encoding='utf-8'
         )
     
-    def set_loader(self, user, password, host, db_name, schema_file_path, schema_file_type):
+    def set_loader(self, engine, schema_file_path, schema_file_type):
         """
         Set up the PostgresLoader for this stream.
         
@@ -191,15 +183,7 @@ class BenditoStream(Stream):
             schema_file_path (str): Path to schema file
             schema_file_type (str): Type of schema file
         """
-        self.loader = PostgresLoader(
-            user=user,
-            password=password,
-            host=host,
-            db_name=db_name,
-            schema_file_path=schema_file_path,
-            schema_file_type=schema_file_type
-        )
-    
+        self.loader = PostgresLoader(engine, schema_file_path, schema_file_type)
     def load_stream(self, target_schema, **kwargs):
         """
         Load the staged data into the target database.
@@ -219,38 +203,13 @@ class BenditoStream(Stream):
         staged_data = pd.read_csv(
             staged_data_path,
             sep=separator,
-            encoding='utf-8'
+            encoding='utf-8',
+            dtype=str
         )
         
         self.loader.load_data(
             df=staged_data,
-            schema_name=target_schema,
-            table_name=self.output_name,
+            target_schema=target_schema,
+            target_table=self.output_name,
             mode=mode
         )
-        
-    def _transform_leads(self, data):
-        """
-        Apply transformations specific to leads data.
-        
-        Args:
-            data (pd.DataFrame): Raw leads data
-            
-        Returns:
-            pd.DataFrame: Transformed leads data
-        """
-        # Apply leads-specific transformations here
-        return data
-        
-    def _transform_accounts(self, data):
-        """
-        Apply transformations specific to accounts data.
-        
-        Args:
-            data (pd.DataFrame): Raw accounts data
-            
-        Returns:
-            pd.DataFrame: Transformed accounts data
-        """
-        # Apply accounts-specific transformations here
-        return data 

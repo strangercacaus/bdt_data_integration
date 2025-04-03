@@ -18,19 +18,20 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         - base_endpoint (str): URL base da API do Notion, 'https://api.notion.com/v1'.
         - token (str): Bearer Token da conta conectada à integração.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, token, **kwargs):
         """
         Inicializa um extrator para a API do Bendito.
 
         Args:
-            *args: Argumentos posicionais para a classe pai.
-            **kwargs: Argumentos nomeados, incluindo 'token', 'identifier' e 'writer'.
+            token (str): Token de autenticação para a API Bendito.
+            **kwargs: Argumentos nomeados adicionais como 'writer' ou 'schema'.
         """
-        super().__init__(*args, **kwargs)
-        self.source = 'bendito'
-        self.token = kwargs.get('token')
+        # Definir o source diretamente - não usar kwargs para isso
+        super().__init__(source='bendito', token=token, **kwargs)
+        
+        # Não é necessário armazenar token novamente, pois a classe pai já faz isso
         self.writer = kwargs.get('writer')
-        self.schema = kwargs.get('schema',None)
+        self.schema = kwargs.get('schema', None)
 
     def _get_endpoint(self) -> str:
         """
@@ -80,7 +81,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             logger.error(f'{__name__}: {response.text}')
         return response
 
-    def fetch_paginated_data(self, query, page_size=200, **kwargs):
+    def fetch_paginated(self, query, page_size=200, **kwargs):
         """
         Obtém dados paginados da API Bendito.
 
@@ -137,7 +138,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         query = kwargs.get('query','select 1')
         page_size = kwargs.get('page_size',200)
         records = list(
-            self.fetch_paginated_data(
+            self.fetch_paginated(
                 query,
                 page_size,
                 separator=kwargs.get('separator', ';'),

@@ -62,7 +62,6 @@ bdt_data_integration
 - src/transformer/: Contém classes para transformação de dados.
 - src/util/: Contém funções utilitárias.
 - src/writer/: Contém classes para escrita de dados.
-- pipelines/: Contém notebooks com pipelines de dados.
 - requirements.txt: Contém os módulos necessários para a execução do projeto.
 - setup.py: Configuração para instalação do projeto como pacote Python.
 - MANIFEST.in: Define arquivos adicionais a serem incluídos no pacote.

@@ -7,3 +7,4 @@ bdt_data_integration.egg-info/
 work/
 main.py
 schema/*
+.vscode/*
