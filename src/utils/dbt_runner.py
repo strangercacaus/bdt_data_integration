@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+import json
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ class DBTRunner:
         self.project_dir = project_dir
         self.profiles_dir = profiles_dir
         
-    def run_command(self, command, models=None, exclude=None, selector=None):
+    def run_command(self, command, models=None, exclude=None, selector=None, vars_dict=None):
         """
         Executa um comando dbt.
         
@@ -30,6 +31,7 @@ class DBTRunner:
             models (str, optional): String de modelos a serem incluídos
             exclude (str, optional): String de modelos a serem excluídos
             selector (str, optional): Seletor a ser usado
+            vars_dict (dict, optional): Variáveis a serem passadas para o dbt
             
         Returns:
             bool: True se o comando for bem-sucedido, False caso contrário
@@ -56,6 +58,12 @@ class DBTRunner:
         # Adiciona opções de seletor
         if selector:
             cmd.extend(["--selector", selector])
+            
+        # Adiciona variáveis dinâmicas
+        if vars_dict:
+            # Serializa o dicionário para JSON
+            vars_json = json.dumps(vars_dict)
+            cmd.extend(["--vars", vars_json])
             
         # Log do comando
         logger.info(f"Executando comando dbt: {' '.join(cmd)}")
@@ -85,7 +93,7 @@ class DBTRunner:
             logger.error(f"Erro ao executar o comando dbt: {e}")
             return False
             
-    def run(self, models=None, exclude=None, selector=None):
+    def run(self, models=None, exclude=None, selector=None, target_schema=None):
         """
         Executa o comando 'dbt run'.
         
@@ -93,13 +101,17 @@ class DBTRunner:
             models (str, optional): String de modelos a serem incluídos
             exclude (str, optional): String de modelos a serem excluídos
             selector (str, optional): Seletor a ser usado
+            target_schema (str, optional): Schema de destino para os modelos
             
         Returns:
             bool: True se o comando for bem-sucedido, False caso contrário
         """
-        return self.run_command("run", models, exclude, selector)
+        vars_dict = None
+        if target_schema:
+            vars_dict = {"target_schema": target_schema}
+        return self.run_command("run", models, exclude, selector, vars_dict)
         
-    def test(self, models=None, exclude=None, selector=None):
+    def test(self, models=None, exclude=None, selector=None, target_schema=None):
         """
         Executa o comando 'dbt test'.
         
@@ -107,13 +119,17 @@ class DBTRunner:
             models (str, optional): String de modelos a serem incluídos
             exclude (str, optional): String de modelos a serem excluídos
             selector (str, optional): Seletor a ser usado
+            target_schema (str, optional): Schema de destino para os modelos
             
         Returns:
             bool: True se o comando for bem-sucedido, False caso contrário
         """
-        return self.run_command("test", models, exclude, selector)
+        vars_dict = None
+        if target_schema:
+            vars_dict = {"target_schema": target_schema}
+        return self.run_command("test", models, exclude, selector, vars_dict)
         
-    def build(self, models=None, exclude=None, selector=None):
+    def build(self, models=None, exclude=None, selector=None, target_schema=None):
         """
         Executa o comando 'dbt build'.
         
@@ -121,8 +137,12 @@ class DBTRunner:
             models (str, optional): String de modelos a serem incluídos
             exclude (str, optional): String de modelos a serem excluídos
             selector (str, optional): Seletor a ser usado
+            target_schema (str, optional): Schema de destino para os modelos
             
         Returns:
             bool: True se o comando for bem-sucedido, False caso contrário
         """
-        return self.run_command("build", models, exclude, selector) 
+        vars_dict = None
+        if target_schema:
+            vars_dict = {"target_schema": target_schema}
+        return self.run_command("build", models, exclude, selector, vars_dict) 

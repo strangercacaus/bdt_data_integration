@@ -33,17 +33,21 @@ class BitrixAPIExtractor(GenericAPIExtractor):
         self.writer = kwargs.get("writer")
         self.bitrix_url = kwargs.get("bitrix_url")
         self.bitrix_user_id = kwargs.get("bitrix_user_id")
+        
+    def _get_endpoint(self):
+        return None
+    
+    def _base_endpoint(self):
+        return f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/"
 
     def _list_url(self, endpoint_id):
-        return f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/crm.{endpoint_id}.list.json"
+        return self._base_endpoint() + f"{endpoint_id}.list.json"
 
     def _get_url(self, endpoint_id, object_id):
-        return f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/crm.{endpoint_id}.get.json?ID={object_id}"
+        return self._base_endpoint() + f"{endpoint_id}.get.json?ID={object_id}"
 
-    def _get_endpoint(self, endpoint_id) -> str:
-        url = f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/crm.{endpoint_id}"
-        logger.info(url)
-        return url
+    def _raw_url(self, endpoint_id) -> str:
+        return self._base_endpoint() + f"{endpoint_id}"
 
     def fetch_paginated(self, url, start=0, **kwargs):
         start = 0
@@ -122,18 +126,18 @@ class BitrixAPIExtractor(GenericAPIExtractor):
         return pd.DataFrame(results, dtype=str)
 
     def extract_as_enum(self, endpoint_id):
-        url = self._get_endpoint(endpoint_id)
+        url = self._raw_url(endpoint_id)
         response = requests.get(url)
         response.raise_for_status()
         if response.json().get("result"):
             results = [
-                {"ID": i, "SUCCESS": True, "CONTENT": json.dumps(result)}
+                {"ID": result.get('ID') or i, "SUCCESS": True, "CONTENT": json.dumps(result)}
                 for i, result in enumerate(response.json()["result"])
             ]
             return pd.DataFrame(results)
         else:
             logger.warning(f"WARNING: Nenhum dado presente em {url}")
-            return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"])
+            return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"],dtype=str)
 
     def extract_as_list(self, endpoint_id):
         list_data = self.fetch_list(endpoint_id)
@@ -203,17 +207,16 @@ class BitrixAPIExtractor(GenericAPIExtractor):
 
     #     return results
 
-    def get_extract_function(self, mode=("table", "endpoint")):
+    def get_extract_function(self, mode=("table", "endpoint", "list")):
+        # sourcery skip: assign-if-exp, remove-redundant-if
         if mode == "table":
             return self.extract_as_table
-        # elif mode == "endpoint":
-        #     return self.extract_as_list
+        elif mode in ["endpoint", "enum"]:
+            return self.extract_as_enum
         elif mode == "list":
             return self.extract_as_list
-        elif mode == "enum":
-            return self.extract_as_enum
         else:
             raise ValueError(f"Modo de extração inválido: {mode}")
 
-    def run(self, **kwargs):
-        pass
+    def run(self, mode, endpoint_id):
+        return self.get_extract_function(mode)(endpoint_id)

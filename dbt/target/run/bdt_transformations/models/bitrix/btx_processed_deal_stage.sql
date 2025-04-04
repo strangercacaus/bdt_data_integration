@@ -1,14 +1,8 @@
 
-      
-  
+  create view "bendito_intelligence_dev"."bitrix"."btx_processed_deal_stage__dbt_tmp"
     
-
-  create  table "bendito_intelligence_dev"."processed_bitrix"."btx_processed_deal_stage"
-  
-  
-    as
-  
-  (
+    
+  as (
     
 
 SELECT 
@@ -16,7 +10,6 @@ SELECT
   ("CONTENT"->>'NAME')::varchar as name,
   ("CONTENT"->>'SORT')::int4 as sort,
   ("CONTENT"->>'STATUS_ID')::varchar as status_id
-FROM bitrix.btx_raw_deal_stage
+from "bendito_intelligence_dev"."bitrix"."btx_raw_deal_stage"
+WHERE "SUCCESS" = true
   );
-  
-  

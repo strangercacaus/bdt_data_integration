@@ -12,6 +12,7 @@ from utils import Utils
 
 logger = logging.getLogger(__name__)  # This will use the module's name
 
+
 class BitrixStream:
     def __init__(self, source_name, config, **kwargs):
         self.source = "bitrix"
@@ -58,10 +59,9 @@ class BitrixStream:
 
         mode = kwargs.get("mode", "table")
 
-        #start = kwargs.get("start", 0)
+        # start = kwargs.get("start", 0)
 
-        extract_function = self.extractor.get_extract_function(mode)
-        records = extract_function(self.source_name)
+        records = self.extractor.run(mode, self.source_name)
 
         raw_data_path = (
             self.writer.get_output_file_path(target_layer="raw", date=False) + ".csv"
@@ -74,25 +74,29 @@ class BitrixStream:
         return records
 
     def transform_stream(self, **kwargs) -> None:
+        """
+        Transform the raw data and write it to the processing layer.
+
+        Args:
+            **kwargs: Additional arguments for transformation
+        """
 
         separator = kwargs.get(
             "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
         )
-        base_dir = os.path.join(os.getcwd(), 'data')
-        path = os.path.join(base_dir, 'raw', self.source)
 
-        extension = ".csv"
+        raw_data_path = self.writer.get_output_file_path(target_layer="raw") + ".csv"
 
         try:
-            raw_data_path = Utils.get_latest_file(path, extension)
+            raw_data = pd.read_csv(
+                raw_data_path, sep=separator, encoding="utf-8", dtype=str
+            )
+        except Exception as e:
+            raise Exception(f"Error reading raw data: {e}") from e
 
-        except Exception:
-            raw_data_path = path + extension
-
-        if raw_data_path is None:
-            raise Exception(f"No files found in the specified directory: {file_path}")
-
-        records = pd.read_csv(raw_data_path, sep=separator, dtype=str)
+        processed_data_path = (
+            self.writer.get_output_file_path(target_layer="processing") + ".csv"
+        )
 
         processed_data_path = (
             self.writer.get_output_file_path(target_layer="processing") + ".csv"
@@ -100,8 +104,8 @@ class BitrixStream:
 
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
 
-        records.to_csv(
-            processed_data_path, index=False, sep=separator, encoding="utf-8"
+        raw_data.to_csv(
+            processed_data_path, sep=separator, index=False, encoding="utf-8"
         )
 
     def stage_stream(self, **kwargs):
@@ -133,10 +137,10 @@ class BitrixStream:
             processed_data_path, index=False, sep=separator, encoding="utf-8"
         )
 
-    def set_loader(self, engine, schema_file_type = None, schema_file_path = None):
+    def set_loader(self, engine, schema_file_type=None, schema_file_path=None):
         """
         Configura o PostgresLoader para esta stream.
-        
+
         Args:
             engine (sqlalchemy.engine.Engine): SQLAlchemy engine para a conexão com o banco de dados
             schema_file_path (str): Caminho para o arquivo de esquema para criar tabelas
@@ -163,8 +167,8 @@ class BitrixStream:
         staged_data = pd.read_csv(
             staged_data_path, sep=separator, encoding="utf-8", dtype=str
         )
-        
-        logger.debug(f'Class Schema: {self.schema}')
+
+        logger.debug(f"Class Schema: {self.schema}")
 
         self.loader.load_data(
             df=staged_data,

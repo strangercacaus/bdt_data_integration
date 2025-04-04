@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: bitrix
+    description: "Raw data imported from Bitrix CRM"
+    schema: bitrix
+    tables:
+      - name: btx_raw_deal
+      - name: btx_raw_deal_userfield
+      - name: btx_raw_deal_stage
+      - name: btx_raw_dealcategory
+      - name: btx_raw_activity
+      - name: btx_raw_product
+      - name: btx_raw_user
+      

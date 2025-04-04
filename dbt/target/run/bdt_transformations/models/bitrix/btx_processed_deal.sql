@@ -1,4 +1,9 @@
 
+  create view "bendito_intelligence_dev"."bitrix"."btx_processed_deal__dbt_tmp"
+    
+    
+  as (
+    
 SELECT
   "ID" :: int4 as id,
   ("CONTENT" ->> 'TITLE') :: varchar as title,
@@ -125,3 +130,4 @@ from
   "bendito_intelligence_dev"."bitrix"."btx_raw_deal"
 WHERE
   "SUCCESS" = true
+  );

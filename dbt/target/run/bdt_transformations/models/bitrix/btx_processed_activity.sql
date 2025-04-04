@@ -1,4 +1,9 @@
 
+  create view "bendito_intelligence_dev"."bitrix"."btx_processed_activity__dbt_tmp"
+    
+    
+  as (
+    
 
 SELECT 
   "ID"::int4 as id,
@@ -17,3 +22,4 @@ SELECT
   ("CONTENT"->>'LAST_UPDATED')::timestamp as last_updated
 from "bendito_intelligence_dev"."bitrix"."btx_raw_activity"
 WHERE "SUCCESS" = true
+  );

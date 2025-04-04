@@ -54,7 +54,7 @@ schema_dir = project_root / "schema" / "bitrix"
 os.makedirs(schema_dir, exist_ok=True)
 
 load_dotenv()
-schema = "bitrix"
+source = "bitrix"
 token = os.environ["BITRIX_TOKEN"]
 bitrix_url = os.environ["BITRIX_URL"]
 bitrix_user_id = os.environ["BITRIX_USER_ID"]
@@ -75,7 +75,7 @@ metadata_db_url = (
 metadata_engine = create_engine(
     metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
 )
-meta = MetadataHandler(metadata_engine, schema)
+meta = MetadataHandler(metadata_engine, source)
 df = meta._load_table_meta()
 
 # Extracting required information from the DataFrame
@@ -107,7 +107,7 @@ def replicate_table(source_name, target_table_name, mode="table"):
     stream.stage_stream()
 
     stream.schema = f"""
-    CREATE TABLE IF NOT EXISTS bitrix.{target_table_name}(
+    CREATE TABLE IF NOT EXISTS {source}.{target_table_name}(
         "ID" integer NOT NULL,
         "SUCCESS" bool,
         "CONTENT" jsonb
@@ -122,7 +122,7 @@ def replicate_table(source_name, target_table_name, mode="table"):
     stream.load_stream(
         source_name=source_name,
         target_table=target_table_name,
-        target_schema='raw',
+        target_schema=source,
         chunksize=1000,
         schema_file_type=mode,
     )
@@ -132,6 +132,12 @@ total = 0
 
 success = 0
 
+base_dir = os.path.join(os.getcwd(), "data")
+for layer in ["raw", "processing", "staging"]:
+    dir_path = os.path.join(base_dir, layer)
+    os.makedirs(dir_path, exist_ok=True)
+    bitrix_logger.info(f"Garantindo que o diretório {dir_path} existe.")
+
 for i, table in active_tables.iterrows():
     total += 1
     table_name = table["table_name"]
@@ -140,10 +146,12 @@ for i, table in active_tables.iterrows():
     meta.update_table_meta(table_name, last_sync_attempt_at=datetime.datetime.now())
     try:
         replicate_table(
-        source_name=table_name, target_table_name=target_table_name, mode=mode
-    )
+            source_name=table_name, target_table_name=target_table_name, mode=mode
+        )
         success += 1
-        meta.update_table_meta(table_name, last_successful_sync_at=datetime.datetime.now())
+        meta.update_table_meta(
+            table_name, last_successful_sync_at=datetime.datetime.now()
+        )
     except Exception as e:
         success += 0
         bitrix_logger.error(f"Error replicating table {table_name}: {str(e)}")
@@ -171,12 +179,15 @@ else:
             f"Encontrados {len(sql_files)} arquivos SQL no diretório {bitrix_models_dir}"
         )
 
+# Define o schema de destino para as transformações
+logger.info(f"Usando schema de destino para transformações: {source}")
+
 dbt_runner = DBTRunner(
     project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
 )
 
-# Run only Bitrix models
-dbt_success = dbt_runner.run(models="bitrix")
+#Run only Bitrix models, passando o schema de destino
+dbt_success = dbt_runner.run(models="bitrix", target_schema=source)
 
 notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")
 

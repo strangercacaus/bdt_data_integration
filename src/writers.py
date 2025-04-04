@@ -68,14 +68,6 @@ class DataWriter(ABC):
         self.stream = stream
         self.config = config or {}
         self.compression = compression
-
-        # Create data directories if they don't exist
-        base_dir = os.path.join(os.getcwd(), "data")
-        for layer in ["raw", "processing", "staging"]:
-            dir_path = os.path.join(base_dir, layer)
-            os.makedirs(dir_path, exist_ok=True)
-            logger.info(f"Garantindo que o diretório {dir_path} existe.")
-
     def _get_raw_dir(self):
         """
         Retorna o diretório onde os dados brutos são armazenados. Esta
