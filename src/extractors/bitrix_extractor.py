@@ -2,6 +2,8 @@ import json
 import logging
 import requests
 import pandas as pd
+import time
+import random
 from bdt_data_integration.src.extractors.base_extractor import GenericAPIExtractor
 from utils import Schema
 
@@ -33,10 +35,10 @@ class BitrixAPIExtractor(GenericAPIExtractor):
         self.writer = kwargs.get("writer")
         self.bitrix_url = kwargs.get("bitrix_url")
         self.bitrix_user_id = kwargs.get("bitrix_user_id")
-        
+
     def _get_endpoint(self):
         return None
-    
+
     def _base_endpoint(self):
         return f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/"
 
@@ -96,7 +98,35 @@ class BitrixAPIExtractor(GenericAPIExtractor):
 
         for i, object_id in enumerate(results["ID"]):
             url = self._get_url(endpoint_id, object_id)
-            response = requests.get(url)
+
+            max_retries = 5
+            retry_count = 0
+            backoff_time = 1  # Initial backoff time in seconds
+
+            while True:
+                response = requests.get(url)
+
+                # Check for rate limiting (429) or service unavailable (503)
+                if response.status_code in [429, 503]:
+
+                    retry_count += 1
+                    if retry_count <= max_retries:
+                        # Log the retry attempt
+                        logger.warning(
+                            f"Received {response.status_code} error. Retrying in {backoff_time} seconds (attempt {retry_count}/{max_retries})..."
+                        )
+                        time.sleep(backoff_time)
+                        # Exponential backoff with jitter
+                        backoff_time = min(30, backoff_time * 2) + random.uniform(0, 1)
+                        continue
+                    else:
+                        # Max retries reached - log and continue with the error response
+                        logger.error(
+                            f"Max retries reached after {response.status_code} errors for URL: {url}"
+                        )
+
+                # Break the retry loop once we have a response (either successful or failed after max retries)
+                break
 
             try:
                 # Tenta converter a resposta em JSON
@@ -131,31 +161,35 @@ class BitrixAPIExtractor(GenericAPIExtractor):
         response.raise_for_status()
         if response.json().get("result"):
             results = [
-                {"ID": result.get('ID') or i, "SUCCESS": True, "CONTENT": json.dumps(result)}
+                {
+                    "ID": result.get("ID") or i,
+                    "SUCCESS": True,
+                    "CONTENT": json.dumps(result),
+                }
                 for i, result in enumerate(response.json()["result"])
             ]
             return pd.DataFrame(results)
         else:
             logger.warning(f"WARNING: Nenhum dado presente em {url}")
-            return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"],dtype=str)
+            return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"], dtype=str)
 
     def extract_as_list(self, endpoint_id):
         list_data = self.fetch_list(endpoint_id)
-        
+
         # Converter o DataFrame inteiro para JSON com tratamento de NaN
-        list_json = list_data.replace({pd.NA: None}).to_json(orient='records')
+        list_json = list_data.replace({pd.NA: None}).to_json(orient="records")
         # Parsear de volta para ter uma lista de dicionários Python
         list_records = json.loads(list_json)
-        
+
         data = [
             {
                 "ID": str(record.get("ID", i)),
                 "CONTENT": json.dumps(record),
-                "SUCCESS": True
+                "SUCCESS": True,
             }
             for i, record in enumerate(list_records)
         ]
-        
+
         return pd.DataFrame(data, dtype=str)
 
     # def extract_as_endpoint(self, endpoint_id, **kwargs):
@@ -207,7 +241,7 @@ class BitrixAPIExtractor(GenericAPIExtractor):
 
     #     return results
 
-    def get_extract_function(self, mode=("table", "endpoint", "list")):
+    def get_extract_function(self, mode=("table", "enum", "endpoint", "list")):
         # sourcery skip: assign-if-exp, remove-redundant-if
         if mode == "table":
             return self.extract_as_table

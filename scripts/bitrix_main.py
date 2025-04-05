@@ -102,8 +102,6 @@ def replicate_table(source_name, target_table_name, mode="table"):
     )
     stream.extract_stream(separator=";", start=0, chunksize=1000, mode=mode)
 
-    stream.transform_stream()
-
     stream.stage_stream()
 
     stream.schema = f"""
@@ -143,18 +141,35 @@ for i, table in active_tables.iterrows():
     table_name = table["table_name"]
     target_table_name = table["target_name"] or table["table_name"]
     mode = table["mode"]
-    meta.update_table_meta(table_name, last_sync_attempt_at=datetime.datetime.now())
+    
+    # Log start of table replication with metadata update
+    bitrix_logger.info(f"Starting replication of table {table_name} (mode: {mode})")
+    
+    # Try to update metadata - continue even if it fails
     try:
+        meta.update_table_meta(table_name, last_sync_attempt_at=datetime.datetime.now())
+    except Exception as e:
+        bitrix_logger.warning(f"Failed to update start metadata for {table_name}: {str(e)}")
+    
+    try:
+        # Attempt table replication
         replicate_table(
             source_name=table_name, target_table_name=target_table_name, mode=mode
         )
         success += 1
-        meta.update_table_meta(
-            table_name, last_successful_sync_at=datetime.datetime.now()
-        )
+        
+        # Try to update success metadata - continue even if it fails
+        try:
+            meta.update_table_meta(
+                table_name, last_successful_sync_at=datetime.datetime.now()
+            )
+            bitrix_logger.info(f"Successfully replicated table {table_name}")
+        except Exception as e:
+            bitrix_logger.warning(f"Failed to update success metadata for {table_name}: {str(e)}")
+            
     except Exception as e:
-        success += 0
         bitrix_logger.error(f"Error replicating table {table_name}: {str(e)}")
+#       We don't increment success counter here
 
 # Execute dbt transformations for bitrix models after all tables have been loaded
 logger = logging.getLogger("dbt_runner")
@@ -186,7 +201,7 @@ dbt_runner = DBTRunner(
     project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
 )
 
-#Run only Bitrix models, passando o schema de destino
+# Run only Bitrix models, passando o schema de destino
 dbt_success = dbt_runner.run(models="bitrix", target_schema=source)
 
 notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")

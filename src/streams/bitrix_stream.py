@@ -73,40 +73,40 @@ class BitrixStream:
 
         return records
 
-    def transform_stream(self, **kwargs) -> None:
-        """
-        Transform the raw data and write it to the processing layer.
+    # def transform_stream(self, **kwargs) -> None:
+    #     """
+    #     Transform the raw data and write it to the processing layer.
 
-        Args:
-            **kwargs: Additional arguments for transformation
-        """
+    #     Args:
+    #         **kwargs: Additional arguments for transformation
+    #     """
 
-        separator = kwargs.get(
-            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
-        )
+    #     separator = kwargs.get(
+    #         "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
+    #     )
 
-        raw_data_path = self.writer.get_output_file_path(target_layer="raw") + ".csv"
+    #     raw_data_path = self.writer.get_output_file_path(target_layer="raw") + ".csv"
 
-        try:
-            raw_data = pd.read_csv(
-                raw_data_path, sep=separator, encoding="utf-8", dtype=str
-            )
-        except Exception as e:
-            raise Exception(f"Error reading raw data: {e}") from e
+    #     try:
+    #         raw_data = pd.read_csv(
+    #             raw_data_path, sep=separator, encoding="utf-8", dtype=str
+    #         )
+    #     except Exception as e:
+    #         raise Exception(f"Error reading raw data: {e}") from e
 
-        processed_data_path = (
-            self.writer.get_output_file_path(target_layer="processing") + ".csv"
-        )
+    #     processed_data_path = (
+    #         self.writer.get_output_file_path(target_layer="processing") + ".csv"
+    #     )
 
-        processed_data_path = (
-            self.writer.get_output_file_path(target_layer="processing") + ".csv"
-        )
+    #     processed_data_path = (
+    #         self.writer.get_output_file_path(target_layer="processing") + ".csv"
+    #     )
 
-        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
+    #     os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
 
-        raw_data.to_csv(
-            processed_data_path, sep=separator, index=False, encoding="utf-8"
-        )
+    #     raw_data.to_csv(
+    #         processed_data_path, sep=separator, index=False, encoding="utf-8"
+    #     )
 
     def stage_stream(self, **kwargs):
 
@@ -115,7 +115,7 @@ class BitrixStream:
         )
 
         processed_data_path = (
-            self.writer.get_output_file_path(target_layer="processing") + ".csv"
+            self.writer.get_output_file_path(target_layer="raw") + ".csv"
         )
 
         os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)

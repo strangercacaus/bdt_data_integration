@@ -1,4 +1,4 @@
-{ { config(materialized = 'view', unique_key = 'id',) } }
+{{ config(materialized = 'view', unique_key = 'id',) }}
 SELECT
   "ID" :: int4 as id,
   ("CONTENT" ->> 'TITLE') :: varchar as title,
@@ -122,6 +122,6 @@ SELECT
   ("CONTENT" ->> 'UF_CRM_DEAL_1738069820827') :: text as uf_crm_deal_1738069820827,
   ("CONTENT" ->> 'UF_CRM_DEAL_1722632496832') :: varchar as uf_crm_deal_1722632496832
 from
-  { { source('bitrix', 'btx_raw_deal') } }
+  {{ source('bitrix', 'btx_raw_deal') }}
 WHERE
   "SUCCESS" = true

@@ -5,11 +5,23 @@ sources:
     description: "Raw data imported from Bitrix CRM"
     schema: bitrix
     tables:
-      - name: btx_raw_deal
-      - name: btx_raw_deal_userfield
-      - name: btx_raw_deal_stage
-      - name: btx_raw_dealcategory
       - name: btx_raw_activity
+      - name: btx_raw_catalog
+      - name: btx_raw_company
+      - name: btx_raw_company_userfield
+      - name: btx_raw_contact
+      - name: btx_raw_currency
+      - name: btx_raw_deal
+      - name: btx_raw_deal_recurring
+      - name: btx_raw_deal_userfield
+      - name: btx_raw_dealcategory
+      - name: btx_raw_dealcategory_stage
+      - name: btx_raw_enum_activitydirection
+      - name: btx_raw_enum_activitynotifytype
+      - name: btx_raw_enum_activitypriority
+      - name: btx_raw_enum_addresstype
+      - name: btx_raw_enum_ownertype
+      - name: btx_raw_lead
       - name: btx_raw_product
+      - name: btx_raw_status
       - name: btx_raw_user
-      

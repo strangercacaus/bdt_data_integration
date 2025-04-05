@@ -3,8 +3,8 @@ SELECT
   "ID" as id,
   ("CONTENT" ->> 'NAME') :: varchar as name,
   NULLIF("CONTENT" ->> 'SORT', '') :: int4 as sort,
-  NULLIF("CONTENT" ->> 'CREATED_DATE', '') :: timestamp as created_date
+  ("CONTENT" ->> 'STATUS_ID') :: varchar as status_id
 from
-  {{ source('bitrix', 'btx_raw_dealcategory') }}
+  {{ source('bitrix', 'btx_raw_dealcategory_stage') }}
 WHERE
   "SUCCESS" = true
