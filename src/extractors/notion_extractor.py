@@ -1,5 +1,7 @@
+import json
 import logging
 import requests
+import pandas as pd
 
 from .base_extractor import GenericAPIExtractor
 
@@ -137,11 +139,22 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
                 if not next_cursor:
                     break      
 
-    def run(self):
+    def run(self, schemaless=True):
         """
         Executa a rotina principal do extrator, consolidando os dados extraídos.
 
         Returns:
             tuple[list, str]: Uma tupla contendo a lista de registros extraídos e a data atual.
         """
-        return [record for page in self.fetch_paginated() for record in page] 
+        if not schemaless:
+            return pd.DataFrame([record for page in self.fetch_paginated() for record in page], dtype=str)
+        data = [
+            {
+                "ID": record.get('id'),
+                "SUCCESS": True,
+                "CONTENT": json.dumps(record),
+            }
+            for page in self.fetch_paginated() 
+            for record in page
+        ]
+        return pd.DataFrame(data, dtype=str) 

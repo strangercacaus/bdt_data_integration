@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: notion
+    description: "Raw data imported from Notion"
+    schema: notion
+    tables:
+      - name: ntn_raw_universal_task_database
+      - name: ntn_raw_action_items

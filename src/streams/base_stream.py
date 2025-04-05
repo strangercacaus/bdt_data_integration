@@ -42,17 +42,6 @@ class Stream(ABC):
             **kwargs: Additional arguments for extraction
         """
         pass
-    
-    @abstractmethod
-    def transform_stream(self, **kwargs) -> None:
-        """
-        Transform the raw data and write it to the processing layer.
-        
-        Args:
-            **kwargs: Additional arguments for transformation
-        """
-        pass
-    
     @abstractmethod
     def stage_stream(self, **kwargs):
         """

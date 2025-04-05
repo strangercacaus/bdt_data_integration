@@ -13,7 +13,7 @@ from utils import Utils
 logger = logging.getLogger(__name__)  # This will use the module's name
 
 
-class BitrixStream:
+class BitrixStream(Stream):
     def __init__(self, source_name, config, **kwargs):
         self.source = "bitrix"
         self.config = config
@@ -114,28 +114,24 @@ class BitrixStream:
             "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
         )
 
-        processed_data_path = (
-            self.writer.get_output_file_path(target_layer="raw") + ".csv"
+        raw_data_path = self.writer.get_output_file_path(target_layer="raw") + ".csv"
+
+        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
+
+        raw_data = pd.read_csv(
+            raw_data_path, sep=separator, encoding="utf-8", dtype=str
         )
 
-        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-
-        processed_data = pd.read_csv(
-            processed_data_path, sep=separator, encoding="utf-8", dtype=str
-        )
-
-        processed_data_path = (
+        raw_data_path = (
             self.writer.get_output_file_path(
                 output_name=self.output_name, target_layer="staging"
             )
             + ".csv"
         )
 
-        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
+        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
 
-        processed_data.to_csv(
-            processed_data_path, index=False, sep=separator, encoding="utf-8"
-        )
+        raw_data.to_csv(raw_data_path, index=False, sep=separator, encoding="utf-8")
 
     def set_loader(self, engine, schema_file_type=None, schema_file_path=None):
         """
@@ -168,7 +164,7 @@ class BitrixStream:
             staged_data_path, sep=separator, encoding="utf-8", dtype=str
         )
 
-        logger.debug(f"Class Schema: {self.schema}")
+        logger.info(f"Chamando load_data com staged_data.shape: {staged_data.shape}")
 
         self.loader.load_data(
             df=staged_data,

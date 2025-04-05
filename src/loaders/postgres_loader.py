@@ -287,17 +287,17 @@ class PostgresLoader(BaseLoader):
             f"loader.create_sql_schema, target_table: {target_table}, target_schema: {target_schema}, type: {self.schema_file_type}"
         )
 
-        if self.schema_file_type == "info_schema":
+        if self.schema:
+            
+            sql_command = self.schema
+            
+        elif self.schema_file_type == "info_schema":
 
             sql_command = self.load_sql_schema(target_table, target_schema)
 
         elif self.schema_file_type == "template":
 
             sql_command = self.render_sql_template(target_table, target_schema)
-
-        elif self.schema:
-
-            sql_command = self.schema
 
         else:
             raise ValueError(

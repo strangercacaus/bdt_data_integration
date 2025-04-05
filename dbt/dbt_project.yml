@@ -20,5 +20,5 @@ models:
   bdt_transformations:
     bitrix:
       +materialized: table
-    # notion:
-    #   +materialized: table
+    notion:
+      +materialized: table

@@ -16,6 +16,8 @@ from bdt_data_integration.src.streams.notion_stream import NotionStream
 from bdt_data_integration.src.utils.utils import Utils
 from bdt_data_integration.src.utils.notifiers import WebhookNotifier
 from bdt_data_integration.src.configuration.configuration import MetadataHandler
+from bdt_data_integration.src.utils.dbt_runner import DBTRunner
+
 
 # Set up the root logger
 logging.basicConfig(
@@ -52,7 +54,7 @@ schema_dir = project_root / "schema" / "notion"
 os.makedirs(schema_dir, exist_ok=True)
 
 load_dotenv()
-schema = "notion"
+source_name = "notion"
 token = os.environ["NOTION_APIKEY"]
 database_id = os.environ["NOTION_DATABASE_ID"]
 host = os.environ["DESTINATION_HOST"]
@@ -72,11 +74,11 @@ metadata_db_url = (
 metadata_engine = create_engine(
     metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
 )
-meta = MetadataHandler(metadata_engine, schema)
+meta = MetadataHandler(metadata_engine, source_name)
 df = meta._load_table_meta()
 
 # Extracting required information from the DataFrame
-columns_to_fetch = ["table_name", "vars"]
+columns_to_fetch = ["table_name", "vars", "target_name"]
 notion_data = df[df["source"] == "notion"][columns_to_fetch]
 
 notion_data["type"] = notion_data["vars"].apply(lambda x: x.get("type", None))
@@ -85,25 +87,23 @@ notion_data["database_id"] = notion_data["vars"].apply(
 )
 
 # Selecting and displaying the columns of interest
-active_tables = notion_data[["table_name", "type", "database_id"]]
+active_tables = notion_data[["table_name", "type", "database_id", "target_name"]]
 
 
 @notifier.error_handler
-def replicate_database(database_name, database_id):
+def replicate_database(database_name, database_id, target_table_name):
     # Define logger for this function
     logger = logging.getLogger("replicate_database")
 
-    schema_file_path = str(schema_dir / f"{database_name}.sql")
-    mapping_file_path = str(schema_dir / f"{database_name}.json")
-
+    
     # Verificar se os arquivos necessários existem
-    if not os.path.exists(schema_file_path):
-        logger.error(f"Arquivo de schema não encontrado: {schema_file_path}")
-        return 1
+    # if not os.path.exists(schema_file_path):
+    #     logger.error(f"Arquivo de schema não encontrado: {schema_file_path}")
+    #     return 1
 
-    if not os.path.exists(mapping_file_path):
-        logger.error(f"Arquivo de mapeamento não encontrado: {mapping_file_path}")
-        return 1
+    # if not os.path.exists(mapping_file_path):
+    #     logger.error(f"Arquivo de mapeamento não encontrado: {mapping_file_path}")
+    #     return 1
 
     stream = NotionStream(source_name=database_name, config=config)
 
@@ -111,19 +111,26 @@ def replicate_database(database_name, database_id):
 
     stream.extract_stream()
 
-    stream.transform_stream(entity="pages")
+    
+    stream.schema = f"""
+    CREATE TABLE IF NOT EXISTS {source_name}.{target_table_name}(
+        "ID" varchar NOT NULL,
+        "SUCCESS" bool,
+        "CONTENT" jsonb
+        );"""
 
-    stream.stage_stream(rename_columns=True, mapping_file_path=mapping_file_path)
+    stream.stage_stream()
 
     stream.set_loader(
         engine=create_engine(
             f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
-        ),
-        schema_file_path=schema_file_path,
-        schema_file_type="template",
+        )
     )
     try:
-        stream.load_stream(target_schema=schema)
+        stream.load_stream(
+            target_table = target_table_name,
+            target_schema = source_name,
+            chunksize = 1000)
     except Exception as e:
         logger.error(f"Erro ao carregar dados: {e}")
         return 0
@@ -134,52 +141,53 @@ def replicate_database(database_name, database_id):
 success = 0
 total = 0
 
-for i, table in active_tables.iterrows():
-    total += 1
-    database_name = table["table_name"]
-    database_id = table["database_id"]
-    meta.update_table_meta(database_name, last_sync_attempt_at=datetime.datetime.now())
-    try:
-        replicate_database(database_name, database_id)
-        success += 1
-        meta.update_table_meta(
-            database_name, last_successful_sync_at=datetime.datetime.now()
+# for i, table in active_tables.iterrows():
+#     total += 1
+#     target_name = table["target_name"] or table["table_name"]
+#     database_name = table["table_name"]
+#     database_id = table["database_id"]
+#     meta.update_table_meta(database_name, last_sync_attempt_at=datetime.datetime.now())
+#     try:
+#         replicate_database(database_name, database_id, target_name)
+#         success += 1
+#         meta.update_table_meta(
+#             database_name, last_successful_sync_at=datetime.datetime.now()
+#         )
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         success += 0
+
+logger = logging.getLogger("dbt_runner")
+logger.info("Executando transformações dbt para os modelos do Notion")
+
+dbt_project_dir = Path(__file__).parent.parent / "dbt"
+dbt_profiles_dir = dbt_project_dir
+
+# Verificar se o diretório existe
+if not dbt_project_dir.exists():
+    logger.error(f"Diretório do projeto dbt não encontrado: {dbt_project_dir}")
+else:
+    logger.info(f"Usando diretório de projeto dbt: {dbt_project_dir}")
+
+    # Verificar se existem modelos SQL na pasta notion
+    notion_models_dir = dbt_project_dir / "models" / "notion"
+    if not notion_models_dir.exists():
+        logger.error(f"Diretório de modelos notion não encontrado: {notion_models_dir}")
+    else:
+        sql_files = list(notion_models_dir.glob("*.sql"))
+        logger.info(
+            f"Encontrados {len(sql_files)} arquivos SQL no diretório {notion_models_dir}"
         )
-    except Exception as e:
-        print(f"Error: {e}")
-        success += 0
 
-schema_file_path = str(schema_dir / "users.sql")
-mapping_file_path = str(schema_dir / "users.json")
+# Define o schema de destino para as transformações
+logger.info(f"Usando schema de destino para transformações: {source_name}")
 
-stream = NotionStream(
-    source_name="users",
-    config=config,
+dbt_runner = DBTRunner(
+    project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
 )
 
-stream.set_extractor(database_id=database_id, token=token)
+dbt_success = dbt_runner.run(models="notion", target_schema=source_name)
 
-stream.extract_stream()
-
-stream.transform_stream(entity="users", source_stream="universal_task_database")
-
-stream.stage_stream(rename_columns=True, mapping_file_path=mapping_file_path)
-
-stream.set_loader(
-    engine=create_engine(
-        f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
-    ),
-    schema_file_path=schema_file_path,
-    schema_file_type="template",
-)
-
-try:
-    stream.load_stream(target_schema=schema)
-    total += 1
-    success += 1
-except Exception as e:
-    print(f"Error: {e}")
-    success += 0
 
 end_time = time.time()
 total_time = end_time - start_time
@@ -194,6 +202,6 @@ hours, minutes, seconds = (
 elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
 # Update the notifier.pipeline_end call with the formatted time
-#notifier.pipeline_end(
+# notifier.pipeline_end(
 #    text=f"Execução de pipeline encerrada: {schema}_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-#) 
+# )
