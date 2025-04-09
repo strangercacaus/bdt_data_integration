@@ -1,5 +1,9 @@
 {{ config(
-	materialized = 'table',
+    materialized = 'table',
+    post_hook=[
+        "GRANT USAGE ON SCHEMA {{ schema }} TO bendito_metabase",
+        "GRANT SELECT ON {{ this }} TO bendito_metabase"
+    ]
 )}}
 select
 	page_id as page_id,
@@ -277,4 +281,5 @@ select
             END
         ) AS tester_item
     ) as tester
-from {{ ref('ntn_processed_universal_task_database') }}
+from {{ ref('ntn_processed_universal_task_database') }};
+

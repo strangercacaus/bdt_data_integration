@@ -1,6 +1,10 @@
 {{ config(
 	materialized = 'table',
 	unique_key = 'id',
+	post_hook=[
+        "GRANT USAGE ON SCHEMA {{ schema }} TO bendito_metabase",
+        "GRANT SELECT ON {{ this }} TO bendito_metabase"
+    ],
 )}}
 SELECT
 	id,

@@ -1,6 +1,9 @@
 {{ config(
     materialized = 'table',
-    
+    post_hook=[
+        "GRANT USAGE ON SCHEMA {{ schema }} TO bendito_metabase",
+        "GRANT SELECT ON {{ this }} TO bendito_metabase"
+    ]
 )}}
 select distinct
 	"CONTENT" -> 'parent' ->> 'database_id' as database_id,

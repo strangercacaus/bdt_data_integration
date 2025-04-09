@@ -8,7 +8,7 @@ setup(
     install_requires=[
         "psycopg2-binary",
         "sql-metadata==2.6.0",
-        "SQLAlchemy==2.0.40",
+        "SQLAlchemy==2.0.0",
         "sqlparse>=0.4.4",
         "Unidecode==1.3.8",
         "pyyaml==6.0.2",
@@ -16,7 +16,7 @@ setup(
         "ratelimit==2.2.1",
         "python-dotenv==1.0.0",
         "numpy==1.26.4",
-        "pandas==2.2",
+        "pandas==2.1.4",
         "pytz==2025.2",
         "tzdata==2025.2",
         "requests==2.31.0",

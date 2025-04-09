@@ -53,9 +53,9 @@ class NotionStream(Stream):
         """
         Extrai dados da API Notion e escreve para a camada raw.
         """
-        
+
         separator = kwargs.get("separator", ";")
-        
+
         records = self.extractor.run()
 
         raw_data_path = (
@@ -82,9 +82,7 @@ class NotionStream(Stream):
             "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
         )
 
-        raw_data_path = (
-            self.writer.get_output_file_path(target_layer="raw") + ".csv"
-        )
+        raw_data_path = self.writer.get_output_file_path(target_layer="raw") + ".csv"
 
         os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
 
@@ -101,9 +99,7 @@ class NotionStream(Stream):
 
         os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
 
-        raw_data.to_csv(
-            staged_data_path, index=False, sep=separator, encoding="utf-8"
-        )
+        raw_data.to_csv(staged_data_path, index=False, sep=separator, encoding="utf-8")
 
         # if rename_columns:
         #     mapping_file_path = kwargs.get("mapping_file_path", None)
@@ -130,7 +126,6 @@ class NotionStream(Stream):
         """
         self.loader = PostgresLoader(engine)
         self.loader.schema = self.schema
-
 
     def load_stream(self, target_schema, target_table, **kwargs):
         """

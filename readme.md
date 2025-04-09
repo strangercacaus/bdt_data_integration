@@ -42,11 +42,169 @@ bdt_data_integration
 ├── .gitignore - Arquivo para ignorar arquivos e diretórios que não devem ser versionados pelo Git
 └── readme.md - Documentação do projeto
 ```
+## Diagrama de Relacionamento de Entidades
+
+``` mermaid
+classDiagram
+    %% Abstract Base Classes
+    class GenericExtractor {
+        <<abstract>>
+        +String source
+        +__init__(source)
+    }
+    
+    class GenericAPIExtractor {
+        <<abstract>>
+        +String source
+        +String token
+        +__init__(source, token)
+        +_get_endpoint() String
+        +fetch_paginated() dict*
+        +run()*
+    }
+    
+    class GenericDatabaseExtractor {
+        <<abstract>>
+        +String source
+        +__init__(source)
+        +_get_endpoint() String
+        +fetch_paginated() dict*
+        +run()*
+    }
+    
+    class BaseLoader {
+        <<abstract>>
+        +load_data(df, target_table, target_schema, mode)*
+        +create_schema(target_schema)*
+        +create_table(sql_command)*
+        +check_if_schema_exists(target_schema) bool*
+    }
+    
+    class DataWriter {
+        <<abstract>>
+        +String source
+        +String stream
+        +dict config
+        +bool compression
+        +__init__(config, source, stream, compression)
+        +_get_raw_dir() String
+        +_get_processing_dir() String
+        +_get_staging_dir() String
+        +_write_row(rows, filename, file_format)
+        +get_output_file_path(filename, page_number, page_prefix, target_layer, output_name, date) String
+        +dump_records(records, target_layer, file_format, date)
+    }
+    
+    %% Concrete Implementations
+    class NotionExtractor {
+        +String source
+        +String token
+        +__init__(source, token)
+        +_get_endpoint() String
+        +fetch_paginated(database_id, n_pages) dict
+        +run(database_id)
+    }
+    
+    class BitrixExtractor {
+        +String source
+        +String token
+        +__init__(source, token)
+        +_get_endpoint() String
+        +fetch_paginated() dict
+        +run()
+    }
+    
+    class BenditoExtractor {
+        +String source
+        +String token
+        +__init__(source, token)
+        +_get_endpoint() String
+        +fetch_paginated() dict
+        +run()
+    }
+    
+    class PostgresLoader {
+        +String connection_string
+        +__init__(connection_string)
+        +load_data(df, target_table, target_schema, mode)
+        +create_schema(target_schema)
+        +create_table(sql_command)
+        +check_if_schema_exists(target_schema) bool
+    }
+    
+    class NotionTransformer {
+        +process_date_columns(df, columns) DataFrame
+        +process_list_columns(df) DataFrame
+        +_extract_users_list(records) DataFrame
+        +extract_properties_from_page(page) dict
+        +extract_pages_from_records(records) DataFrame
+    }
+    
+    class DbtRunner {
+        +String dbt_path
+        +String profiles_dir
+        +__init__(dbt_path, profiles_dir)
+        +run_models(models)
+        +run_project()
+        +test_models(models)
+        +run_snapshots()
+        +run_seeds()
+    }
+    
+    %% DBT Models (Representação conceptual)
+    class NotionRawModel {
+        <<dbt model>>
+        +ntn_raw_universal_task_database
+        +ntn_raw_action_items
+    }
+    
+    class NotionProcessedModel {
+        <<dbt model>>
+        +ntn_processed_universal_task_database
+    }
+    
+    class NotionCuratedModel {
+        <<dbt model>>
+        +ntn_curated_universal_task_database
+        +ntn_curated_users
+        +ntn_curated_enum_database_properties
+    }
+    
+    class BitrixModels {
+        <<dbt model>>
+        +models
+    }
+    
+    %% Relationships
+    GenericExtractor <|-- GenericAPIExtractor
+    GenericExtractor <|-- GenericDatabaseExtractor
+    
+    GenericAPIExtractor <|-- NotionExtractor
+    GenericAPIExtractor <|-- BitrixExtractor
+    GenericAPIExtractor <|-- BenditoExtractor
+    
+    BaseLoader <|-- PostgresLoader
+    
+    NotionExtractor -- NotionTransformer : uses >
+    NotionExtractor -- DataWriter : uses >
+    BitrixExtractor -- DataWriter : uses >
+    
+    PostgresLoader -- NotionRawModel : loads data to >
+    PostgresLoader -- BitrixModels : loads data to >
+    
+    DbtRunner -- NotionRawModel : transforms >
+    DbtRunner -- NotionProcessedModel : transforms >
+    DbtRunner -- NotionCuratedModel : transforms >
+    DbtRunner -- BitrixModels : transforms >
+    
+    NotionRawModel -- NotionProcessedModel : source for >
+    NotionProcessedModel -- NotionCuratedModel : source for >
+```
 
 ## Convenções de Nomenclatura
 
 ### Pascal Case (ExemploDeClasse):
-- Nomes de Classes Python
+- Nomes de Classes
 
 ### Snake Case (exemplo_de_metodo):
 - Nomes de Métodos Python

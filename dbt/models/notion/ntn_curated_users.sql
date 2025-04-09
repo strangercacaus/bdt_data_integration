@@ -1,5 +1,9 @@
-{{config(
-    materialized = 'table'
+{{ config(
+    materialized = 'table',
+    post_hook=[
+        "GRANT USAGE ON SCHEMA {{ schema }} TO bendito_metabase",
+        "GRANT SELECT ON {{ this }} TO bendito_metabase"
+    ]
 )}}
 with unique_person as
 (
