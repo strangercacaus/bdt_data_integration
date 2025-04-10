@@ -101,9 +101,7 @@ def replicate_table(source_name, target_table_name, mode="table"):
         token=token, bitrix_url=bitrix_url, bitrix_user_id=bitrix_user_id
     )
     stream.extract_stream(separator=";", start=0, chunksize=1000, mode=mode)
-
-    stream.stage_stream()
-
+    
     stream.schema = f"""
     CREATE TABLE IF NOT EXISTS {source}.{target_table_name}(
         "ID" integer NOT NULL,
@@ -169,13 +167,13 @@ for i, table in active_tables.iterrows():
             
     except Exception as e:
         bitrix_logger.error(f"Error replicating table {table_name}: {str(e)}")
-#       We don't increment success counter here
+#      We don't increment success counter here
 
 # Execute dbt transformations for bitrix models after all tables have been loaded
 logger = logging.getLogger("dbt_runner")
 logger.info("Executando transformações dbt para os modelos do Bitrix")
 
-dbt_project_dir = Path(__file__).parent.parent / "dbt"
+dbt_project_dir = Path(__file__).parent.parent.parent / "dbt"
 dbt_profiles_dir = dbt_project_dir
 
 # Verificar se o diretório existe

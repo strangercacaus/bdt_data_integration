@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import datetime
+import pandas as pd
 from dotenv import load_dotenv
 import sys
 from pathlib import Path
@@ -66,9 +67,9 @@ start_time = time.time()
 notifier = WebhookNotifier(url=notifier_url, pipeline="bendito_pipeline")
 
 schema_file_path = str(schema_dir / 'bendito.public.information_schema.csv')
-schema_df = Utils.get_schema('public')
-schema_df.to_csv(schema_file_path, index=False, sep=';')
-#schema_df = pd.read_csv(schema_file_path,sep=';')
+#schema_df = Utils.get_schema('public')
+#schema_df.to_csv(schema_file_path, index=False, sep=';')
+schema_df = pd.read_csv(schema_file_path,sep=';')
 unique_table_names = schema_df['table_name'].unique()
 
 #Carregando configurações
@@ -100,7 +101,7 @@ def replicate_table(table_name):
 
     stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
 
-    stream.extract_stream(separator=";", page_size=5000)
+    #stream.extract_stream(separator=";", page_size=5000)
 
     stream.transform_stream()
 

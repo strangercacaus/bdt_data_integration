@@ -95,22 +95,11 @@ def replicate_database(database_name, database_id, target_table_name):
     # Define logger for this function
     logger = logging.getLogger("replicate_database")
 
-    
-    # Verificar se os arquivos necessários existem
-    # if not os.path.exists(schema_file_path):
-    #     logger.error(f"Arquivo de schema não encontrado: {schema_file_path}")
-    #     return 1
-
-    # if not os.path.exists(mapping_file_path):
-    #     logger.error(f"Arquivo de mapeamento não encontrado: {mapping_file_path}")
-    #     return 1
-
     stream = NotionStream(source_name=database_name, config=config)
 
     stream.set_extractor(database_id=database_id, token=token)
 
     stream.extract_stream()
-
     
     stream.schema = f"""
     CREATE TABLE IF NOT EXISTS {source_name}.{target_table_name}(
@@ -118,9 +107,7 @@ def replicate_database(database_name, database_id, target_table_name):
         "SUCCESS" bool,
         "CONTENT" jsonb
         );"""
-
-    stream.stage_stream()
-
+        
     stream.set_loader(
         engine=create_engine(
             f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
@@ -137,30 +124,29 @@ def replicate_database(database_name, database_id, target_table_name):
     return 0
 
 
-# sourcery skip: convert-to-enumerate, remove-unused-enumerate
 success = 0
 total = 0
 
-# for i, table in active_tables.iterrows():
-#     total += 1
-#     target_name = table["target_name"] or table["table_name"]
-#     database_name = table["table_name"]
-#     database_id = table["database_id"]
-#     meta.update_table_meta(database_name, last_sync_attempt_at=datetime.datetime.now())
-#     try:
-#         replicate_database(database_name, database_id, target_name)
-#         success += 1
-#         meta.update_table_meta(
-#             database_name, last_successful_sync_at=datetime.datetime.now()
-#         )
-#     except Exception as e:
-#         print(f"Error: {e}")
-#         success += 0
+for i, table in active_tables.iterrows():
+    total += 1
+    target_name = table["target_name"] or table["table_name"]
+    database_name = table["table_name"]
+    database_id = table["database_id"]
+    meta.update_table_meta(database_name, last_sync_attempt_at=datetime.datetime.now())
+    try:
+        replicate_database(database_name, database_id, target_name)
+        success += 1
+        meta.update_table_meta(
+            database_name, last_successful_sync_at=datetime.datetime.now()
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        success += 0
 
 logger = logging.getLogger("dbt_runner")
 logger.info("Executando transformações dbt para os modelos do Notion")
 
-dbt_project_dir = Path(__file__).parent.parent / "dbt"
+dbt_project_dir = Path(__file__).parent.parent.parent / "dbt"
 dbt_profiles_dir = dbt_project_dir
 
 # Verificar se o diretório existe
@@ -202,6 +188,6 @@ hours, minutes, seconds = (
 elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
 # Update the notifier.pipeline_end call with the formatted time
-# notifier.pipeline_end(
-#    text=f"Execução de pipeline encerrada: {schema}_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-# )
+notifier.pipeline_end(
+    text=f"Execução de pipeline encerrada: {source_name}_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+)

@@ -51,6 +51,7 @@ class PostgresLoader(BaseLoader):
         self.engine = engine
         self.schema_file_path = schema_file_path
         self.schema_file_type = schema_file_type
+        self.schema = None
 
     def load_sql_schema(self, target_table: str, target_schema: str):
         """

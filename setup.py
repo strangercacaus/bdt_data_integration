@@ -8,7 +8,7 @@ setup(
     install_requires=[
         "psycopg2-binary",
         "sql-metadata==2.6.0",
-        "SQLAlchemy==2.0.0",
+        "SQLAlchemy==1.4.54",
         "sqlparse>=0.4.4",
         "Unidecode==1.3.8",
         "pyyaml==6.0.2",

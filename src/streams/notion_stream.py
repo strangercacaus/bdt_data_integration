@@ -68,53 +68,6 @@ class NotionStream(Stream):
 
         return records
 
-    #
-
-    def stage_stream(self, rename_columns: bool = False, **kwargs):
-        """
-        Processa os dados transformados e escreve para a camada staging.
-
-        Args:
-            rename_columns (bool): Se deve renomear colunas usando um arquivo de mapeamento
-            **kwargs: Argumentos adicionais para a etapa de staging
-        """
-        separator = kwargs.get(
-            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
-        )
-
-        raw_data_path = self.writer.get_output_file_path(target_layer="raw") + ".csv"
-
-        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
-
-        raw_data = pd.read_csv(
-            raw_data_path, sep=separator, encoding="utf-8", dtype=str
-        )
-
-        staged_data_path = (
-            self.writer.get_output_file_path(
-                output_name=self.output_name, target_layer="staging"
-            )
-            + ".csv"
-        )
-
-        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
-
-        raw_data.to_csv(staged_data_path, index=False, sep=separator, encoding="utf-8")
-
-        # if rename_columns:
-        #     mapping_file_path = kwargs.get("mapping_file_path", None)
-        #     if not mapping_file_path:
-        #         raise Exception("Caminho do arquivo mapping não foi informado")
-        #     try:
-        #         with open(mapping_file_path, "r") as file:
-        #             mapping = json.load(file)
-
-        #         processed_data = Utils.rename_columns(processed_data, mapping)
-        #     except Exception as e:
-        #         raise Exception(f"Erro ao ler o arquivo mapping: {e}") from e
-        # else:
-        #     processed_data.columns = processed_data.columns.str.lower()
-
     def set_loader(self, engine):
         """
         Configura o PostgresLoader para esta stream.
@@ -141,21 +94,21 @@ class NotionStream(Stream):
             "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
         )
 
-        staged_data_path = (
+        raw_data_path = (
             self.writer.get_output_file_path(
-                output_name=self.output_name, target_layer="staging"
+                output_name=self.output_name, target_layer="raw"
             )
             + ".csv"
         )
 
-        staged_data = pd.read_csv(
-            staged_data_path, sep=separator, encoding="utf-8", dtype=str
+        raw_data = pd.read_csv(
+            raw_data_path, sep=separator, encoding="utf-8", dtype=str
         )
 
         logger.info(f"Chamando load_data com staged_data.shape: {staged_data.shape}")
 
         self.loader.load_data(
-            df=staged_data,
+            df=raw_data,
             target_table=target_table,
             target_schema=target_schema,
             mode=mode,
