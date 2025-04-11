@@ -67,9 +67,8 @@ start_time = time.time()
 notifier = WebhookNotifier(url=notifier_url, pipeline="bendito_pipeline")
 
 schema_file_path = str(schema_dir / 'bendito.public.information_schema.csv')
-#schema_df = Utils.get_schema('public')
-#schema_df.to_csv(schema_file_path, index=False, sep=';')
-schema_df = pd.read_csv(schema_file_path,sep=';')
+schema_df = Utils.get_schema('public')
+schema_df.to_csv(schema_file_path, index=False, sep=';')
 unique_table_names = schema_df['table_name'].unique()
 
 #Carregando configurações
@@ -91,6 +90,7 @@ bendito_data = df[(df["source"] == "bendito") & (df["active"] == True)][
 # Selecting and displaying the columns of interest
 active_tables = bendito_data[["table_name"]]
 
+bendito_logger.info(active_tables)
 
 @notifier.error_handler
 def replicate_table(table_name):
@@ -101,7 +101,7 @@ def replicate_table(table_name):
 
     stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
 
-    #stream.extract_stream(separator=";", page_size=5000)
+    stream.extract_stream(separator=";", page_size=5000)
 
     stream.transform_stream()
 
@@ -123,19 +123,17 @@ def replicate_table(table_name):
 
 total = 0
 success = 0
-#for i, table in active_tables.iterrows():
-for table in ['account_receivable','imported_nfe','job']:
+for i, table in active_tables.iterrows():
     total += 1
-#    table_name = table['table_name']
-    table_name = table
+    table_name = table['table_name']
     meta.update_table_meta(table_name, last_sync_attempt_at = datetime.datetime.now())
     try: 
         replicate_table(table_name)
         success += 1
         meta.update_table_meta(table_name, last_successful_sync_at = datetime.datetime.now())
-    except:
+    except Exception as e:
         success += 0
-
+        raise e
 end_time = time.time()
 total_time = end_time - start_time
 elapsed_time = str(datetime.timedelta(seconds=total_time))
@@ -146,4 +144,4 @@ hours, minutes, seconds = int(float(str(total_time // 3600).zfill(2))), int(floa
 elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
 # Update the notifier.pipeline_end call with the formatted time
-#notifier.pipeline_end(text = f'Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}') 
+notifier.pipeline_end(text = f'Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}')

@@ -125,7 +125,6 @@ def replicate_table(source_name, target_table_name, mode="table"):
 
 
 total = 0
-
 success = 0
 
 base_dir = os.path.join(os.getcwd(), "data")
@@ -217,6 +216,6 @@ hours, minutes, seconds = (
 )
 elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
-# notifier.pipeline_end(
-#    text=f"Execução de pipeline encerrada: bitrix_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-# )
+notifier.pipeline_end(
+    text=f"Execução de pipeline encerrada: bitrix_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+)
