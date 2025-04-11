@@ -90,6 +90,7 @@ bendito_data = df[(df["source"] == "bendito") & (df["active"] == True)][
 # Selecting and displaying the columns of interest
 active_tables = bendito_data[["table_name"]]
 
+bendito_logger.info(active_tables)
 
 @notifier.error_handler
 def replicate_table(table_name):
@@ -130,9 +131,9 @@ for i, table in active_tables.iterrows():
         replicate_table(table_name)
         success += 1
         meta.update_table_meta(table_name, last_successful_sync_at = datetime.datetime.now())
-    except:
+    except Exception as e:
         success += 0
-
+        raise e
 end_time = time.time()
 total_time = end_time - start_time
 elapsed_time = str(datetime.timedelta(seconds=total_time))
@@ -143,4 +144,4 @@ hours, minutes, seconds = int(float(str(total_time // 3600).zfill(2))), int(floa
 elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
 # Update the notifier.pipeline_end call with the formatted time
-notifier.pipeline_end(text = f'Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}') 
+notifier.pipeline_end(text = f'Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}')
