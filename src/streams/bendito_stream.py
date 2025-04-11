@@ -25,6 +25,7 @@ class BenditoStream(Stream):
         """
         super().__init__(source_name, config, **kwargs)
         self.source = "bendito"
+        self.source_name = source_name
         self.output_name = kwargs.get("output_name", self.source_name)
         self.writer = DataWriter(
             source=self.source,
@@ -45,45 +46,45 @@ class BenditoStream(Stream):
         self.separator = separator
 
     def extract_stream(self, custom_query=None, page_size=500, **kwargs) -> None:
-        """
-        Extract data from Bendito API and write it to the raw layer.
 
-        Args:
-            custom_query (str, optional): Custom SQL query to extract data
-            page_size (int): Number of records per page
-            **kwargs: Additional arguments for extraction
-        """
-        endpoint = kwargs.get("endpoint", None)
-        table = kwargs.get("table", self.source_name)
-        columns = kwargs.get("columns", None)
-        where = kwargs.get("where", None)
-        order_by = kwargs.get("order_by", None)
+        separator = kwargs.get(
+            'separator',
+            ';'
+            )
 
-        if custom_query is not None:
-            data = self.extractor.run_query(query=custom_query, page_size=page_size)
+        order_col = kwargs.get(
+            'order_col',
+            1
+            )
+        
+        if custom_query:
+            query = custom_query.strip().rstrip(';')
         else:
-            data = self.extractor.extract_table(
-                table=table,
-                columns=columns,
-                where=where,
-                endpoint=endpoint,
-                order_by=order_by,
-                page_size=page_size,
+            query = f'select * from "{self.source_name}" order by {order_col} asc'
+
+        records = self.extractor.run(
+            query = query,
+            separator = separator,
+            page_size = page_size)
+            
+        raw_data_path = self.writer.get_output_file_path(
+            target_layer = 'raw',
+            date = False
+            ) + '.csv'
+
+        os.makedirs(
+            os.path.dirname(raw_data_path),
+            exist_ok = True
             )
 
-        if isinstance(data, pd.DataFrame):
-            raw_data_path = (
-                self.writer.get_output_file_path(target_layer="raw") + ".csv"
+        records.to_csv(
+            raw_data_path,
+            index = False,
+            sep = separator,
+            encoding = 'utf-8'
             )
 
-            os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
-
-            data.to_csv(
-                raw_data_path, sep=self.separator, index=False, encoding="utf-8"
-            )
-        else:
-            logging.error(f"Invalid data format: {type(data)}")
-            raise ValueError(f"Invalid data format: {type(data)}")
+        return records
 
     def transform_stream(self, **kwargs) -> None:
         """

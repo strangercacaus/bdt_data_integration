@@ -145,7 +145,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
                 compression=kwargs.get('compression',False)
             )
         )
-        df = pd.concat(records, ignore_index=True)
+        df = pd.concat(records, ignore_index=True, dtype='str')
         logger.info(f'{__name__}: Fim da extração.')
         
         return df 

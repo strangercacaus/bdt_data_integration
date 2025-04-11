@@ -103,7 +103,7 @@ class BitrixStream(Stream):
             raw_data_path, sep=separator, encoding="utf-8", dtype=str
         )
 
-        logger.info(f"Chamando load_data com staged_data.shape: {staged_data.shape}")
+        logger.info(f"Chamando load_data com raw_data.shape: {raw_data.shape}")
 
         self.loader.load_data(
             df=raw_data,

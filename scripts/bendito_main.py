@@ -93,6 +93,7 @@ active_tables = bendito_data[["table_name"]]
 bendito_logger.info(active_tables)
 
 @notifier.error_handler
+
 def replicate_table(table_name):
 
     logger = logging.getLogger("replicate_database")
@@ -114,12 +115,7 @@ def replicate_table(table_name):
         schema_file_path=schema_file_path,
         schema_file_type="info_schema",
     )
-    try:
-        stream.load_stream(target_schema=schema, source_name=table_name, chunksize=1000)
-    except Exception:
-        stream.load_stream(target_schema=schema, source_name=table_name, chunksize=1000)
-    finally:
-        return 0
+    stream.load_stream(target_schema=schema, source_name=table_name, chunksize=1000)
 
 total = 0
 success = 0
