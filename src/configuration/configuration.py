@@ -55,7 +55,6 @@ class MetadataHandler:
                 # Create a fresh connection for each attempt
                 with self.engine.connect() as connection:
                     connection.execute(text(query), params)
-                    connection.commit()  # Make sure to commit the transaction
                 logger.info(f"Successfully updated metadata for {self.source}.{table}")
                 return True  # Success - exit the retry loop
             except Exception as e:
