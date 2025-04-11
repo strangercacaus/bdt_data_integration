@@ -8,3 +8,5 @@ work/
 main.py
 schema/*
 .vscode/*
+.idea/
+build/
