@@ -188,6 +188,6 @@ hours, minutes, seconds = (
 elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
 # Update the notifier.pipeline_end call with the formatted time
-notifier.pipeline_end(
-    text=f"Execução de pipeline encerrada: {source_name}_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-)
+# notifier.pipeline_end(
+#     text=f"Execução de pipeline encerrada: {source_name}_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+# )
