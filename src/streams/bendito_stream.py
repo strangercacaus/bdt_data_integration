@@ -86,84 +86,6 @@ class BenditoStream(Stream):
 
         return records
 
-    def transform_stream(self, **kwargs) -> None:
-        """
-        Transform the raw data and write it to the processing layer.
-
-        Args:
-            **kwargs: Additional arguments for transformation
-        """
-        # Lendo o arquivo na camada raw
-        separator = kwargs.get(
-            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
-        )
-
-        raw_data_path = self.writer.get_output_file_path(target_layer="raw") + ".csv"
-
-        try:
-            raw_data = pd.read_csv(
-                raw_data_path, sep=separator, encoding="utf-8", dtype=str
-            )
-        except Exception as e:
-            raise Exception(f"Error reading raw data: {e}") from e
-
-        # Gravando o arquivo na camada processing
-        processed_data_path = (
-            self.writer.get_output_file_path(target_layer="processing") + ".csv"
-        )
-
-        os.makedirs(os.path.dirname(processed_data_path), exist_ok=True)
-
-        raw_data.to_csv(
-            processed_data_path, sep=separator, index=False, encoding="utf-8"
-        )
-
-    def stage_stream(self, rename_columns=False, **kwargs):
-        """
-        Process the transformed data and write it to the staging layer.
-
-        Args:
-            rename_columns (bool): Whether to rename columns using a mapping file
-            **kwargs: Additional arguments for staging
-        """
-        # Lendo o arquivo na camada processing
-        separator = kwargs.get("separator", self.separator)
-
-        processed_data_path = (
-            self.writer.get_output_file_path(target_layer="processing") + ".csv"
-        )
-
-        processed_data = pd.read_csv(
-            processed_data_path, sep=separator, encoding="utf-8", dtype=str
-        )
-
-        if rename_columns:
-            mapping_file_path = kwargs.get("mapping_file_path", None)
-            if not mapping_file_path:
-                raise Exception("Caminho do arquivo mapping não foi informado")
-            try:
-                with open(mapping_file_path, "r") as file:
-                    mapping = json.load(file)
-
-                processed_data = Utils.rename_columns(processed_data, mapping)
-            except Exception as e:
-                raise Exception(f"Erro ao ler o arquivo mapping: {e}") from e
-        else:
-            processed_data.columns = processed_data.columns.str.lower()
-
-        staged_data_path = (
-            self.writer.get_output_file_path(
-                output_name=self.output_name, target_layer="staging"
-            )
-            + ".csv"
-        )
-
-        os.makedirs(os.path.dirname(staged_data_path), exist_ok=True)
-
-        processed_data.to_csv(
-            staged_data_path, sep=separator, index=False, encoding="utf-8"
-        )
-
     def set_loader(self, engine, schema_file_path, schema_file_type):
         """
         Set up the PostgresLoader for this stream.
@@ -189,19 +111,19 @@ class BenditoStream(Stream):
         mode = kwargs.get("mode", "replace")
         separator = kwargs.get("separator", self.separator)
 
-        staged_data_path = (
+        raw_data_path = (
             self.writer.get_output_file_path(
-                output_name=self.output_name, target_layer="staging"
+                output_name=self.output_name, target_layer="raw"
             )
             + ".csv"
         )
 
-        staged_data = pd.read_csv(
-            staged_data_path, sep=separator, encoding="utf-8", dtype=str
+        raw_data = pd.read_csv(
+            raw_data_path, sep=separator, encoding="utf-8", dtype=str
         )
 
         self.loader.load_data(
-            df=staged_data,
+            df=raw_data,
             target_schema=target_schema,
             target_table=self.output_name,
             mode=mode,

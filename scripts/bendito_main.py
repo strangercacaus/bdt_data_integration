@@ -90,8 +90,6 @@ bendito_data = df[(df["source"] == "bendito") & (df["active"] == True)][
 # Selecting and displaying the columns of interest
 active_tables = bendito_data[["table_name"]]
 
-bendito_logger.info(active_tables)
-
 @notifier.error_handler
 
 def replicate_table(table_name):
@@ -104,10 +102,6 @@ def replicate_table(table_name):
 
     stream.extract_stream(separator=";", page_size=5000)
 
-    stream.transform_stream()
-
-    stream.stage_stream()
-
     stream.set_loader(
         engine=create_engine(
             f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
@@ -119,9 +113,11 @@ def replicate_table(table_name):
 
 total = 0
 success = 0
-for i, table in active_tables.iterrows():
+#for i, table in active_tables.iterrows():
+for table in ['client','person','invoice']:
     total += 1
-    table_name = table['table_name']
+#    table_name = table['table_name']
+    table_name = table
     meta.update_table_meta(table_name, last_sync_attempt_at = datetime.datetime.now())
     try: 
         replicate_table(table_name)
@@ -130,6 +126,7 @@ for i, table in active_tables.iterrows():
     except Exception as e:
         success += 0
         raise e
+
 end_time = time.time()
 total_time = end_time - start_time
 elapsed_time = str(datetime.timedelta(seconds=total_time))

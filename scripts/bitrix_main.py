@@ -133,40 +133,40 @@ for layer in ["raw", "processing", "staging"]:
     os.makedirs(dir_path, exist_ok=True)
     bitrix_logger.info(f"Garantindo que o diretório {dir_path} existe.")
 
-for i, table in active_tables.iterrows():
-    total += 1
-    table_name = table["table_name"]
-    target_table_name = table["target_name"] or table["table_name"]
-    mode = table["mode"]
+# for i, table in active_tables.iterrows():
+#     total += 1
+#     table_name = table["table_name"]
+#     target_table_name = table["target_name"] or table["table_name"]
+#     mode = table["mode"]
     
-    # Log start of table replication with metadata update
-    bitrix_logger.info(f"Starting replication of table {table_name} (mode: {mode})")
+#     # Log start of table replication with metadata update
+#     bitrix_logger.info(f"Starting replication of table {table_name} (mode: {mode})")
     
-    # Try to update metadata - continue even if it fails
-    try:
-        meta.update_table_meta(table_name, last_sync_attempt_at=datetime.datetime.now())
-    except Exception as e:
-        bitrix_logger.warning(f"Failed to update start metadata for {table_name}: {str(e)}")
+#     # Try to update metadata - continue even if it fails
+#     try:
+#         meta.update_table_meta(table_name, last_sync_attempt_at=datetime.datetime.now())
+#     except Exception as e:
+#         bitrix_logger.warning(f"Failed to update start metadata for {table_name}: {str(e)}")
     
-    try:
-        # Attempt table replication
-        replicate_table(
-            source_name=table_name, target_table_name=target_table_name, mode=mode
-        )
-        success += 1
+#     try:
+#         # Attempt table replication
+#         replicate_table(
+#             source_name=table_name, target_table_name=target_table_name, mode=mode
+#         )
+#         success += 1
         
-        # Try to update success metadata - continue even if it fails
-        try:
-            meta.update_table_meta(
-                table_name, last_successful_sync_at=datetime.datetime.now()
-            )
-            bitrix_logger.info(f"Successfully replicated table {table_name}")
-        except Exception as e:
-            bitrix_logger.warning(f"Failed to update success metadata for {table_name}: {str(e)}")
+#         # Try to update success metadata - continue even if it fails
+#         try:
+#             meta.update_table_meta(
+#                 table_name, last_successful_sync_at=datetime.datetime.now()
+#             )
+#             bitrix_logger.info(f"Successfully replicated table {table_name}")
+#         except Exception as e:
+#             bitrix_logger.warning(f"Failed to update success metadata for {table_name}: {str(e)}")
             
-    except Exception as e:
-        bitrix_logger.error(f"Error replicating table {table_name}: {str(e)}")
-#      We don't increment success counter here
+#     except Exception as e:
+#         bitrix_logger.error(f"Error replicating table {table_name}: {str(e)}")
+# #      We don't increment success counter here
 
 # Execute dbt transformations for bitrix models after all tables have been loaded
 logger = logging.getLogger("dbt_runner")

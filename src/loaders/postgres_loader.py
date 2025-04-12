@@ -388,13 +388,6 @@ class PostgresLoader(BaseLoader):
                 logger.debug(f"Truncando dados de {target_table}.")
                 self.truncate_table(target_table, target_schema)
 
-                # Verifica se o engine é uma instância de um Sqlalchemy Engine
-                if not isinstance(self.engine, Engine):
-                    raise ValueError(
-                        "O engine não é uma instância de um Sqlalchemy Engine."
-                    )
-                else:
-                    logger.debug(f"Validação do engine passou: {type(self.engine)}")
         # Se a tabela não existe no schema, cria a tabela
         else:
             logger.debug(f"Tabela {target_table} não encontrada em {target_schema}")
