@@ -2,7 +2,6 @@ import os
 import time
 import logging
 import datetime
-import pandas as pd
 from dotenv import load_dotenv
 import sys
 from pathlib import Path
@@ -48,22 +47,28 @@ logging.getLogger("__main__").setLevel(logging.DEBUG)
 logging.getLogger("bdt_data_integration").setLevel(logging.DEBUG)
 # Set the root logger to ensure all child loggers are visible
 logging.getLogger().setLevel(logging.DEBUG)
-# Garantir que os diretórios necessários existam
+
+# Define base path for schema files relative to package base
+project_root = Path(__file__).parent.parent.parent
+schema_dir = project_root / "schema" / "notion"
+os.makedirs(schema_dir, exist_ok=True)
 
 load_dotenv()
-
-source_system = "bendito"
+origin = "bendito"
 host = os.environ["DESTINATION_HOST"]
 user = os.environ["DESTINATION_ROOT_USER"]
 password = os.environ["DESTINATION_ROOT_PASSWORD"]
 db_name = os.environ["DESTINATION_DB_NAME"]
 notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
+#
+#
+#
 
 
 start_time = time.time()
 notifier = WebhookNotifier(url=notifier_url, pipeline="bendito_pipeline")
 
-#Carregando configurações
+# Carregando configurações
 config = Utils.load_config()
 metadata_db_url = (
     f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
@@ -71,35 +76,40 @@ metadata_db_url = (
 metadata_engine = create_engine(
     metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
 )
-meta = MetadataHandler(metadata_engine, source_system)
-df = meta._load_table_meta()
+metadata_engine = MetadataHandler(metadata_engine, origin)
+df = metadata_engine._load_table_meta()
 
 # Extracting required information from the DataFrame
 columns_to_fetch = ["table_name", "vars", "target_name"]
 bendito_data = df[(df["source"] == "bendito") & (df["active"] == True)][
     columns_to_fetch
 ]
+
+bendito_data["mode"] = bendito_data["vars"].apply(
+    lambda x: x.get("type", None) if x else None
+)
 # Selecting and displaying the columns of interest
-active_tables = bendito_data[["table_name",'target_name']]
+active_tables = bendito_data[["table_name", "target_name", "mode"]]
+
 
 @notifier.error_handler
-
-def replicate_table(source_table, target_table_name, mode='table'):
+def replicate_table(origin_table_name, target_table_name, mode="table"):
 
     logger = logging.getLogger("replicate_database")
 
-    stream = BenditoStream(source_table, config=config)
+    stream = BenditoStream(source_name=origin_table_name, config=config)
 
     stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
 
     stream.extract_stream(separator=";", page_size=5000)
-    
-    stream.schema = f"""
-    CREATE TABLE IF NOT EXISTS {source_system}.{target_table_name}(
+
+    ddl = f"""
+    CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
         "ID" varchar NOT NULL,
         "SUCCESS" bool,
         "CONTENT" jsonb
         );"""
+    stream.set_table_definition(ddl)
 
     stream.set_loader(
         engine=create_engine(
@@ -108,28 +118,37 @@ def replicate_table(source_table, target_table_name, mode='table'):
     )
     try:
         stream.load_stream(
-            target_table_name,
-            source_system,
-            chunksize = 1000)
+            target_table=target_table_name, target_schema=origin, chunksize=1000
+        )
     except Exception as e:
         logger.error(f"Erro ao carregar dados: {e}")
         return 0
     return 0
-    
+
+
+base_dir = os.path.join(os.getcwd(), "data")
+dir_path = os.path.join(base_dir, "raw")
+os.makedirs(dir_path, exist_ok=True)
+bendito_logger.info(f"Garantindo que o diretório {dir_path} existe.")
+
 total = 0
 success = 0
-# for i, table in active_tables.iterrows():
-for table in ['anp','cest','ncm']:
+
+for i, table in active_tables.iterrows():
+    # for table in ['anp','cest','ncm']:
     total += 1
-#   table_name = table['table_name']
-#   target_table_name = table['target_table_name']
-    source_table = table
-    target_table_name = 'bdt_raw_' + source_table
-    meta.update_table_meta(source_table, last_sync_attempt_at = datetime.datetime.now())
-    try: 
-        replicate_table(source_table, target_table_name)
+    origin_table_name = table["table_name"]
+    target_table_name = table["target_table_name"]
+    metadata_engine.update_table_meta(
+        origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+    )
+
+    try:
+        replicate_table(origin_table_name, target_table_name)
         success += 1
-        meta.update_table_meta(source_table, last_successful_sync_at = datetime.datetime.now())
+        metadata_engine.update_table_meta(
+            origin_table_name, last_successful_sync_at=datetime.datetime.now()
+        )
     except Exception as e:
         success += 0
         raise e
@@ -149,7 +168,9 @@ else:
     # Verificar se existem modelos SQL na pasta notion
     bendito_models_dir = dbt_project_dir / "models" / "bendito"
     if not bendito_models_dir.exists():
-        logger.error(f"Diretório de modelos bendito não encontrado: {bendito_models_dir}")
+        logger.error(
+            f"Diretório de modelos bendito não encontrado: {bendito_models_dir}"
+        )
     else:
         sql_files = list(bendito_models_dir.glob("*.sql"))
         logger.info(
@@ -157,22 +178,27 @@ else:
         )
 
 # Define o schema de destino para as transformações
-logger.info(f"Usando schema de destino para transformações: {source_system}")
+logger.info(f"Usando schema de destino para transformações: {origin}")
 
 dbt_runner = DBTRunner(
     project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
 )
 
-dbt_success = dbt_runner.run(models=source_system, target_schema= source_system)
+dbt_success = dbt_runner.run(models=origin, target_schema=origin)
 
 end_time = time.time()
 total_time = end_time - start_time
 elapsed_time = str(datetime.timedelta(seconds=total_time))
-elapsed_time  # Returns a string in the format 'H:MM:SS'
 
 # Convert elapsed_time from string format 'H:MM:SS.ssssss' to 'HH:MM:SS'
-hours, minutes, seconds = int(float(str(total_time // 3600).zfill(2))), int(float(str((total_time % 3600) // 60).zfill(2))), int(float(str(round(total_time % 60)).zfill(2)))
+hours, minutes, seconds = (
+    int(float(str(total_time // 3600).zfill(2))),
+    int(float(str((total_time % 3600) // 60).zfill(2))),
+    int(float(str(round(total_time % 60)).zfill(2))),
+)
 elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
 # Update the notifier.pipeline_end call with the formatted time
-notifier.pipeline_end(text = f'Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}')
+notifier.pipeline_end(
+    text=f"Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+)

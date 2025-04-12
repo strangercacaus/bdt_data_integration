@@ -146,7 +146,7 @@ class PostgresLoader(BaseLoader):
         """
         with self.engine.begin() as connection:
             create_schema_query = text(f"CREATE SCHEMA {target_schema}")
-            logger.debug(f'Executando query: {create_schema_query}')
+            logger.debug(f"Executando query: {create_schema_query}")
             connection.execute(create_schema_query)
             logger.info(f"Schema {target_schema} criado com sucesso.")
 
@@ -288,22 +288,7 @@ class PostgresLoader(BaseLoader):
             f"loader.create_sql_schema, target_table: {target_table}, target_schema: {target_schema}, type: {self.schema_file_type}"
         )
 
-        if self.schema:
-            
-            sql_command = self.schema
-            
-        elif self.schema_file_type == "info_schema":
-
-            sql_command = self.load_sql_schema(target_table, target_schema)
-
-        elif self.schema_file_type == "template":
-
-            sql_command = self.render_sql_template(target_table, target_schema)
-
-        else:
-            raise ValueError(
-                "É obrigatório escolher entre um de 'info_schema', 'template' ou 'schema'"
-            )
+        sql_command = self.table_definition
 
         self.create_table(sql_command)
 
@@ -366,9 +351,7 @@ class PostgresLoader(BaseLoader):
 
         # Define o tamanho do chunk para o carregamento em partes
         chunksize = kwargs.get("chunksize", 1000)
-        # Define o schema para o carregamento
-        table_definition = kwargs.get("schema", None)
-        # Verifica se o schema existe
+        # Define o schema para o carregamento        # Verifica se o schema existe
         schema_exists = self.check_if_schema_exists(target_schema)
 
         # Se o schema não existe, cria o schema
@@ -392,9 +375,9 @@ class PostgresLoader(BaseLoader):
         else:
             logger.debug(f"Tabela {target_table} não encontrada em {target_schema}")
 
-            if table_definition is None and self.schema_file_path is None:
+            if self.table_definition is None:
                 raise ValueError(
-                    "Relação não existe no destino, caminho do arquivo de schema precisa estar presente."
+                    "Relação não existe no destino, definição de tabela de destino precisa estar presente."
                 )
 
             logger.debug(f"Criando tabela {target_table} em {target_schema}")
@@ -402,7 +385,7 @@ class PostgresLoader(BaseLoader):
 
         loaded_rows = 0
         logger.debug(f"Inserindo dados em {target_table}")
-        
+
         loaded_rows = df.to_sql(
             target_table,
             con=self.engine,
