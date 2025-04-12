@@ -17,6 +17,8 @@ from bdt_data_integration.src.streams.bendito_stream import BenditoStream
 from bdt_data_integration.src.utils.utils import Utils
 from bdt_data_integration.src.utils.notifiers import WebhookNotifier
 from bdt_data_integration.src.configuration.configuration import MetadataHandler
+from bdt_data_integration.src.utils.dbt_runner import DBTRunner
+
 
 # Set up the root logger
 logging.basicConfig(
@@ -55,7 +57,7 @@ os.makedirs(schema_dir, exist_ok=True)
 
 load_dotenv()
 
-schema = "bendito"
+source = "bendito"
 host = os.environ["DESTINATION_HOST"]
 user = os.environ["DESTINATION_ROOT_USER"]
 password = os.environ["DESTINATION_ROOT_PASSWORD"]
@@ -83,7 +85,7 @@ meta = MetadataHandler(metadata_engine, schema)
 df = meta._load_table_meta()
 
 # Extracting required information from the DataFrame
-columns_to_fetch = ["table_name", "vars"]
+columns_to_fetch = ["table_name", "vars", "target_table_name"]
 bendito_data = df[(df["source"] == "bendito") & (df["active"] == True)][
     columns_to_fetch
 ]
@@ -92,40 +94,77 @@ active_tables = bendito_data[["table_name"]]
 
 @notifier.error_handler
 
-def replicate_table(table_name):
+def replicate_table(source_name, target_table_name):
 
     logger = logging.getLogger("replicate_database")
 
-    stream = BenditoStream(source_name=table_name, config=config)
+    stream = BenditoStream(source_name=source_name, config=config)
 
     stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
 
     stream.extract_stream(separator=";", page_size=5000)
+    
+    stream.schema = f"""
+    CREATE TABLE IF NOT EXISTS {source_name}.{target_table_name}(
+        "ID" varchar NOT NULL,
+        "SUCCESS" bool,
+        "CONTENT" jsonb
+        );"""
 
     stream.set_loader(
         engine=create_engine(
             f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
-        ),
-        schema_file_path=schema_file_path,
-        schema_file_type="info_schema",
+        )
     )
     stream.load_stream(target_schema=schema, source_name=table_name, chunksize=1000)
 
-# total = 0
-# success = 0
-# #for i, table in active_tables.iterrows():
+total = 0
+success = 0
+for i, table in active_tables.iterrows():
 # for table in ['client','person','invoice']:
-#     total += 1
-# #    table_name = table['table_name']
-#     table_name = table
-#     meta.update_table_meta(table_name, last_sync_attempt_at = datetime.datetime.now())
-#     try: 
-#         replicate_table(table_name)
-#         success += 1
-#         meta.update_table_meta(table_name, last_successful_sync_at = datetime.datetime.now())
-#     except Exception as e:
-#         success += 0
-#         raise e
+    total += 1
+    table_name = table['table_name']
+    target_table_name = table['target_table_name']
+#    table_name = table
+    meta.update_table_meta(table_name, last_sync_attempt_at = datetime.datetime.now())
+    try: 
+        replicate_table(table_name, target_table_name)
+        success += 1
+        meta.update_table_meta(table_name, last_successful_sync_at = datetime.datetime.now())
+    except Exception as e:
+        success += 0
+        raise e
+
+logger = logging.getLogger("dbt_runner")
+logger.info("Executando transformações dbt para os modelos do Notion")
+
+dbt_project_dir = Path(__file__).parent.parent.parent / "dbt"
+dbt_profiles_dir = dbt_project_dir
+
+# Verificar se o diretório existe
+if not dbt_project_dir.exists():
+    logger.error(f"Diretório do projeto dbt não encontrado: {dbt_project_dir}")
+else:
+    logger.info(f"Usando diretório de projeto dbt: {dbt_project_dir}")
+
+    # Verificar se existem modelos SQL na pasta notion
+    bendito_models_dir = dbt_project_dir / "models" / "bendito"
+    if not bendito_models_dir.exists():
+        logger.error(f"Diretório de modelos bendito não encontrado: {bendito_models_dir}")
+    else:
+        sql_files = list(bendito_models_dir.glob("*.sql"))
+        logger.info(
+            f"Encontrados {len(sql_files)} arquivos SQL no diretório {bendito_models_dir}"
+        )
+
+# Define o schema de destino para as transformações
+logger.info(f"Usando schema de destino para transformações: {source}")
+
+dbt_runner = DBTRunner(
+    project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
+)
+
+dbt_success = dbt_runner.run(models=source, target_schema= source)
 
 end_time = time.time()
 total_time = end_time - start_time

@@ -133,7 +133,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             **kwargs: Argumentos adicionais, incluindo 'query', 'page_size', 'separator' e 'compression'.
 
         Returns:
-            pd.DataFrame: Um DataFrame contendo todos os dados extraídos e combinados.
+            pd.DataFrame: Um DataFrame contendo todos os dados extraídos e combinados com as colunas ID, SUCCESS e CONTENT.
         """
         query = kwargs.get('query','select 1')
         page_size = kwargs.get('page_size',200)
@@ -148,4 +148,23 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         df = pd.concat(records, ignore_index=True)
         logger.info(f'{__name__}: Fim da extração.')
         
-        return df 
+        # Verificando se existe uma coluna 'id' no DataFrame
+        if 'id' in df.columns:
+            # Usando a coluna 'id' como ID
+            id_column = df['id'].astype(str)
+        else:
+            # Se não existir coluna 'id', usar o índice
+            id_column = df.index.astype(str)
+        
+        # Abordagem altamente otimizada usando to_json
+        # Convertendo o DataFrame para JSON em formato de registros
+        json_records = df.to_json(orient='records', lines=True).split('\n')
+        
+        # Criando o DataFrame de resultado com operações vetorizadas
+        result_df = pd.DataFrame({
+            "ID": id_column,
+            "SUCCESS": True,
+            "CONTENT": json_records
+        })
+        
+        return result_df.astype(str) 
