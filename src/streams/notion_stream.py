@@ -8,7 +8,6 @@ import logging
 from .base_stream import Stream
 from writers import DataWriter
 from loaders.postgres_loader import PostgresLoader
-from transformers import NotionTransformer
 from extractors.notion_extractor import NotionDatabaseAPIExtractor
 from utils import Utils
 from sqlalchemy.sql import text
