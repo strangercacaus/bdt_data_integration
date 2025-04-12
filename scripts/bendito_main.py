@@ -135,10 +135,9 @@ total = 0
 success = 0
 
 for i, table in active_tables.iterrows():
-    # for table in ['anp','cest','ncm']:
     total += 1
     origin_table_name = table["table_name"]
-    target_table_name = table["target_table_name"]
+    target_table_name = table["target_name"] or table["table_name"]
     metadata_engine.update_table_meta(
         origin_table_name, last_sync_attempt_at=datetime.datetime.now()
     )

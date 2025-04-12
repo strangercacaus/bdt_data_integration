@@ -182,7 +182,7 @@ dbt_runner = DBTRunner(
     project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
 )
 
-dbt_success = dbt_runner.run(models=origin, target_schema=origin)
+dbt_success = dbt_runner.run(models='notion', target_schema=origin)
 
 
 end_time = time.time()
