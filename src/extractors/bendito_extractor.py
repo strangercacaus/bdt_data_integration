@@ -159,6 +159,19 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         # Abordagem altamente otimizada usando to_json
         # Convertendo o DataFrame para JSON em formato de registros
         json_records = df.to_json(orient='records', lines=True).split('\n')
+
+                # Removendo a linha vazia extra que pode ser gerada
+        if json_records and json_records[-1] == '':
+            json_records = json_records[:-1]
+        
+        # Verificando se os tamanhos dos arrays são compatíveis
+        if len(json_records) != len(id_column):
+            logger.warning(f"Incompatibilidade de tamanho: json_records={len(json_records)}, id_column={len(id_column)}")
+            # Ajustando para garantir que os tamanhos sejam iguais
+            min_length = min(len(json_records), len(id_column))
+            json_records = json_records[:min_length]
+            id_column = id_column[:min_length]
+        
         
         # Criando o DataFrame de resultado com operações vetorizadas
         result_df = pd.DataFrame({

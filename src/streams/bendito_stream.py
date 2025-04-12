@@ -86,7 +86,7 @@ class BenditoStream(Stream):
 
         return records
 
-    def set_loader(self, engine, schema_file_path, schema_file_type):
+    def set_loader(self, engine):
         """
         Set up the PostgresLoader for this stream.
 
@@ -98,9 +98,9 @@ class BenditoStream(Stream):
             schema_file_path (str): Path to schema file
             schema_file_type (str): Type of schema file
         """
-        self.loader = PostgresLoader(engine, schema_file_path, schema_file_type)
+        self.loader = PostgresLoader(engine)
 
-    def load_stream(self, target_schema, **kwargs):
+    def load_stream(self, target_schema, target_table, **kwargs):
         """
         Load the staged data into the target database.
 
@@ -109,6 +109,7 @@ class BenditoStream(Stream):
             **kwargs: Additional arguments for loading
         """
         mode = kwargs.get("mode", "replace")
+        
         separator = kwargs.get("separator", self.separator)
 
         raw_data_path = (
@@ -122,9 +123,12 @@ class BenditoStream(Stream):
             raw_data_path, sep=separator, encoding="utf-8", dtype=str
         )
 
+        logger.info(f"Chamando load_data com raw_data.shape: {raw_data.shape}")
+
         self.loader.load_data(
             df=raw_data,
+            target_table=target_table,
             target_schema=target_schema,
-            target_table=self.output_name,
             mode=mode,
+            schema=self.schema,
         )

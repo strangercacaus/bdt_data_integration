@@ -50,14 +50,9 @@ logging.getLogger("bdt_data_integration").setLevel(logging.DEBUG)
 logging.getLogger().setLevel(logging.DEBUG)
 # Garantir que os diretórios necessários existam
 
-# Define base path for schema files relative to package base
-project_root = Path(__file__).parent.parent.parent
-schema_dir = project_root / "schema" / "bendito"
-os.makedirs(schema_dir, exist_ok=True)
-
 load_dotenv()
 
-source = "bendito"
+source_system = "bendito"
 host = os.environ["DESTINATION_HOST"]
 user = os.environ["DESTINATION_ROOT_USER"]
 password = os.environ["DESTINATION_ROOT_PASSWORD"]
@@ -68,11 +63,6 @@ notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
 start_time = time.time()
 notifier = WebhookNotifier(url=notifier_url, pipeline="bendito_pipeline")
 
-schema_file_path = str(schema_dir / 'bendito.public.information_schema.csv')
-schema_df = Utils.get_schema('public')
-schema_df.to_csv(schema_file_path, index=False, sep=';')
-unique_table_names = schema_df['table_name'].unique()
-
 #Carregando configurações
 config = Utils.load_config()
 metadata_db_url = (
@@ -81,31 +71,31 @@ metadata_db_url = (
 metadata_engine = create_engine(
     metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
 )
-meta = MetadataHandler(metadata_engine, schema)
+meta = MetadataHandler(metadata_engine, source_system)
 df = meta._load_table_meta()
 
 # Extracting required information from the DataFrame
-columns_to_fetch = ["table_name", "vars", "target_table_name"]
+columns_to_fetch = ["table_name", "vars", "target_name"]
 bendito_data = df[(df["source"] == "bendito") & (df["active"] == True)][
     columns_to_fetch
 ]
 # Selecting and displaying the columns of interest
-active_tables = bendito_data[["table_name"]]
+active_tables = bendito_data[["table_name",'target_name']]
 
 @notifier.error_handler
 
-def replicate_table(source_name, target_table_name):
+def replicate_table(source_table, target_table_name, mode='table'):
 
     logger = logging.getLogger("replicate_database")
 
-    stream = BenditoStream(source_name=source_name, config=config)
+    stream = BenditoStream(source_table, config=config)
 
     stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
 
     stream.extract_stream(separator=";", page_size=5000)
     
     stream.schema = f"""
-    CREATE TABLE IF NOT EXISTS {source_name}.{target_table_name}(
+    CREATE TABLE IF NOT EXISTS {source_system}.{target_table_name}(
         "ID" varchar NOT NULL,
         "SUCCESS" bool,
         "CONTENT" jsonb
@@ -116,21 +106,30 @@ def replicate_table(source_name, target_table_name):
             f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
         )
     )
-    stream.load_stream(target_schema=schema, source_name=table_name, chunksize=1000)
-
+    try:
+        stream.load_stream(
+            target_table_name,
+            source_system,
+            chunksize = 1000)
+    except Exception as e:
+        logger.error(f"Erro ao carregar dados: {e}")
+        return 0
+    return 0
+    
 total = 0
 success = 0
-for i, table in active_tables.iterrows():
-# for table in ['client','person','invoice']:
+# for i, table in active_tables.iterrows():
+for table in ['anp','cest','ncm']:
     total += 1
-    table_name = table['table_name']
-    target_table_name = table['target_table_name']
-#    table_name = table
-    meta.update_table_meta(table_name, last_sync_attempt_at = datetime.datetime.now())
+#   table_name = table['table_name']
+#   target_table_name = table['target_table_name']
+    source_table = table
+    target_table_name = 'bdt_raw_' + source_table
+    meta.update_table_meta(source_table, last_sync_attempt_at = datetime.datetime.now())
     try: 
-        replicate_table(table_name, target_table_name)
+        replicate_table(source_table, target_table_name)
         success += 1
-        meta.update_table_meta(table_name, last_successful_sync_at = datetime.datetime.now())
+        meta.update_table_meta(source_table, last_successful_sync_at = datetime.datetime.now())
     except Exception as e:
         success += 0
         raise e
@@ -158,13 +157,13 @@ else:
         )
 
 # Define o schema de destino para as transformações
-logger.info(f"Usando schema de destino para transformações: {source}")
+logger.info(f"Usando schema de destino para transformações: {source_system}")
 
 dbt_runner = DBTRunner(
     project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
 )
 
-dbt_success = dbt_runner.run(models=source, target_schema= source)
+dbt_success = dbt_runner.run(models=source_system, target_schema= source_system)
 
 end_time = time.time()
 total_time = end_time - start_time
