@@ -22,9 +22,9 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],  # Send log output to the console (screen)
 )
 
-# Make sure the bitrix_logger is at the desired level
-bitrix_logger = logging.getLogger("bitrix_logger")
-bitrix_logger.setLevel(logging.DEBUG)  # Set to DEBUG for maximum visibility
+# Make sure the public_logger is at the desired level
+public_logger = logging.getLogger("public_logger")
+public_logger.setLevel(logging.DEBUG)  # Set to DEBUG for maximum visibility
 
 # Enable postgres_loader logger
 postgres_logger = logging.getLogger("postgres_loader")
@@ -36,11 +36,9 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 # Define base path for schema files relative to package base
 project_root = Path(__file__).parent.parent.parent
-schema_dir = project_root / "schema" / "bitrix"
+schema_dir = project_root / "schema" / "public"
 os.makedirs(schema_dir, exist_ok=True)
 
-start_time = time.time()
-notifier = WebhookNotifier(url=notifier_url, pipeline="downstream_reporting")
 
 load_dotenv()
 source = "public"
@@ -50,12 +48,9 @@ password = os.environ["DESTINATION_ROOT_PASSWORD"]
 db_name = os.environ["DESTINATION_DB_NAME"]
 notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
 
-start_time = time.time()
-notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")
-
 # Execute dbt transformations for bitrix models after all tables have been loaded
 logger = logging.getLogger("dbt_runner")
-logger.info("Executando transformações dbt para os modelos do Bitrix")
+logger.info("Executando transformações dbt para os modelos de Public")
 
 dbt_project_dir = Path(__file__).parent.parent.parent / "dbt"
 dbt_profiles_dir = dbt_project_dir
@@ -69,7 +64,7 @@ else:
     # Verificar se existem modelos SQL na pasta bitrix
     public_models_dir = dbt_project_dir / "models" / "public"
     if not public_models_dir.exists():
-        logger.error(f"Diretório de modelos bitrix não encontrado: {public_models_dir}")
+        logger.error(f"Diretório de modelos public não encontrado: {public_models_dir}")
     else:
         sql_files = list(public_models_dir.glob("*.sql"))
         logger.info(
@@ -85,12 +80,3 @@ dbt_runner = DBTRunner(
 
 # Run only Bitrix models, passando o schema de destino
 dbt_success = dbt_runner.run(models="public", target_schema='public')
-
-end_time = time.time()
-total_time = end_time - start_time
-elapsed_time = str(datetime.timedelta(seconds=total_time))
-elapsed_time  # Returns a string in the format 'H:MM:SS'
-
-notifier.pipeline_end(
-    text=f"Execução de pipeline encerrada: downstream_reporting, tempo de execução: {elapsed_time_formatted}"
-)
