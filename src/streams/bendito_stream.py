@@ -1,5 +1,4 @@
 import os
-import json
 import pandas as pd
 import logging
 
@@ -7,7 +6,6 @@ from .base_stream import Stream
 from writers import DataWriter
 from loaders.postgres_loader import PostgresLoader
 from extractors.bendito_extractor import BenditoAPIExtractor
-from utils import Utils
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +17,7 @@ class BenditoStream(Stream):
         Initialize a BenditoStream with a source name and configuration.
 
         Args:
-            source_name (str): Name of the source stream
+            source_name (str): Nome da tabela fonte da stream
             config (dict): Configuration dictionary
             **kwargs: Additional arguments
         """
@@ -47,46 +45,33 @@ class BenditoStream(Stream):
 
     def extract_stream(self, custom_query=None, page_size=500, **kwargs) -> None:
 
-        separator = kwargs.get(
-            'separator',
-            ';'
-            )
+        separator = kwargs.get("separator", ";")
 
-        order_col = kwargs.get(
-            'order_col',
-            1
-            )
-        
+        order_col = kwargs.get("order_col", 1)
+
         if custom_query:
-            query = custom_query.strip().rstrip(';')
+            query = custom_query.strip().rstrip(";")
         else:
             query = f'select * from "{self.source_name}" order by {order_col} asc'
 
         records = self.extractor.run(
-            query = query,
-            separator = separator,
-            page_size = page_size)
-            
-        raw_data_path = self.writer.get_output_file_path(
-            target_layer = 'raw',
-            date = False
-            ) + '.csv'
+            query=query, separator=separator, page_size=page_size
+        )
 
-        os.makedirs(
-            os.path.dirname(raw_data_path),
-            exist_ok = True
-            )
+        raw_data_path = (
+            self.writer.get_output_file_path(target_layer="raw", date=False) + ".csv"
+        )
 
-        records.to_csv(
-            raw_data_path,
-            index = False,
-            sep = separator,
-            encoding = 'utf-8'
-            )
+        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
+
+        records.to_csv(raw_data_path, index=False, sep=separator, encoding="utf-8")
 
         return records
+    
+    def set_table_definition(self, ddl):
+        self.table_definition = ddl
 
-    def set_loader(self, engine, schema_file_path, schema_file_type):
+    def set_loader(self, engine):
         """
         Set up the PostgresLoader for this stream.
 
@@ -98,9 +83,10 @@ class BenditoStream(Stream):
             schema_file_path (str): Path to schema file
             schema_file_type (str): Type of schema file
         """
-        self.loader = PostgresLoader(engine, schema_file_path, schema_file_type)
+        self.loader = PostgresLoader(engine)
+        self.loader.table_definition = self.table_definition
 
-    def load_stream(self, target_schema, **kwargs):
+    def load_stream(self, target_schema, target_table, **kwargs):
         """
         Load the staged data into the target database.
 
@@ -109,7 +95,10 @@ class BenditoStream(Stream):
             **kwargs: Additional arguments for loading
         """
         mode = kwargs.get("mode", "replace")
-        separator = kwargs.get("separator", self.separator)
+
+        separator = kwargs.get(
+            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
+        )
 
         raw_data_path = (
             self.writer.get_output_file_path(
@@ -122,9 +111,11 @@ class BenditoStream(Stream):
             raw_data_path, sep=separator, encoding="utf-8", dtype=str
         )
 
+        logger.info(f"Chamando load_data com raw_data.shape: {raw_data.shape}")
+
         self.loader.load_data(
             df=raw_data,
+            target_table=target_table,
             target_schema=target_schema,
-            target_table=self.output_name,
             mode=mode,
         )

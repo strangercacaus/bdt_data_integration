@@ -35,10 +35,10 @@ postgres_logger = logging.getLogger("postgres_loader")
 postgres_logger.setLevel(logging.DEBUG)  # Set to DEBUG for maximum visibility
 
 # Enable stream and extractor loggers with their exact __name__ values
-logging.getLogger("bdt_data_integration.src.stream.bitrix_stream").setLevel(
+logging.getLogger("bdt_data_integration.src.stream.notion_stream").setLevel(
     logging.DEBUG
 )
-logging.getLogger("bdt_data_integration.src.extractor.bitrix_extractor").setLevel(
+logging.getLogger("bdt_data_integration.src.extractor.notion_extractor").setLevel(
     logging.DEBUG
 )
 # Also enable the loggers with __name__ (which would be the module name)
@@ -54,7 +54,7 @@ schema_dir = project_root / "schema" / "notion"
 os.makedirs(schema_dir, exist_ok=True)
 
 load_dotenv()
-source_name = "notion"
+origin = "notion"
 token = os.environ["NOTION_APIKEY"]
 database_id = os.environ["NOTION_DATABASE_ID"]
 host = os.environ["DESTINATION_HOST"]
@@ -62,6 +62,7 @@ user = os.environ["DESTINATION_ROOT_USER"]
 password = os.environ["DESTINATION_ROOT_PASSWORD"]
 db_name = os.environ["DESTINATION_DB_NAME"]
 notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
+#
 
 
 start_time = time.time()
@@ -74,12 +75,12 @@ metadata_db_url = (
 metadata_engine = create_engine(
     metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
 )
-meta = MetadataHandler(metadata_engine, source_name)
-df = meta._load_table_meta()
+metadata_engine = MetadataHandler(metadata_engine, origin)
+df = metadata_engine._load_table_meta()
 
 # Extracting required information from the DataFrame
 columns_to_fetch = ["table_name", "vars", "target_name"]
-notion_data = df[df["source"] == "notion"][columns_to_fetch]
+notion_data = df[(df["source"] == "notion") & (df["active"] == True)][columns_to_fetch]
 
 notion_data["type"] = notion_data["vars"].apply(lambda x: x.get("type", None))
 notion_data["database_id"] = notion_data["vars"].apply(
@@ -91,23 +92,24 @@ active_tables = notion_data[["table_name", "type", "database_id", "target_name"]
 
 
 @notifier.error_handler
-def replicate_database(database_name, database_id, target_table_name):
+def replicate_database(origin_table_name, database_id, target_table_name):
     # Define logger for this function
     logger = logging.getLogger("replicate_database")
 
-    stream = NotionStream(source_name=database_name, config=config)
+    stream = NotionStream(source_name=origin_table_name, config=config)
 
     stream.set_extractor(database_id=database_id, token=token)
 
     stream.extract_stream()
-    
-    stream.schema = f"""
-    CREATE TABLE IF NOT EXISTS {source_name}.{target_table_name}(
+
+    ddl = f"""
+    CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
         "ID" varchar NOT NULL,
         "SUCCESS" bool,
         "CONTENT" jsonb
         );"""
-        
+    stream.set_table_definition(ddl)
+    
     stream.set_loader(
         engine=create_engine(
             f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
@@ -115,29 +117,37 @@ def replicate_database(database_name, database_id, target_table_name):
     )
     try:
         stream.load_stream(
-            target_table = target_table_name,
-            target_schema = source_name,
-            chunksize = 1000)
+            target_table=target_table_name, target_schema=origin, chunksize=1000
+        )
     except Exception as e:
         logger.error(f"Erro ao carregar dados: {e}")
         return 0
     return 0
 
 
-success = 0
+base_dir = os.path.join(os.getcwd(), "data")
+dir_path = os.path.join(base_dir, "raw")
+os.makedirs(dir_path, exist_ok=True)
+notion_logger.info(f"Garantindo que o diretório {dir_path} existe.")
+
+
 total = 0
+success = 0
 
 for i, table in active_tables.iterrows():
     total += 1
-    target_name = table["target_name"] or table["table_name"]
-    database_name = table["table_name"]
+    origin_table_name = table["table_name"]
+    target_table_name = table["target_name"] or table["table_name"]
     database_id = table["database_id"]
-    meta.update_table_meta(database_name, last_sync_attempt_at=datetime.datetime.now())
+    metadata_engine.update_table_meta(
+        origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+    )
+
     try:
-        replicate_database(database_name, database_id, target_name)
+        replicate_database(origin_table_name, database_id, target_table_name)
         success += 1
-        meta.update_table_meta(
-            database_name, last_successful_sync_at=datetime.datetime.now()
+        metadata_engine.update_table_meta(
+            origin_table_name, last_successful_sync_at=datetime.datetime.now()
         )
     except Exception as e:
         print(f"Error: {e}")
@@ -166,13 +176,13 @@ else:
         )
 
 # Define o schema de destino para as transformações
-logger.info(f"Usando schema de destino para transformações: {source_name}")
+logger.info(f"Usando schema de destino para transformações: {origin}")
 
 dbt_runner = DBTRunner(
     project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
 )
 
-dbt_success = dbt_runner.run(models="notion", target_schema=source_name)
+dbt_success = dbt_runner.run(models='notion', target_schema=origin)
 
 
 end_time = time.time()
@@ -189,5 +199,5 @@ elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
 # Update the notifier.pipeline_end call with the formatted time
 notifier.pipeline_end(
-     text=f"Execução de pipeline encerrada: {source_name}_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+    text=f"Execução de pipeline encerrada: notion_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
 )

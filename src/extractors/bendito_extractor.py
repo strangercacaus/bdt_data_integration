@@ -133,7 +133,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             **kwargs: Argumentos adicionais, incluindo 'query', 'page_size', 'separator' e 'compression'.
 
         Returns:
-            pd.DataFrame: Um DataFrame contendo todos os dados extraídos e combinados.
+            pd.DataFrame: Um DataFrame contendo todos os dados extraídos e combinados com as colunas ID, SUCCESS e CONTENT.
         """
         query = kwargs.get('query','select 1')
         page_size = kwargs.get('page_size',200)
@@ -148,4 +148,36 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         df = pd.concat(records, ignore_index=True)
         logger.info(f'{__name__}: Fim da extração.')
         
-        return df 
+        # Verificando se existe uma coluna 'id' no DataFrame
+        if 'id' in df.columns:
+            # Usando a coluna 'id' como ID
+            id_column = df['id'].astype(str)
+        else:
+            # Se não existir coluna 'id', usar o índice
+            id_column = df.index.astype(str)
+        
+        # Abordagem altamente otimizada usando to_json
+        # Convertendo o DataFrame para JSON em formato de registros
+        json_records = df.to_json(orient='records', lines=True).split('\n')
+
+                # Removendo a linha vazia extra que pode ser gerada
+        if json_records and json_records[-1] == '':
+            json_records = json_records[:-1]
+        
+        # Verificando se os tamanhos dos arrays são compatíveis
+        if len(json_records) != len(id_column):
+            logger.warning(f"Incompatibilidade de tamanho: json_records={len(json_records)}, id_column={len(id_column)}")
+            # Ajustando para garantir que os tamanhos sejam iguais
+            min_length = min(len(json_records), len(id_column))
+            json_records = json_records[:min_length]
+            id_column = id_column[:min_length]
+        
+        
+        # Criando o DataFrame de resultado com operações vetorizadas
+        result_df = pd.DataFrame({
+            "ID": id_column,
+            "SUCCESS": True,
+            "CONTENT": json_records
+        })
+        
+        return result_df.astype(str) 

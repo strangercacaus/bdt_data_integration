@@ -1,16 +1,11 @@
 import os
-import json
 import pandas as pd
 import logging
-
-# Adicionando diretório dos módulos personalizados ao PATH
 
 from .base_stream import Stream
 from writers import DataWriter
 from loaders.postgres_loader import PostgresLoader
 from extractors.notion_extractor import NotionDatabaseAPIExtractor
-from utils import Utils
-from sqlalchemy.sql import text
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +17,7 @@ class NotionStream(Stream):
         Inicializa uma NotionStream com um nome de fonte e uma configuração.
 
         Args:
-            source_name (str): Nome da fonte da stream
+            source_name (str): Nome da tabela fonte da stream
             config (dict): Dicionário de configuração
             **kwargs: Argumentos adicionais
         """
@@ -67,6 +62,9 @@ class NotionStream(Stream):
 
         return records
 
+    def set_table_definition(self, ddl):
+        self.table_definition = ddl
+
     def set_loader(self, engine):
         """
         Configura o PostgresLoader para esta stream.
@@ -77,7 +75,7 @@ class NotionStream(Stream):
             schema_file_type (Literal["template", "info_schema", "schema"]): Tipo de arquivo de esquema
         """
         self.loader = PostgresLoader(engine)
-        self.loader.schema = self.schema
+        self.loader.table_definition = self.table_definition
 
     def load_stream(self, target_schema, target_table, **kwargs):
         """
@@ -111,5 +109,4 @@ class NotionStream(Stream):
             target_table=target_table,
             target_schema=target_schema,
             mode=mode,
-            schema=self.schema,
         )

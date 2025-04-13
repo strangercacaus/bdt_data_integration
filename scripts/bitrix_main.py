@@ -54,7 +54,7 @@ schema_dir = project_root / "schema" / "bitrix"
 os.makedirs(schema_dir, exist_ok=True)
 
 load_dotenv()
-source = "bitrix"
+origin = "bitrix"
 token = os.environ["BITRIX_TOKEN"]
 bitrix_url = os.environ["BITRIX_URL"]
 bitrix_user_id = os.environ["BITRIX_USER_ID"]
@@ -75,8 +75,8 @@ metadata_db_url = (
 metadata_engine = create_engine(
     metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
 )
-meta = MetadataHandler(metadata_engine, source)
-df = meta._load_table_meta()
+metadata_engine = MetadataHandler(metadata_engine, origin)
+df = metadata_engine._load_table_meta()
 
 # Extracting required information from the DataFrame
 columns_to_fetch = ["table_name", "target_name", "vars"]
@@ -91,83 +91,68 @@ active_tables = bitrix_data[["table_name", "target_name", "mode"]].copy()
 
 
 @notifier.error_handler
-def replicate_table(source_name, target_table_name, mode="table"):
+def replicate_table(origin_table_name, target_table_name, mode="table"):
 
     logger = logging.getLogger("replicate_database")
 
-    stream = BitrixStream(source_name=source_name, config=config)
+    stream = BitrixStream(source_name=origin_table_name, config=config)
 
     stream.set_extractor(
         token=token, bitrix_url=bitrix_url, bitrix_user_id=bitrix_user_id
     )
     stream.extract_stream(separator=";", start=0, chunksize=1000, mode=mode)
-    
-    stream.schema = f"""
-    CREATE TABLE IF NOT EXISTS {source}.{target_table_name}(
+
+    ddl = f"""
+    CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
         "ID" integer NOT NULL,
         "SUCCESS" bool,
         "CONTENT" jsonb
         );"""
+    stream.set_table_definition(ddl)
 
     stream.set_loader(
         engine=create_engine(
             f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
         )
     )
+    try:
+        stream.load_stream(
+            target_table=target_table_name,
+            target_schema=origin,
+            chunksize=1000,
+            schema_file_type=mode,
+        )
+    except Exception as e:
+        logger.error(f"Erro ao carregar dados: {e}")
+        return 0
 
-    stream.load_stream(
-        source_name=source_name,
-        target_table=target_table_name,
-        target_schema=source,
-        chunksize=1000,
-        schema_file_type=mode,
-    )
 
+base_dir = os.path.join(os.getcwd(), "data")
+dir_path = os.path.join(base_dir, "raw")
+os.makedirs(dir_path, exist_ok=True)
+bitrix_logger.info(f"Garantindo que o diretório {dir_path} existe.")
 
 total = 0
 success = 0
 
-base_dir = os.path.join(os.getcwd(), "data")
-for layer in ["raw", "processing", "staging"]:
-    dir_path = os.path.join(base_dir, layer)
-    os.makedirs(dir_path, exist_ok=True)
-    bitrix_logger.info(f"Garantindo que o diretório {dir_path} existe.")
+for i, table in active_tables.iterrows():
+    total += 1
+    origin_table_name = table["table_name"]
+    target_table_name = table["target_name"] or table["table_name"]
+    mode = table["mode"]
+    metadata_engine.update_table_meta(
+        origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+    )
 
-# for i, table in active_tables.iterrows():
-#     total += 1
-#     table_name = table["table_name"]
-#     target_table_name = table["target_name"] or table["table_name"]
-#     mode = table["mode"]
-    
-#     # Log start of table replication with metadata update
-#     bitrix_logger.info(f"Starting replication of table {table_name} (mode: {mode})")
-    
-#     # Try to update metadata - continue even if it fails
-#     try:
-#         meta.update_table_meta(table_name, last_sync_attempt_at=datetime.datetime.now())
-#     except Exception as e:
-#         bitrix_logger.warning(f"Failed to update start metadata for {table_name}: {str(e)}")
-    
-#     try:
-#         # Attempt table replication
-#         replicate_table(
-#             source_name=table_name, target_table_name=target_table_name, mode=mode
-#         )
-#         success += 1
-        
-#         # Try to update success metadata - continue even if it fails
-#         try:
-#             meta.update_table_meta(
-#                 table_name, last_successful_sync_at=datetime.datetime.now()
-#             )
-#             bitrix_logger.info(f"Successfully replicated table {table_name}")
-#         except Exception as e:
-#             bitrix_logger.warning(f"Failed to update success metadata for {table_name}: {str(e)}")
-            
-#     except Exception as e:
-#         bitrix_logger.error(f"Error replicating table {table_name}: {str(e)}")
-# #      We don't increment success counter here
-
+    try:
+        replicate_table(origin_table_name, target_table_name)
+        success += 1
+        metadata_engine.update_table_meta(
+            origin_table_name, last_successful_sync_at=datetime.datetime.now()
+        )
+    except Exception as e:
+        success += 0
+        raise e
 # Execute dbt transformations for bitrix models after all tables have been loaded
 logger = logging.getLogger("dbt_runner")
 logger.info("Executando transformações dbt para os modelos do Bitrix")
@@ -192,21 +177,20 @@ else:
         )
 
 # Define o schema de destino para as transformações
-logger.info(f"Usando schema de destino para transformações: {source}")
+logger.info(f"Usando schema de destino para transformações: {origin}")
 
 dbt_runner = DBTRunner(
     project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
 )
 
 # Run only Bitrix models, passando o schema de destino
-dbt_success = dbt_runner.run(models="bitrix", target_schema=source)
+dbt_success = dbt_runner.run(models=origin, target_schema=origin)
 
 notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")
 
 end_time = time.time()
 total_time = end_time - start_time
 elapsed_time = str(datetime.timedelta(seconds=total_time))
-elapsed_time  # Returns a string in the format 'H:MM:SS'
 
 # Convert elapsed_time from string format 'H:MM:SS.ssssss' to 'HH:MM:SS'
 hours, minutes, seconds = (

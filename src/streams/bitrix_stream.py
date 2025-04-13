@@ -1,28 +1,30 @@
 import os
-import json
 import pandas as pd
 import logging
-import requests
 
 from .base_stream import Stream
 from writers import DataWriter
 from loaders.postgres_loader import PostgresLoader
 from extractors.bitrix_extractor import BitrixAPIExtractor
-from utils import Utils
 
 logger = logging.getLogger(__name__)  # This will use the module's name
 
 
 class BitrixStream(Stream):
     def __init__(self, source_name, config, **kwargs):
+        """
+        Inicializa uma BitrixStream com um nome de fonte e uma configuração.
+
+        Args:
+            source_name (str): Nome da tabela fonte da stream
+            config (dict): Dicionário de configuração
+            **kwargs: Argumentos adicionais
+        """
+        super().__init__(source_name, config, **kwargs)
         self.source = "bitrix"
-        self.config = config
         self.source_name = source_name
         self.output_name = kwargs.get("output_name", self.source_name)
-
-    @property
-    def writer(self):
-        return DataWriter(
+        self.writer = DataWriter(
             source=self.source,
             stream=self.source_name,
             compression=False,
@@ -30,6 +32,13 @@ class BitrixStream(Stream):
         )
 
     def set_extractor(self, **kwargs):
+        """
+        Configura o BitrixAPIExtractor para esta stream.
+
+        Args:
+            database_id (str): ID do banco de dados Notion
+            token (str): Token da API Notion
+        """
 
         separator = kwargs.get("separator", ";")
 
@@ -59,8 +68,6 @@ class BitrixStream(Stream):
 
         mode = kwargs.get("mode", "table")
 
-        # start = kwargs.get("start", 0)
-
         records = self.extractor.run(mode, self.source_name)
 
         raw_data_path = (
@@ -72,7 +79,11 @@ class BitrixStream(Stream):
         records.to_csv(raw_data_path, index=False, sep=separator, encoding="utf-8")
 
         return records
-    def set_loader(self, engine, schema_file_type=None, schema_file_path=None):
+    
+    def set_table_definition(self, ddl):
+        self.table_definition = ddl
+
+    def set_loader(self, engine):
         """
         Configura o PostgresLoader para esta stream.
 
@@ -81,11 +92,17 @@ class BitrixStream(Stream):
             schema_file_path (str): Caminho para o arquivo de esquema para criar tabelas
             schema_file_type (Literal["template", "info_schema", "schema"]): Tipo de arquivo de esquema
         """
-        self.loader = PostgresLoader(engine, schema_file_path, schema_file_type)
-        self.loader.schema = self.schema
+        self.loader = PostgresLoader(engine)
+        self.loader.table_definition = self.table_definition
 
     def load_stream(self, target_schema, target_table, **kwargs):
+        """
+        Carrega os dados na camada staging no banco de dados de destino.
 
+        Args:
+            target_schema (str): Nome do esquema de destino
+            **kwargs: Argumentos adicionais para o carregamento
+        """
         mode = kwargs.get("mode", "replace")
 
         separator = kwargs.get(
@@ -110,5 +127,4 @@ class BitrixStream(Stream):
             target_table=target_table,
             target_schema=target_schema,
             mode=mode,
-            schema=self.schema,
         )
