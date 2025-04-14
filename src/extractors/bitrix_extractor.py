@@ -192,55 +192,6 @@ class BitrixAPIExtractor(GenericAPIExtractor):
 
         return pd.DataFrame(data, dtype=str)
 
-    # def extract_as_endpoint(self, endpoint_id, **kwargs):
-    #     url = self._get_endpoint(endpoint_id)
-    #     results = pd.DataFrame(dtype="str")
-    #     results["ID"] = None
-    #     results["SUCCESS"] = None
-    #     results["CONTENT"] = None
-
-    #     for response in self.fetch_paginated(url, start=0):
-    #         if isinstance(response, list):
-    #             if len(response) > 0:
-    #                 if not isinstance(response[0], dict):
-    #                     raise Exception(
-    #                         "Formato de resultado inválido (esperado dicionário dentro da lista)"
-    #                     )
-    #                 for record in response:
-    #                     try:
-    #                         record_id = record["ID"]
-    #                         results.at[0, "ÍD"] = record_id
-
-    #                         if "result" in record:
-    #                             results.at[record_id, "CONTENT"] = json.dumps(record)
-    #                             results.at[record_id, "SUCCESS"] = True
-    #                         else:
-    #                             # Caso não tenha a chave 'result', armazena um erro estruturado
-    #                             results.at[record_id, "SUCCESS"] = False
-    #                             results.at[record_id, "CONTENT"] = json.dumps(
-    #                                 {
-    #                                     "ERROR": 'Chave "result" não encontrada na resposta',
-    #                                     "URL": f"{url}",
-    #                                     "STATUS_CODE": response.status_code,
-    #                                 }
-    #                             )
-    #                     except ValueError as e:
-    #                         results.at[record_id, "CONTENT"] = json.dumps(
-    #                             {
-    #                                 "ERROR": "JSON Inválido",
-    #                                 "DATA": response,
-    #                                 "EXCEPTION": str(e),
-    #                             }
-    #                         )
-    #             else:
-    #                 logger.info(f"Nenhum dado foi encontrado em {url}")
-    #                 break
-    #         else:
-    #             print(f"Tipo inesperado de resposta: {type(response)}")
-    #             raise Exception("Formato de resultado inválido")
-
-    #     return results
-
     def get_extract_function(self, mode=("table", "enum", "endpoint", "list")):
         # sourcery skip: assign-if-exp, remove-redundant-if
         if mode == "table":

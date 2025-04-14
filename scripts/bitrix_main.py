@@ -145,7 +145,7 @@ for i, table in active_tables.iterrows():
     )
 
     try:
-        replicate_table(origin_table_name, target_table_name)
+        replicate_table(origin_table_name, target_table_name, mode)
         success += 1
         metadata_engine.update_table_meta(
             origin_table_name, last_successful_sync_at=datetime.datetime.now()
