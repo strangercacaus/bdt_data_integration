@@ -11,4 +11,3 @@ schema/*
 .idea/
 build/
 /dbt/logs/
-/dbt/target/
