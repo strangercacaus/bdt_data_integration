@@ -9,10 +9,13 @@
 select
 	x.id,
 	x.titulo,
-	x2.name as estagio,
+	x2.name as etapa,
 	x.mrr,
+	x.id_customer,
 	x.id_empresa,
 	x.id_contato,
+	x.id_lead,
+	x.id_tipo,
 	x3.email as atribuido_por,
 	x.aberto,
 	x.data_de_inicio,
@@ -27,8 +30,6 @@ select
 	x.ultima_atividade_em,
 	x5.email as ultima_atividade_por,
 	x.recente,
-	x.id_lead,
-	x.id_tipo,
 	x.comentarios,
 	x.id_da_fonte,
 	x.valor_imposto,
@@ -41,11 +42,34 @@ select
 	x.cp_segmento as segmento,
 	x.cp_perfil as perfil,
 	x.cp_email_financeiro as email_financeiro,
-	x.cp_forma_pgto_implementacao as forma_pgto_implementacao,
-	x.cp_forma_pgto_recorrencia as forma_pgto_recorrencia,
+	(
+		select 
+			value 
+		from bitrix.btx_curated_userfield_options o 
+		where o.id = x.cp_forma_pgto_implementacao 
+		and o.field_name = 'UF_CRM_1719234611470'
+	)
+	 as forma_pgto_implementacao,
+		(
+		select 
+			value 
+		from bitrix.btx_curated_userfield_options o 
+		where o.id = x.cp_forma_pgto_recorrencia 
+		and o.field_name = 'UF_CRM_1719234653377'
+	)
+	 as forma_pgto_recorrencia,
 	x.cp_vr_negociado_recorrencia as vr_negociado_recorrencia,
 	x.cp_vr_negociado_implementacao as vr_negociado_implementacao,
-	x.cp_anexar_o_contrato as anexar_o_contrato,
+	case 
+		when x.cp_anexar_o_contrato->>'downloadUrl' is not null
+		then 'https://benditocs.bitrix24.com.br'|| (x.cp_anexar_o_contrato->>'downloadUrl')::varchar
+		else null
+	end as contrato_recorrencia,
+	case 
+		when x.cp_contrato_do_setup->>'downloadUrl' is not null
+		then 'https://benditocs.bitrix24.com.br'|| (x.cp_anexar_o_contrato->>'downloadUrl')::varchar
+		else null
+	end as contrato_setup,
 	x.cp_contrato_do_setup as contrato_do_setup,
 	x.cp_valor_negociado_ativacao as valor_negociado_ativacao,
 	x.cp_valor_negociado_integracao as valor_negociado_integracao,
@@ -71,26 +95,37 @@ select
 	x.cp_expectativa_com_o_projeto,
 	x.cp_status_do_projeto,
 	x.cp_detalhes_motivo_cancelamento,
-	x.cp_data_solicitacao_cancelamento,
-	x.cp_como_avalia_implantacao_bendito,
-	x.cp_novo_valor,
-	x.cp_cliente_ja_possui_base_bendito,
-	x.cp_quantidade_de_pedidos,
-	x.cp_valor_faturado,
-	x.cp_produto,
-	x.cp_valor_vendido,
-	x.cp_qtd_vendida,
-	x.cp_plano,
-	x.cp_tem_desenvolvimento_bendito,
-	x.cp_tipo_de_desenvolvimento,
-	x.cp_expectativa_valor_recorrencia,
-	x.cp_pessoa_responsavel_pelo_lead,
-	x.cp_qual_a_dor_do_cliente,
-	x.cp_ja_utilizavam_solucao,
-	x.cp_conta_pra_gente_porque,
-	x.cp_tipo_de_produto_que_a_empresa_vende,
-	x.cp_como_fazem_gestao_de_pedidos_hj,
-	x.cp_email_da_pessoa_ponto_focal
+	x.cp_data_solicitacao_cancelamento as data_pedido_churn,
+	--x.cp_como_avalia_implantacao_bendito,
+	--x.cp_novo_valor,
+	--x.cp_cliente_ja_possui_base_bendito,
+	--x.cp_quantidade_de_pedidos,
+	--x.cp_valor_faturado,
+	--x.cp_produto,
+	--x.cp_valor_vendido,
+	--x.cp_qtd_vendida,
+	array_to_string(
+	ARRAY(
+	SELECT o.value
+	FROM jsonb_array_elements(x.cp_plano) e
+	JOIN bitrix.btx_curated_userfield_options o 
+	ON e::int = o.id 
+	AND o.field_name = 'UF_CRM_DEAL_1719236124580'),';') AS plano,
+	x.cp_tem_desenvolvimento_bendito::int::bool as tem_desenvolvimento_bendito,
+	array_to_string(
+	ARRAY(
+	SELECT o.value
+	FROM jsonb_array_elements(x.cp_tipo_de_desenvolvimento) e
+	JOIN bitrix.btx_curated_userfield_options o 
+	ON e::int = o.id 
+	AND o.field_name = 'UF_CRM_DEAL_1725540759541'),'; ') AS tipo_de_desenvolvimento--,
+	--x.cp_expectativa_valor_recorrencia as ,
+	--x.cp_qual_a_dor_do_cliente,
+	--x.cp_ja_utilizavam_solucao,
+	--x.cp_conta_pra_gente_porque,
+	--x.cp_tipo_de_produto_que_a_empresa_vende,
+	--x.cp_como_fazem_gestao_de_pedidos_hj,
+	--x.cp_email_da_pessoa_ponto_focal
 from
 	bitrix.btx_curated_deal x
 left join bitrix.btx_processed_dealcategory x1
@@ -106,4 +141,4 @@ left join bitrix.btx_curated_user x5
 left join bitrix.btx_curated_user x6
 	on x.id_criado_por = x6.id
 left join bitrix.btx_curated_user x7
-	on x.id_movido_por = x7.id	
+	on x.id_movido_por = x7.id

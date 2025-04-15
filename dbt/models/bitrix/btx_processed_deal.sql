@@ -128,7 +128,7 @@ SELECT
     ("CONTENT"->>'UF_CRM_66D0A6A169EDC')::text as uf_crm_66d0a6a169edc,
     NULLIF("CONTENT"->>'UF_CRM_DEAL_1719236124580', '')::jsonb as uf_crm_deal_1719236124580,
     NULLIF("CONTENT"->>'UF_CRM_DEAL_1725540405848', '')::int2 as uf_crm_deal_1725540405848,
-    NULLIF("CONTENT"->>'UF_CRM_DEAL_1725540759541', '')::jsonb as uf_crm_deal_1725540759541,
+    NULLIF(NULLIF("CONTENT"->>'UF_CRM_DEAL_1725540759541', ''),'false')::jsonb as uf_crm_deal_1725540759541,
     ("CONTENT"->>'UF_CRM_DEAL_1725569571488')::text as uf_crm_deal_1725569571488,
     NULLIF("CONTENT"->>'UF_CRM_DEAL_1725569886689', '[]')::jsonb as uf_crm_deal_1725569886689,
     ("CONTENT"->>'UF_CRM_DEAL_1727374223411')::varchar as uf_crm_deal_1727374223411,
@@ -136,6 +136,7 @@ SELECT
     ("CONTENT"->>'UF_CRM_DEAL_1732567150103')::text as uf_crm_deal_1732567150103,
     ("CONTENT"->>'UF_CRM_DEAL_1738069738944')::varchar as uf_crm_deal_1738069738944,
     ("CONTENT"->>'UF_CRM_DEAL_1738069820827')::text as uf_crm_deal_1738069820827,
-    ("CONTENT"->>'UF_CRM_DEAL_1722632496832')::varchar as uf_crm_deal_1722632496832
+    ("CONTENT"->>'UF_CRM_DEAL_1722632496832')::varchar as uf_crm_deal_1722632496832,
+    NULLIF("CONTENT"->>'UF_CRM_1744677619','')::int2 as uf_crm_1744677619
 from {{ source('bitrix', 'btx_raw_deal') }}
 WHERE "SUCCESS" = true

@@ -46,24 +46,24 @@ def main():
     parser.add_argument(
         "--extract",
         type=str,
-        default='true',
-        choices=['true', 'false'],
+        default="true",
+        choices=["true", "false"],
         help="Turns data extraction on/off for table (default: True)",
     )
 
     parser.add_argument(
         "--load",
         type=str,
-        default='true',
-        choices=['true', 'false'],
+        default="true",
+        choices=["true", "false"],
         help="Turns data loading on/off for table (default: True)",
     )
 
     parser.add_argument(
         "--transform",
         type=str,
-        default='true',
-        choices=['true', 'false'],
+        default="true",
+        choices=["true", "false"],
         help="Turns data transformation on/off for table (default: True)",
     )
     args = parser.parse_args()
@@ -132,64 +132,85 @@ def main():
     # Selecting and displaying the columns of interest
     active_tables = bitrix_data[["table_name", "target_name", "mode"]].copy()
 
-    @notifier.error_handler
-    def replicate_table(origin_table_name, target_table_name, mode="table"):
+    if args.extract.lower() == "true" or args.load.lower() == "true":
 
-        logger = logging.getLogger("replicate_database")
+        @notifier.error_handler
+        def replicate_table(origin_table_name, target_table_name, mode="table"):
 
-        stream = BitrixStream(source_name=origin_table_name, config=config)
+            logger = logging.getLogger("replicate_database")
 
-        if args.extract.lower() == 'true':
-            stream.set_extractor(
-                token=token, bitrix_url=bitrix_url, bitrix_user_id=bitrix_user_id
-            )
-            stream.extract_stream(
-                separator=";", start=0, chunksize=args.chunk_size, mode=mode
-            )
+            stream = BitrixStream(source_name=origin_table_name, config=config)
 
-        if args.load.lower() == 'true':
-            ddl = f"""
-            CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
-                "ID" integer NOT NULL,
-                "SUCCESS" bool,
-                "CONTENT" jsonb
-                );"""
-            stream.set_table_definition(ddl)
-
-            stream.set_loader(
-                engine=create_engine(
-                    f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
+            if args.extract.lower() == "true":
+                stream.set_extractor(
+                    token=token, bitrix_url=bitrix_url, bitrix_user_id=bitrix_user_id
                 )
-            )
-            try:
-                stream.load_stream(
-                    target_table=target_table_name,
-                    target_schema=origin,
-                    chunksize=args.chunk_size,
-                    schema_file_type=mode,
+                stream.extract_stream(
+                    separator=";", start=0, chunksize=args.chunk_size, mode=mode
                 )
-            except Exception as e:
-                logger.error(f"Erro ao carregar dados: {e}")
-                return 0
 
-    base_dir = os.path.join(os.getcwd(), "data")
-    dir_path = os.path.join(base_dir, "raw")
-    os.makedirs(dir_path, exist_ok=True)
-    bitrix_logger.info(f"Garantindo que o diretório {dir_path} existe.")
+            if args.load.lower() == "true":
+                ddl = f"""
+                CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
+                    "ID" integer NOT NULL,
+                    "SUCCESS" bool,
+                    "CONTENT" jsonb
+                    );"""
+                stream.set_table_definition(ddl)
 
-    total = 0
-    success = 0
+                stream.set_loader(
+                    engine=create_engine(
+                        f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
+                    )
+                )
+                try:
+                    stream.load_stream(
+                        target_table=target_table_name,
+                        target_schema=origin,
+                        chunksize=args.chunk_size,
+                        schema_file_type=mode,
+                    )
+                except Exception as e:
+                    logger.error(f"Erro ao carregar dados: {e}")
+                    return 0
 
-    if args.table.lower() == "all":
-        for i, table in active_tables.iterrows():
+        base_dir = os.path.join(os.getcwd(), "data")
+        dir_path = os.path.join(base_dir, "raw")
+        os.makedirs(dir_path, exist_ok=True)
+        bitrix_logger.info(f"Garantindo que o diretório {dir_path} existe.")
+
+        total = 0
+        success = 0
+
+        if args.table.lower() == "all":
+            for i, table in active_tables.iterrows():
+                total += 1
+                origin_table_name = table["table_name"]
+                target_table_name = table["target_name"] or table["table_name"]
+                mode = table["mode"]
+                metadata_engine.update_table_meta(
+                    origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+                )
+
+                try:
+                    replicate_table(origin_table_name, target_table_name, mode)
+                    success += 1
+                    metadata_engine.update_table_meta(
+                        origin_table_name,
+                        last_successful_sync_at=datetime.datetime.now(),
+                    )
+                except Exception as e:
+                    success += 0
+                    raise e
+
+        else:
+            origin_table_name = args.table
+            target_table_name = f"bdt_raw_{args.table}"
+            mode = args.mode
             total += 1
-            origin_table_name = table["table_name"]
-            target_table_name = table["target_name"] or table["table_name"]
-            mode = table["mode"]
             metadata_engine.update_table_meta(
                 origin_table_name, last_sync_attempt_at=datetime.datetime.now()
             )
-
             try:
                 replicate_table(origin_table_name, target_table_name, mode)
                 success += 1
@@ -199,30 +220,15 @@ def main():
             except Exception as e:
                 success += 0
                 raise e
-
     else:
-        origin_table_name = args.table
-        target_table_name = f"bdt_raw_{args.table}"
-        mode = args.mode
-        total += 1
-        metadata_engine.update_table_meta(
-            origin_table_name, last_sync_attempt_at=datetime.datetime.now()
-        )
-        try:
-            replicate_table(origin_table_name, target_table_name, mode)
-            success += 1
-            metadata_engine.update_table_meta(
-                origin_table_name, last_successful_sync_at=datetime.datetime.now()
-            )
-        except Exception as e:
-            success += 0
-            raise e
-
+        total = 0
+        success = 0
     # Execute dbt transformations for bitrix models after all tables have been loaded
     logger = logging.getLogger("dbt_runner")
     logger.info("Executando transformações dbt para os modelos do Bitrix")
 
-    if args.transform.lower() == 'true':
+    if args.transform.lower() == "true":
+
         dbt_project_dir = Path(__file__).parent.parent / "dbt"
         dbt_profiles_dir = dbt_project_dir
 

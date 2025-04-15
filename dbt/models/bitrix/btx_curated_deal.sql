@@ -45,6 +45,7 @@ SELECT
 	is_manual_opportunity as oportunidade_manual,
 	is_return_customer as cliente_retorno,
 	is_repeated_approach as abordagem_repetida,
+	uf_crm_1744677619 AS id_customer,
 	uf_crm_1718891707656 AS cp_quantidade_de_usuarios,
 	uf_crm_1718893063318 AS cp_ponto_focal,
 	uf_crm_1721248408791 AS cp_email_ponto_focal,
