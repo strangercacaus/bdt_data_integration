@@ -41,7 +41,7 @@ class WebhookNotifier:
         text = kwargs.get('text',None)
         message = text if text else f'Iniciando pipeline: {self.pipeline}'
         url = self.url
-        payload = json.dumps({"message": f'Iniciando pipeline: {self.pipeline}'})
+        payload = json.dumps({"message": f'Iniciando pipeline: {message}'})
         headers = {
             'Content-Type': 'application/json'
         }

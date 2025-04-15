@@ -1,5 +1,4 @@
 import logging
-import os
 import subprocess
 import json
 from pathlib import Path
@@ -22,7 +21,7 @@ class DBTRunner:
         self.project_dir = project_dir
         self.profiles_dir = profiles_dir
         
-    def run_command(self, command, models=None, exclude=None, selector=None, vars_dict=None):
+    def run_command(self, command, models=None, exclude=None, selector=None, vars_dict=None, select=None):
         """
         Executa um comando dbt.
         
@@ -65,6 +64,9 @@ class DBTRunner:
             vars_json = json.dumps(vars_dict)
             cmd.extend(["--vars", vars_json])
             
+        if select:
+            cmd.extend(["--select",select])
+            
         # Log do comando
         logger.info(f"Executando comando dbt: {' '.join(cmd)}")
         
@@ -93,7 +95,7 @@ class DBTRunner:
             logger.error(f"Erro ao executar o comando dbt: {e}")
             return False
             
-    def run(self, models=None, exclude=None, selector=None, target_schema=None):
+    def run(self, models=None, exclude=None, selector=None, target_schema=None, select=None):
         """
         Executa o comando 'dbt run'.
         
@@ -106,12 +108,10 @@ class DBTRunner:
         Returns:
             bool: True se o comando for bem-sucedido, False caso contrário
         """
-        vars_dict = None
-        if target_schema:
-            vars_dict = {"target_schema": target_schema}
-        return self.run_command("run", models, exclude, selector, vars_dict)
+        vars_dict = {"target_schema": target_schema} if target_schema else None
+        return self.run_command("run", models, exclude, selector, vars_dict, select)
         
-    def test(self, models=None, exclude=None, selector=None, target_schema=None):
+    def test(self, models=None, exclude=None, selector=None, target_schema=None, select=None):
         """
         Executa o comando 'dbt test'.
         
@@ -124,12 +124,10 @@ class DBTRunner:
         Returns:
             bool: True se o comando for bem-sucedido, False caso contrário
         """
-        vars_dict = None
-        if target_schema:
-            vars_dict = {"target_schema": target_schema}
-        return self.run_command("test", models, exclude, selector, vars_dict)
+        vars_dict = {"target_schema": target_schema} if target_schema else None
+        return self.run_command("test", models, exclude, selector, vars_dict, select)
         
-    def build(self, models=None, exclude=None, selector=None, target_schema=None):
+    def build(self, models=None, exclude=None, selector=None, target_schema=None, select=None):
         """
         Executa o comando 'dbt build'.
         
@@ -142,7 +140,5 @@ class DBTRunner:
         Returns:
             bool: True se o comando for bem-sucedido, False caso contrário
         """
-        vars_dict = None
-        if target_schema:
-            vars_dict = {"target_schema": target_schema}
-        return self.run_command("build", models, exclude, selector, vars_dict) 
+        vars_dict = {"target_schema": target_schema} if target_schema else None
+        return self.run_command("build", models, exclude, selector, vars_dict, select) 

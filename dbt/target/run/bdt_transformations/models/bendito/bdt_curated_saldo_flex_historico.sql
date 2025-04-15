@@ -1,0 +1,22 @@
+
+  
+    
+
+  create  table "bendito_intelligence"."default_schema"."bdt_curated_saldo_flex_historico__dbt_tmp"
+  
+  
+    as
+  
+  (
+    
+SELECT ("CONTENT"->>'id')::integer AS id,
+("CONTENT"->>'saldo_flex_id')::integer AS saldo_flex_id,
+("CONTENT"->>'invoice_id')::integer AS invoice_id,
+("CONTENT"->>'value')::numeric AS value,
+("CONTENT"->>'movement')::integer AS movement,
+("CONTENT"->>'id_user')::integer AS id_user,
+("CONTENT"->>'time_creation')::timestamp without time zone AS time_creation,
+("CONTENT"->>'observation')::character varying AS observation
+FROM "bendito_intelligence"."bendito"."bdt_raw_saldo_flex_historico"
+  );
+  
