@@ -2,7 +2,7 @@
   
     
 
-  create  table "bendito_intelligence"."default_schema"."bdt_curated_payment_method_price_table__dbt_tmp"
+  create  table "bendito_intelligence"."bendito"."bdt_curated_payment_method_price_table__dbt_tmp"
   
   
     as

@@ -8,7 +8,7 @@ bdt_transformations:
       port: 5432
       dbname: "{{ env_var('DESTINATION_DB_NAME') }}"
       threads: 4
-      schema: "{{ var('target_schema', 'default_schema') }}"
+      schema: "{{ var('target_schema', 'public') }}"
       keepalives_idle: 0
       connect_timeout: 10
       retries: 1

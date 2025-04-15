@@ -1,8 +1,13 @@
 
-  create view "bendito_intelligence"."public"."bdt_customer__dbt_tmp"
+  
     
-    
-  as (
+
+  create  table "bendito_intelligence"."public"."bdt_customer__dbt_tmp"
+  
+  
+    as
+  
+  (
     
 select
 	x.id,
@@ -65,3 +70,4 @@ left join bendito.bdt_curated_domain x10 on x.integration_type = x10.value and x
 left join bendito.bdt_curated_domain x11 on x.integration_type = x11.value and x11.domain = 'TIPO_RECORRENCIA'
 left join bendito.bdt_curated_domain x12 on x.integration_type = x12.value and x12.domain = 'ESTAGIO_CLIENTE'
   );
+  

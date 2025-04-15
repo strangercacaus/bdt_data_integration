@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'view',
+    materialized = 'table',
+    unique_key = 'id',
 	enabled = true,
     post_hook=[
         "GRANT SELECT ON {{ this }} TO bendito_metabase"

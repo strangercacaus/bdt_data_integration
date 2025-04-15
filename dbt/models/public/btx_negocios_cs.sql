@@ -49,7 +49,7 @@ select
 	x.cp_contrato_do_setup as contrato_do_setup,
 	x.cp_valor_negociado_ativacao as valor_negociado_ativacao,
 	x.cp_valor_negociado_integracao as valor_negociado_integracao,
-	x.cp_quantidade_usuarios_ativos as quantidade_usuarios_ativos,,
+	x.cp_quantidade_usuarios_ativos as quantidade_usuarios_ativos,
 	x.cp_modulo_do_sistema modulo_do_sistema,
 	x.cp_ambiente ambiente,
 	x.cp_area,
@@ -106,7 +106,4 @@ left join bitrix.btx_curated_user x5
 left join bitrix.btx_curated_user x6
 	on x.id_criado_por = x6.id
 left join bitrix.btx_curated_user x7
-	on x.id_movido_por = x7.id
-left join btx_curated_userfield x8
-	on x.cp_motivo_do_cancelamento = unnest(x8.list)
-where x.id_categoria = 0	
+	on x.id_movido_por = x7.id	

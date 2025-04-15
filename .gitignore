@@ -10,3 +10,5 @@ schema/*
 .vscode/*
 .idea/
 build/
+/dbt/logs/
+/dbt/target/

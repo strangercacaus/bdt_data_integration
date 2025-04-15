@@ -2,7 +2,7 @@
   
     
 
-  create  table "bendito_intelligence"."default_schema"."bdt_curated_sku_pricing__dbt_tmp"
+  create  table "bendito_intelligence"."bendito"."bdt_curated_sku_pricing__dbt_tmp"
   
   
     as

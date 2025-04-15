@@ -2,7 +2,7 @@
   
     
 
-  create  table "bendito_intelligence"."default_schema"."bdt_curated_comercial_politics_rules_criteria__dbt_tmp"
+  create  table "bendito_intelligence"."bendito"."bdt_curated_comercial_politics_rules_criteria__dbt_tmp"
   
   
     as
