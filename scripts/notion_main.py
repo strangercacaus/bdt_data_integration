@@ -116,7 +116,7 @@ def main():
     user = os.environ["DESTINATION_ROOT_USER"]
     password = os.environ["DESTINATION_ROOT_PASSWORD"]
     db_name = os.environ["DESTINATION_DB_NAME"]
-    notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
+    notifier_url = os.environ["DEEPNOTE_BENDITO_BI_WEBHOOK"]
 
     start_time = time.time()
     notifier = WebhookNotifier(url=notifier_url, pipeline="notion_pipeline")

@@ -46,7 +46,7 @@ class WebhookNotifier:
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        logger.info(f"Make.Com Response: {response.text}")
+        logger.info(f"Webhook Response: {response.text}")
 
     def pipeline_end(self, **kwargs):
         """
@@ -66,7 +66,7 @@ class WebhookNotifier:
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        logger.info(f"Make.Com Response: {response.text}")
+        logger.info(f"Webhook Response: {response.text}")
 
     def pipeline_error(self, e=None):
         """
@@ -86,7 +86,7 @@ class WebhookNotifier:
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        logger.info(f"Make.Com Response: {response.text}")
+        logger.info(f"Webhook Response: {response.text}")
 
     def error_handler(self, func):
         """
