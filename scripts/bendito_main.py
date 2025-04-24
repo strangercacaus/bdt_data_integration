@@ -63,6 +63,14 @@ def main():
         choices=['true', 'false'],
         help="Turns data transformation on/off for table (default: True)",
     )
+    
+    parser.add_argument(
+        "--silent",
+        type=str,
+        default='false',
+        choices=['true', 'false'],
+        help="Turns notifcation on / off (default: True)",
+    )
 
     args = parser.parse_args()
 
@@ -135,39 +143,45 @@ def main():
 
         logger = logging.getLogger("replicate_database")
 
-        stream = BenditoStream(source_name=origin_table_name, config=config)
-
         if args.extract.lower() == 'true':
+            
+            stream = BenditoStream(source_name=origin_table_name, config=config)
 
             stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
 
-            stream.extract_stream(separator=";", page_size=args.page_size)
+            records = stream.extract_stream(separator=";", page_size=args.page_size)
 
-        if args.load.lower() == 'true':
+            if args.load.lower() == 'true':
 
-            ddl = f"""
-            CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
-                "ID" varchar NOT NULL,
-                "SUCCESS" bool,
-                "CONTENT" jsonb
-                );"""
+                ddl = f"""
+                CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
+                    "ID" varchar NOT NULL,
+                    "SUCCESS" bool,
+                    "CONTENT" jsonb
+                    );"""
 
-            stream.set_table_definition(ddl)
+                stream.set_table_definition(ddl)
 
-            stream.set_loader(
-                engine=create_engine(
-                    f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
+                stream.set_loader(
+                    engine=create_engine(
+                        f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
+                    )
                 )
-            )
-            try:
-                stream.load_stream(
-                    target_table=target_table_name,
-                    target_schema=origin,
-                    chunksize=args.chunk_size,
-                )
-            except Exception as e:
-                logger.error(f"Erro ao carregar dados: {e}")
+                try:
+                    stream.load_stream(records,
+                        target_table=target_table_name,
+                        target_schema=origin,
+                        chunksize=args.chunk_size,
+                    )
+                except Exception as e:
+                    logger.error(f"Erro ao carregar dados: {e}")
+                    return 0
                 return 0
+            else:
+                logger.info(f"Pulando load em {origin_table_name}")
+                return 0
+        elif args.load.lower() == 'true':
+            logger.info(f"Pulando load em {origin_table_name}: Nada a carregar")
             return 0
 
     base_dir = os.path.join(os.getcwd(), "data")
@@ -263,9 +277,10 @@ def main():
     elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
     # Update the notifier.pipeline_end call with the formatted time
-    notifier.pipeline_end(
-        text=f"Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-    )
+    if args.silent.lower() == 'false':
+        notifier.pipeline_end(
+            text=f"Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+        )
 
 
 if __name__ == "__main__":

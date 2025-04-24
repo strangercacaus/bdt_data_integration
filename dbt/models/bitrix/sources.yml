@@ -26,3 +26,4 @@ sources:
       - name: btx_raw_product
       - name: btx_raw_status
       - name: btx_raw_user
+      - name: btx_raw_deal_fields

@@ -48,19 +48,7 @@ class NotionStream(Stream):
         Extrai dados da API Notion e escreve para a camada raw.
         """
 
-        separator = kwargs.get("separator", ";")
-
-        records = self.extractor.run()
-
-        raw_data_path = (
-            self.writer.get_output_file_path(target_layer="raw", date=False) + ".csv"
-        )
-
-        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
-
-        records.to_csv(raw_data_path, index=False, sep=separator, encoding="utf-8")
-
-        return records
+        return self.extractor.run()
 
     def set_table_definition(self, ddl):
         self.table_definition = ddl
@@ -77,7 +65,7 @@ class NotionStream(Stream):
         self.loader = PostgresLoader(engine)
         self.loader.table_definition = self.table_definition
 
-    def load_stream(self, target_schema, target_table, **kwargs):
+    def load_stream(self, records, target_schema: str, target_table: str, **kwargs):
         """
         Carrega os dados na camada staging no banco de dados de destino.
 
@@ -85,28 +73,12 @@ class NotionStream(Stream):
             target_schema (str): Nome do esquema de destino
             **kwargs: Argumentos adicionais para o carregamento
         """
-        mode = kwargs.get("mode", "replace")
 
-        separator = kwargs.get(
-            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
-        )
-
-        raw_data_path = (
-            self.writer.get_output_file_path(
-                output_name=self.output_name, target_layer="raw"
-            )
-            + ".csv"
-        )
-
-        raw_data = pd.read_csv(
-            raw_data_path, sep=separator, encoding="utf-8", dtype=str
-        )
-
-        logger.info(f"Chamando load_data com staged_data.shape: {raw_data.shape}")
+        logger.info(f"Chamando load_data com staged_data.shape: {records.shape}")
 
         self.loader.load_data(
-            df=raw_data,
+            df=records,
             target_table=target_table,
             target_schema=target_schema,
-            mode=mode,
+            mode='replace',
         )

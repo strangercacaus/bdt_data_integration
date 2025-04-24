@@ -192,7 +192,21 @@ class BitrixAPIExtractor(GenericAPIExtractor):
 
         return pd.DataFrame(data, dtype=str)
 
-    def get_extract_function(self, mode=("table", "enum", "endpoint", "list")):
+    def extract_as_fields(self, endpoint_id):
+        url = self._base_endpoint() + 'crm.' + endpoint_id
+        list_data = requests.get(url).json().get('result')
+        
+        data = [
+            {
+                "ID": key,
+                "SUCCESS": True,
+                "CONTENT": json.dumps({ "ID": key} | list_data[key])
+            }
+        for key in enumerate (list_data.keys())
+        ]
+        
+        return pd.DataFrame(data, dtype=str)
+    def get_extract_function(self, mode=("table", "enum", "endpoint", "list", "fields")):
         # sourcery skip: assign-if-exp, remove-redundant-if
         if mode == "table":
             return self.extract_as_table
@@ -200,6 +214,8 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             return self.extract_as_enum
         elif mode == "list":
             return self.extract_as_list
+        elif mode == 'fields':
+            return self.extract_as_fields
         else:
             raise ValueError(f"Modo de extração inválido: {mode}")
 

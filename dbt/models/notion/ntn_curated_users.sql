@@ -14,6 +14,15 @@ with unique_person as
 	union all
 	select distinct jsonb_array_elements(responsavel->'people')
 	from  {{ref('ntn_processed_universal_task_database')}}
+	union all
+	select distinct jsonb_array_elements(created_by->'people')
+	from  {{ref('ntn_processed_bendito_blueprint')}}
+	union all
+	select distinct jsonb_array_elements(last_edited_by->'people')
+	from  {{ref('ntn_processed_bendito_blueprint')}}
+	union all
+	select distinct jsonb_array_elements(proprietario->'people')
+	from  {{ref('ntn_processed_bendito_blueprint')}}
 )
 select distinct
 	person ->>'id' as id,

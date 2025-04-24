@@ -54,20 +54,8 @@ class BenditoStream(Stream):
         else:
             query = f'select * from "{self.source_name}" order by {order_col} asc'
 
-        records = self.extractor.run(
-            query=query, separator=separator, page_size=page_size
-        )
+        return self.extractor.run(query=query, separator=separator, page_size=page_size)
 
-        raw_data_path = (
-            self.writer.get_output_file_path(target_layer="raw", date=False) + ".csv"
-        )
-
-        os.makedirs(os.path.dirname(raw_data_path), exist_ok=True)
-
-        records.to_csv(raw_data_path, index=False, sep=separator, encoding="utf-8")
-
-        return records
-    
     def set_table_definition(self, ddl):
         self.table_definition = ddl
 
@@ -86,7 +74,7 @@ class BenditoStream(Stream):
         self.loader = PostgresLoader(engine)
         self.loader.table_definition = self.table_definition
 
-    def load_stream(self, target_schema, target_table, **kwargs):
+    def load_stream(self, records, target_schema, target_table, **kwargs):
         """
         Load the staged data into the target database.
 
@@ -94,28 +82,12 @@ class BenditoStream(Stream):
             target_schema (str): Name of the target schema
             **kwargs: Additional arguments for loading
         """
-        mode = kwargs.get("mode", "replace")
 
-        separator = kwargs.get(
-            "separator", self.config.get("DEFAULT_CSV_SEPARATOR", ";")
-        )
-
-        raw_data_path = (
-            self.writer.get_output_file_path(
-                output_name=self.output_name, target_layer="raw"
-            )
-            + ".csv"
-        )
-
-        raw_data = pd.read_csv(
-            raw_data_path, sep=separator, encoding="utf-8", dtype=str
-        )
-
-        logger.info(f"Chamando load_data com raw_data.shape: {raw_data.shape}")
+        logger.info(f"Chamando load_data com raw_data.shape: {records.shape}")
 
         self.loader.load_data(
-            df=raw_data,
+            df=records,
             target_table=target_table,
             target_schema=target_schema,
-            mode=mode,
+            mode="replace",
         )

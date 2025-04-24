@@ -39,9 +39,9 @@ class WebhookNotifier:
             None
         """
         text = kwargs.get('text',None)
-        message = text if text else f'Iniciando pipeline: {self.pipeline}'
+        message = text or f'Iniciando pipeline: {self.pipeline}'
         url = self.url
-        payload = json.dumps({"message": f'Iniciando pipeline: {message}'})
+        payload = json.dumps({"content": f'Iniciando pipeline: {message}'})
         headers = {
             'Content-Type': 'application/json'
         }
@@ -59,9 +59,9 @@ class WebhookNotifier:
             None
         """
         text = kwargs.get('text',None)
-        message = text if text else f'Execução de pipeline encerrada: {self.pipeline}'
+        message = text or f'Execução de pipeline encerrada: {self.pipeline}'
         url = self.url
-        payload = json.dumps({"message": message})
+        payload = json.dumps({"content": message})
         headers = {
             'Content-Type': 'application/json'
         }
@@ -81,7 +81,7 @@ class WebhookNotifier:
         url = self.url
         # Convert the exception to a string and split it into lines if needed
         error_message = str(e).splitlines()[:2]  # Take only the first 2 lines of the error message
-        payload = json.dumps({"message": f'Erro na execução do pipeline: {self.pipeline}.\n{" ".join(error_message)}'})
+        payload = json.dumps({"content": f'Erro na execução do pipeline: {self.pipeline}.\n{" ".join(error_message)}'})
         headers = {
             'Content-Type': 'application/json'
         }

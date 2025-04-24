@@ -27,6 +27,14 @@ def main():
         default="all",
         help="Specific table to process (default: all tables)",
     )
+
+    parser.add_argument(
+        "--silent",
+        type=str,
+        default="false",
+        choices=["true", "false"],
+        help="Turns notifcation on / off (default: True)",
+    )
     # Set up the root logger
     logging.basicConfig(
         level=logging.DEBUG,  # Set to DEBUG to capture all log messages
@@ -92,7 +100,8 @@ def main():
     )
 
     # Run only Bitrix models, passando o schema de destino
-    dbt_runner.run(select="public", target_schema='public')
+    dbt_runner.run(select="public", target_schema="public")
+
 
 if __name__ == "__main__":
     main()
