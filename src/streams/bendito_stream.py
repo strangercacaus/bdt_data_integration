@@ -3,7 +3,6 @@ import pandas as pd
 import logging
 
 from .base_stream import Stream
-from writers import DataWriter
 from loaders.postgres_loader import PostgresLoader
 from extractors.bendito_extractor import BenditoAPIExtractor
 
@@ -25,12 +24,6 @@ class BenditoStream(Stream):
         self.source = "bendito"
         self.source_name = source_name
         self.output_name = kwargs.get("output_name", self.source_name)
-        self.writer = DataWriter(
-            source=self.source,
-            stream=self.source_name,
-            compression=False,
-            config=self.config,
-        )
 
     def set_extractor(self, token, separator=";"):
         """

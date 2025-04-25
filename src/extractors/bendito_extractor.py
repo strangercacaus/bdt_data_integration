@@ -30,7 +30,6 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         super().__init__(source='bendito', token=token, **kwargs)
         
         # Não é necessário armazenar token novamente, pois a classe pai já faz isso
-        self.writer = kwargs.get('writer')
         self.schema = kwargs.get('schema', None)
 
     def _get_endpoint(self) -> str:

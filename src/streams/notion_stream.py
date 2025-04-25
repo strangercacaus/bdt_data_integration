@@ -3,12 +3,10 @@ import pandas as pd
 import logging
 
 from .base_stream import Stream
-from writers import DataWriter
 from loaders.postgres_loader import PostgresLoader
 from extractors.notion_extractor import NotionDatabaseAPIExtractor
 
 logger = logging.getLogger(__name__)
-
 
 class NotionStream(Stream):
 
@@ -24,12 +22,6 @@ class NotionStream(Stream):
         super().__init__(source_name, config, **kwargs)
         self.source = "notion"
         self.output_name = kwargs.get("output_name", self.source_name)
-        self.writer = DataWriter(
-            source=self.source,
-            stream=self.source_name,
-            compression=False,
-            config=self.config,
-        )
 
     def set_extractor(self, database_id, token):
         """

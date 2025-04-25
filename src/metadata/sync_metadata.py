@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-class MetadataHandler:
+class SyncMetadataHandler:
     def __init__(self, engine, source: str):
         self.engine = engine
         self.source = source
         
-    def _load_table_meta(self):
+    def _load_sync_meta(self):
         """Loads metadata table information into a Pandas DataFrame."""
         query = f"""SELECT ct.source, ct.table_name, ct.target_name, ct.active, ct.last_successful_sync_at, ct.last_sync_attempt_at, ct.vars 
         FROM configuration.table ct where ct.source = '{self.source}';"""

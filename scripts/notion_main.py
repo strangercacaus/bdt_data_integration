@@ -15,8 +15,8 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from bdt_data_integration.src.streams.notion_stream import NotionStream
 from bdt_data_integration.src.utils.utils import Utils
-from bdt_data_integration.src.utils.notifiers import WebhookNotifier
-from bdt_data_integration.src.configuration.configuration import MetadataHandler
+from bdt_data_integration.src.utils.notifier import WebhookNotifier
+from bdt_data_integration.src.metadata.sync_metadata import SyncMetadataHandler
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
@@ -131,17 +131,13 @@ def main():
     # Carrega algumas configurações globais do projeto, vai ser morto em breve pq ficou inutilizado
     config = Utils.load_config()
 
-    # Cria uma conexão com o banco de dados de metadados
-    metadata_db_url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
-    metadata_db_engine = create_engine(
-        metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
-    )
+    # Cria uma conexão com o banco de dados de metadados e carrega as informações das tabelas que serão processadas
+    url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
+    engine = create_engine(url, poolclass=QueuePool, pool_size=5, max_overflow=10)
+    handler = SyncMetadataHandler(engine, origin)
+    df = handler._load_sync_meta()
 
-    # Carrega as informações das tabelas do banco de dados de metadados
-    metadata_db_engine = MetadataHandler(metadata_db_engine, origin)
-    df = metadata_db_engine._load_table_meta()
-
-    # Manipula o retorno do banco de metadados para obter os campos necessários para a extrac'ão dos dados
+    # Manipula o retorno do banco de metadados para obter os campos necessários para a extração dos dados
     columns_to_fetch = ["table_name", "vars", "target_name"]
     notion_data = df[(df["source"] == "notion") & (df["active"] == True)][
         columns_to_fetch
@@ -206,7 +202,7 @@ def main():
                 origin_table_name = table["table_name"]
                 target_table_name = table["target_name"] or table["table_name"]
                 database_id = table["database_id"]
-                metadata_db_engine.update_table_meta(
+                handler.update_table_meta(
                     origin_table_name, last_sync_attempt_at=datetime.datetime.now()
                 )
 
@@ -215,7 +211,7 @@ def main():
                         origin_table_name, database_id, target_table_name
                     )
                     success += 1
-                    metadata_db_engine.update_table_meta(
+                    handler.update_table_meta(
                         origin_table_name,
                         last_successful_sync_at=datetime.datetime.now(),
                     )
@@ -231,13 +227,13 @@ def main():
             database_id = active_tables[
                 active_tables["table_name"] == origin_table_name
             ]["database_id"].values[0]
-            metadata_db_engine.update_table_meta(
+            handler.update_table_meta(
                 origin_table_name, last_sync_attempt_at=datetime.datetime.now()
             )
             try:
                 replicate_database(origin_table_name, database_id, target_table_name)
                 success += 1
-                metadata_db_engine.update_table_meta(
+                handler.update_table_meta(
                     origin_table_name, last_successful_sync_at=datetime.datetime.now()
                 )
             except Exception as e:

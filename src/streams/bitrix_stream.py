@@ -3,13 +3,10 @@ import pandas as pd
 import logging
 
 from .base_stream import Stream
-from writers import DataWriter
 from loaders.postgres_loader import PostgresLoader
 from extractors.bitrix_extractor import BitrixAPIExtractor
 
 logger = logging.getLogger(__name__)  # This will use the module's name
-
-
 class BitrixStream(Stream):
     def __init__(self, source_name, config, **kwargs):
         """
@@ -24,12 +21,6 @@ class BitrixStream(Stream):
         self.source = "bitrix"
         self.source_name = source_name
         self.output_name = kwargs.get("output_name", self.source_name)
-        self.writer = DataWriter(
-            source=self.source,
-            stream=self.source_name,
-            compression=False,
-            config=self.config,
-        )
 
     def set_extractor(self, **kwargs):
         """
@@ -56,7 +47,7 @@ class BitrixStream(Stream):
         self.extractor = BitrixAPIExtractor(
             source=self.source,
             token=token,
-            writer=self.writer,
+
             separator=separator,
             bitrix_url=bitrix_url,
             bitrix_user_id=bitrix_user_id,

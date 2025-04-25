@@ -5,7 +5,6 @@ import pandas as pd
 import time
 import random
 from bdt_data_integration.src.extractors.base_extractor import GenericAPIExtractor
-from utils import Schema
 
 logger = logging.getLogger(__name__)  # This will also use the module's name
 
@@ -32,7 +31,6 @@ class BitrixAPIExtractor(GenericAPIExtractor):
         kwargs["source"] = "bitrix"
         super().__init__(*args, **kwargs)
         self.token = kwargs.get("token")
-        self.writer = kwargs.get("writer")
         self.bitrix_url = kwargs.get("bitrix_url")
         self.bitrix_user_id = kwargs.get("bitrix_user_id")
 

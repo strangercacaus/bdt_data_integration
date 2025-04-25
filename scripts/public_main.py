@@ -1,14 +1,9 @@
 import os
-import time
 import logging
-import datetime
 from dotenv import load_dotenv
 import argparse
 import sys
 from pathlib import Path
-
-from sqlalchemy import create_engine
-from sqlalchemy.pool import QueuePool
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 

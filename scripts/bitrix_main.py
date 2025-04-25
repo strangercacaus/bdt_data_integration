@@ -14,8 +14,8 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from bdt_data_integration.src.streams.bitrix_stream import BitrixStream
 from bdt_data_integration.src.utils.utils import Utils
-from bdt_data_integration.src.utils.notifiers import WebhookNotifier
-from bdt_data_integration.src.configuration.configuration import MetadataHandler
+from bdt_data_integration.src.utils.notifier import WebhookNotifier
+from bdt_data_integration.src.metadata.sync_metadata import SyncMetadataHandler
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
@@ -30,7 +30,7 @@ def main():
         default="all",
         help="Specific table to process (default: all tables)",
     )
-    
+
     parser.add_argument(
         "--chunk-size",
         type=int,
@@ -61,7 +61,7 @@ def main():
         choices=["true", "false"],
         help="Turns data transformation on/off for table (default: True)",
     )
-    
+
     parser.add_argument(
         "--silent",
         type=str,
@@ -69,7 +69,7 @@ def main():
         choices=["true", "false"],
         help="Turns notifcation on / off (default: True)",
     )
-    
+
     args = parser.parse_args()
     # Set up the root logger
     logging.basicConfig(
@@ -114,15 +114,16 @@ def main():
     start_time = time.time()
     notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")
 
+    # Carregando configurações globais do projeto
     config = Utils.load_config()
-    metadata_db_url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
-    metadata_engine = create_engine(
-        metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
-    )
-    metadata_engine = MetadataHandler(metadata_engine, origin)
-    df = metadata_engine._load_table_meta()
 
-    # Extracting required information from the DataFrame
+    # Carregando configurações de sincronização das tabelas
+    url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
+    engine = create_engine(url, poolclass=QueuePool, pool_size=5, max_overflow=10)
+    handler = SyncMetadataHandler(engine, origin)
+    df = handler._load_sync_meta()
+
+    # obtendo as informações das tabelas que serão processadas
     columns_to_fetch = ["table_name", "target_name", "vars"]
     bitrix_data = df[(df["source"] == "bitrix") & (df["active"] == True)][
         columns_to_fetch
@@ -132,7 +133,7 @@ def main():
         lambda x: x.get("type", None) if x else None
     )
 
-    # Selecting and displaying the columns of interest
+    # Armazena as tabelas que serão processadas em um dataframe (tabelas com a replicação ativa)
     active_tables = bitrix_data[["table_name", "target_name", "mode"]]
 
     @notifier.error_handler
@@ -197,13 +198,13 @@ def main():
             origin_table_name = table["table_name"]
             target_table_name = table["target_name"] or table["table_name"]
             mode = table["mode"]
-            metadata_engine.update_table_meta(
+            handler.update_table_meta(
                 origin_table_name, last_sync_attempt_at=datetime.datetime.now()
             )
 
             try:
-                success += replicate_table(origin_table_name, target_table_name, mode)
-                metadata_engine.update_table_meta(
+                success += replicate_table(origin_table_name, target_table_name, mode) or 0
+                handler.update_table_meta(
                     origin_table_name,
                     last_successful_sync_at=datetime.datetime.now(),
                 )
@@ -219,12 +220,12 @@ def main():
             "mode"
         ].values[0]
         total += 1
-        metadata_engine.update_table_meta(
+        handler.update_table_meta(
             origin_table_name, last_sync_attempt_at=datetime.datetime.now()
         )
         try:
-            success += replicate_table(origin_table_name, target_table_name, mode)
-            metadata_engine.update_table_meta(
+            success += replicate_table(origin_table_name, target_table_name, mode) or 0
+            handler.update_table_meta(
                 origin_table_name, last_successful_sync_at=datetime.datetime.now()
             )
         except Exception as e:

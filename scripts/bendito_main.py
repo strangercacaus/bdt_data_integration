@@ -14,8 +14,8 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from bdt_data_integration.src.streams.bendito_stream import BenditoStream
 from bdt_data_integration.src.utils.utils import Utils
-from bdt_data_integration.src.utils.notifiers import WebhookNotifier
-from bdt_data_integration.src.configuration.configuration import MetadataHandler
+from bdt_data_integration.src.utils.notifier import WebhookNotifier
+from bdt_data_integration.src.metadata.sync_metadata import SyncMetadataHandler
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
@@ -45,30 +45,30 @@ def main():
     parser.add_argument(
         "--extract",
         type=str,
-        default='true',
-        choices=['true', 'false'],
+        default="true",
+        choices=["true", "false"],
         help="Turns data extraction on/off for table (default: True)",
     )
 
     parser.add_argument(
         "--load",
-        default='true',
-        choices=['true', 'false'],
+        default="true",
+        choices=["true", "false"],
         help="Turns data loading on/off for table (default: True)",
     )
 
     parser.add_argument(
         "--transform",
-        default='true',
-        choices=['true', 'false'],
+        default="true",
+        choices=["true", "false"],
         help="Turns data transformation on/off for table (default: True)",
     )
-    
+
     parser.add_argument(
         "--silent",
         type=str,
-        default='false',
-        choices=['true', 'false'],
+        default="false",
+        choices=["true", "false"],
         help="Turns notifcation on / off (default: True)",
     )
 
@@ -110,23 +110,20 @@ def main():
     password = os.environ["DESTINATION_ROOT_PASSWORD"]
     db_name = os.environ["DESTINATION_DB_NAME"]
     notifier_url = os.environ["DEEPNOTE_BENDITO_BI_WEBHOOK"]
-    #
-    #
-    #
 
     start_time = time.time()
     notifier = WebhookNotifier(url=notifier_url, pipeline="bendito_pipeline")
 
-    # Carregando configurações
+    # Carregando configurações globais do projeto
     config = Utils.load_config()
-    metadata_db_url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
-    metadata_engine = create_engine(
-        metadata_db_url, poolclass=QueuePool, pool_size=5, max_overflow=10
-    )
-    metadata_engine = MetadataHandler(metadata_engine, origin)
-    df = metadata_engine._load_table_meta()
 
-    # Extracting required information from the DataFrame
+    # Carregando configurações de sincronização das tabelas
+    url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
+    engine = create_engine(url, poolclass=QueuePool, pool_size=5, max_overflow=10)
+    handler = SyncMetadataHandler(engine, origin)
+    df = handler._load_sync_meta()
+
+    # obtendo as informações das tabelas que serão processadas
     columns_to_fetch = ["table_name", "vars", "target_name"]
     bendito_data = df[(df["source"] == "bendito") & (df["active"] == True)][
         columns_to_fetch
@@ -135,7 +132,6 @@ def main():
     bendito_data["mode"] = bendito_data["vars"].apply(
         lambda x: x.get("type", None) if x else None
     )
-    # Selecting and displaying the columns of interest
     active_tables = bendito_data[["table_name", "target_name", "mode"]]
 
     @notifier.error_handler
@@ -143,15 +139,15 @@ def main():
 
         logger = logging.getLogger("replicate_database")
 
-        if args.extract.lower() == 'true':
-            
+        if args.extract.lower() == "true":
+
             stream = BenditoStream(source_name=origin_table_name, config=config)
 
             stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
 
             records = stream.extract_stream(separator=";", page_size=args.page_size)
 
-            if args.load.lower() == 'true':
+            if args.load.lower() == "true":
 
                 ddl = f"""
                 CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
@@ -168,7 +164,8 @@ def main():
                     )
                 )
                 try:
-                    stream.load_stream(records,
+                    stream.load_stream(
+                        records,
                         target_table=target_table_name,
                         target_schema=origin,
                         chunksize=args.chunk_size,
@@ -180,7 +177,7 @@ def main():
             else:
                 logger.info(f"Pulando load em {origin_table_name}")
                 return 0
-        elif args.load.lower() == 'true':
+        elif args.load.lower() == "true":
             logger.info(f"Pulando load em {origin_table_name}: Nada a carregar")
             return 0
 
@@ -198,14 +195,14 @@ def main():
             total += 1
             origin_table_name = table["table_name"]
             target_table_name = table["target_name"] or table["table_name"]
-            metadata_engine.update_table_meta(
+            handler.update_table_meta(
                 origin_table_name, last_sync_attempt_at=datetime.datetime.now()
             )
 
             try:
                 replicate_table(origin_table_name, target_table_name)
                 success += 1
-                metadata_engine.update_table_meta(
+                handler.update_table_meta(
                     origin_table_name, last_successful_sync_at=datetime.datetime.now()
                 )
             except Exception as e:
@@ -216,20 +213,20 @@ def main():
         total += 1
         origin_table_name = args.table
         target_table_name = f"bdt_raw_{args.table}"
-        metadata_engine.update_table_meta(
+        handler.update_table_meta(
             origin_table_name, last_sync_attempt_at=datetime.datetime.now()
         )
         try:
             replicate_table(origin_table_name, target_table_name)
             success += 1
-            metadata_engine.update_table_meta(
+            handler.update_table_meta(
                 origin_table_name, last_successful_sync_at=datetime.datetime.now()
             )
         except Exception as e:
             success += 0
             raise e
 
-    if args.transform.lower() == 'true':
+    if args.transform.lower() == "true":
 
         logger = logging.getLogger("dbt_runner")
         logger.info("Executando transformações dbt para os modelos do Bendito")
@@ -277,7 +274,7 @@ def main():
     elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
 
     # Update the notifier.pipeline_end call with the formatted time
-    if args.silent.lower() == 'false':
+    if args.silent.lower() == "false":
         notifier.pipeline_end(
             text=f"Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
         )

@@ -2,13 +2,13 @@
 Utility package for data integration.
 
 This package provides utility classes and functions for:
-- Schema management and DDL generation
 - Common utility functions for file operations, date handling, and configuration
 - Webhook and Discord notifications for pipeline events
+- DBT runner for model transformations
 """
 
-from .schema import Schema
 from .utils import Utils
-from .notifiers import WebhookNotifier, DiscordNotifier
+from .notifier import WebhookNotifier, DiscordNotifier
+from .dbt_runner import DBTRunner
 
-__all__ = ['Schema', 'Utils', 'WebhookNotifier', 'DiscordNotifier'] 
+__all__ = ['Utils', 'WebhookNotifier', 'DiscordNotifier', 'DBTRunner'] 
