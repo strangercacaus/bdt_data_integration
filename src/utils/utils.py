@@ -60,3 +60,20 @@ class Utils:
         logger.info('Configuração padrão carregada.')
         return config
         
+    @staticmethod
+    def format_elapsed_time(total_seconds):
+        """
+        Formata um tempo em segundos para o formato HH:MM:SS
+        
+        Args:
+            total_seconds (float): Tempo total em segundos
+            
+        Returns:
+            str: Tempo formatado no formato HH:MM:SS
+        """
+        hours = int(total_seconds // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+        seconds = int(total_seconds % 60)
+        
+        return f"{hours}:{minutes:02d}:{seconds:02d}"
+        

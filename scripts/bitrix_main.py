@@ -121,29 +121,16 @@ def main():
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
     engine = create_engine(url, poolclass=QueuePool, pool_size=5, max_overflow=10)
     handler = SyncMetadataHandler(engine, origin)
-    df = handler._load_sync_meta()
-
-    # obtendo as informações das tabelas que serão processadas
-    columns_to_fetch = ["table_name", "target_name", "vars"]
-    bitrix_data = df[(df["source"] == "bitrix") & (df["active"] == True)][
-        columns_to_fetch
-    ]
-
-    bitrix_data["mode"] = bitrix_data["vars"].apply(
-        lambda x: x.get("type", None) if x else None
-    )
-
-    # Armazena as tabelas que serão processadas em um dataframe (tabelas com a replicação ativa)
-    active_tables = bitrix_data[["table_name", "target_name", "mode"]]
+    active_tables = handler._load_sync_meta()
 
     @notifier.error_handler
-    def replicate_table(origin_table_name, target_table_name, mode="table"):
+    def replicate_table(source_name, target_name, mode="table"):
 
         logger = logging.getLogger("replicate_database")
 
         if args.extract.lower() == "true":
 
-            stream = BitrixStream(source_name=origin_table_name, config=config)
+            stream = BitrixStream(source_name=source_name, config=config)
 
             stream.set_extractor(
                 token=token, bitrix_url=bitrix_url, bitrix_user_id=bitrix_user_id
@@ -152,8 +139,8 @@ def main():
 
             if args.load.lower() == "true":
                 ddl = f"""
-                CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
-                    "ID" integer NOT NULL,
+                CREATE TABLE IF NOT EXISTS {origin}.{target_name}(
+                    "ID" varchar NOT NULL,
                     "SUCCESS" bool,
                     "CONTENT" jsonb
                     );"""
@@ -168,7 +155,7 @@ def main():
                 try:
                     stream.load_stream(
                         records,
-                        target_table=target_table_name,
+                        target_table=target_name,
                         target_schema=origin,
                         chunksize=args.chunk_size,
                         schema_file_type=mode,
@@ -178,59 +165,53 @@ def main():
                     logger.error(f"Erro ao carregar dados: {e}")
                     return 0
             else:
-                logger.info(f"Pulando load em {origin_table_name}")
+                logger.info(f"Pulando load em {source_name}")
                 return 0
         elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {origin_table_name}: Nada a carregar")
+            logger.info(f"Pulando load em {source_name}: Nada a carregar")
             return 0
-
-    base_dir = os.path.join(os.getcwd(), "data")
-    dir_path = os.path.join(base_dir, "raw")
-    os.makedirs(dir_path, exist_ok=True)
-    bitrix_logger.info(f"Garantindo que o diretório {dir_path} existe.")
 
     total = 0
     success = 0
 
     if args.table.lower() == "all":
-        for i, table in active_tables.iterrows():
+        for row in active_tables.itertuples():
             total += 1
-            origin_table_name = table["table_name"]
-            target_table_name = table["target_name"] or table["table_name"]
-            mode = table["mode"]
+            source_name = row.source_name
+            target_name = row.target_name or row.source_name
+            mode = row[6] if hasattr(row, "_fields") and "mode" in row._fields else "table"
             handler.update_table_meta(
-                origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+                source_name, last_sync_attempt_at=datetime.datetime.now()
             )
 
             try:
-                success += replicate_table(origin_table_name, target_table_name, mode) or 0
+                success += replicate_table(source_name, target_name, mode) or 0
                 handler.update_table_meta(
-                    origin_table_name,
+                    source_name,
                     last_successful_sync_at=datetime.datetime.now(),
                 )
             except Exception as e:
                 success += 0
                 raise e
-    else:
-        origin_table_name = args.table
-        target_table_name = active_tables[
-            active_tables["table_name"] == origin_table_name
-        ]["target_name"].values[0]
-        mode = active_tables[active_tables["table_name"] == origin_table_name][
-            "mode"
-        ].values[0]
+    elif args.table in active_tables["source_name"].values:
+        source_name = args.table
+        row = active_tables.loc[active_tables["source_name"] == source_name].iloc[0]
+        target_name = row.target_name or source_name
+        mode = row["mode"]
         total += 1
         handler.update_table_meta(
-            origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+            source_name, last_sync_attempt_at=datetime.datetime.now()
         )
         try:
-            success += replicate_table(origin_table_name, target_table_name, mode) or 0
+            success += replicate_table(source_name, target_name, mode) or 0
             handler.update_table_meta(
-                origin_table_name, last_successful_sync_at=datetime.datetime.now()
+                source_name, last_successful_sync_at=datetime.datetime.now()
             )
         except Exception as e:
             success += 0
             raise e
+    else:
+        raise ValueError("Nome da tabela inválido ou não configurado")
 
     total = 0
     success = 0
@@ -273,23 +254,12 @@ def main():
 
     notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")
 
-    end_time = time.time()
-    total_time = end_time - start_time
-    elapsed_time = str(datetime.timedelta(seconds=total_time))
-
-    # Convert elapsed_time from string format 'H:MM:SS.ssssss' to 'HH:MM:SS'
-    hours, minutes, seconds = (
-        int(float(str(total_time // 3600).zfill(2))),
-        int(float(str((total_time % 3600) // 60).zfill(2))),
-        int(float(str(round(total_time % 60)).zfill(2))),
-    )
-    elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
+    elapsed_time_formatted = Utils.format_elapsed_time(time.time() - start_time)
 
     if args.silent.lower() == "false":
         notifier.pipeline_end(
             text=f"Execução de pipeline encerrada: bitrix_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
         )
-
 
 if __name__ == "__main__":
     main()

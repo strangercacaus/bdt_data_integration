@@ -135,37 +135,24 @@ def main():
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
     engine = create_engine(url, poolclass=QueuePool, pool_size=5, max_overflow=10)
     handler = SyncMetadataHandler(engine, origin)
-    df = handler._load_sync_meta()
-
-    # Manipula o retorno do banco de metadados para obter os campos necessários para a extração dos dados
-    columns_to_fetch = ["table_name", "vars", "target_name"]
-    notion_data = df[(df["source"] == "notion") & (df["active"] == True)][
-        columns_to_fetch
-    ]
-    notion_data["type"] = notion_data["vars"].apply(lambda x: x.get("type", None))
-    notion_data["database_id"] = notion_data["vars"].apply(
-        lambda x: x.get("database_id", None)
-    )
-
-    # Armazena as tabelas que serão processadas em um dataframe (tabelas com a replicação ativa)
-    active_tables = notion_data[["table_name", "type", "database_id", "target_name"]]
+    active_tables = handler._load_sync_meta()
 
     # Define a função que vai processar a extração e o carregamento dos dados
     @notifier.error_handler
-    def replicate_database(origin_table_name, database_id, target_table_name):
+    def replicate_database(source_name, identifier, target_name, days):
         # Define logger for this function
         logger = logging.getLogger("replicate_database")
 
-        stream = NotionStream(source_name=origin_table_name, config=config)
+        stream = NotionStream(source_name=source_name, config=config)
 
         if args.extract.lower() == "true":
-            stream.set_extractor(database_id=database_id, token=token)
+            stream.set_extractor(database_id=identifier, token=token)
 
-            records = stream.extract_stream()
+            records = stream.extract_stream(days=days)
 
             if args.load.lower() == "true":
                 ddl = f"""
-                CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
+                CREATE TABLE IF NOT EXISTS {origin}.{target_name}(
                     "ID" varchar NOT NULL,
                     "SUCCESS" bool,
                     "CONTENT" jsonb
@@ -180,7 +167,7 @@ def main():
                 try:
                     stream.load_stream(
                         records,
-                        target_table=target_table_name,
+                        target_table=target_name,
                         target_schema=origin,
                         chunksize=1000,
                     )
@@ -188,7 +175,10 @@ def main():
                     logger.error(f"Erro ao carregar dados: {e}")
                     return 0
         elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {origin_table_name}: Nada a carregar")
+            logger.info(f"Pulando load em {source_name}: Nada a carregar")
+            return 0
+        else:
+            logger.info(f"Pulando load em {source_name}: Nada a carregar")
             return 0
 
     total = 0
@@ -197,50 +187,46 @@ def main():
     if args.extract.lower() == "true" or args.load.lower() == "true":
 
         if args.table == "all":
-            for i, table in active_tables.iterrows():
+            for row in active_tables.itertuples():
                 total += 1
-                origin_table_name = table["table_name"]
-                target_table_name = table["target_name"] or table["table_name"]
-                database_id = table["database_id"]
+                source_name = row.source_name
+                target_name = row.target_name or row.source_name
+                identifier = row.source_identifier
+                days = row.days_interval
                 handler.update_table_meta(
-                    origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+                    source_name, last_sync_attempt_at=datetime.datetime.now()
                 )
 
                 try:
-                    replicate_database(
-                        origin_table_name, database_id, target_table_name
-                    )
+                    replicate_database(source_name, identifier, target_name, days)
                     success += 1
                     handler.update_table_meta(
-                        origin_table_name,
+                        source_name,
                         last_successful_sync_at=datetime.datetime.now(),
                     )
                 except Exception as e:
                     print(f"Error: {e}")
                     success += 0
-        elif args.table != "all":
+        elif args.table in active_tables["source_name"].values:
             total += 1
-            origin_table_name = args.table
-            target_table_name = active_tables[
-                active_tables["table_name"] == origin_table_name
-            ]["target_name"].values[0]
-            database_id = active_tables[
-                active_tables["table_name"] == origin_table_name
-            ]["database_id"].values[0]
+            source_name = args.table
+            row = active_tables.loc[active_tables["source_name"] == source_name].iloc[0]
+            target_name = row.target_name or source_name
+            identifier = row.source_identifier
             handler.update_table_meta(
-                origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+                source_name, last_sync_attempt_at=datetime.datetime.now()
             )
             try:
-                replicate_database(origin_table_name, database_id, target_table_name)
+                replicate_database(source_name, identifier, target_name)
                 success += 1
                 handler.update_table_meta(
-                    origin_table_name, last_successful_sync_at=datetime.datetime.now()
+                    source_name, last_successful_sync_at=datetime.datetime.now()
                 )
             except Exception as e:
                 print(f"Error: {e}")
                 success += 0
         else:
-            raise ValueError("database_id is required when table_name is provided")
+            raise ValueError("Nome da base de dados inválido ou não configurado")
 
     if args.transform.lower() == "true":
 
@@ -276,15 +262,7 @@ def main():
 
     dbt_runner.run(models="notion", target_schema=origin)
 
-    end_time = time.time()
-    total_time = end_time - start_time
-    # Convert elapsed_time from string format 'H:MM:SS.ssssss' to 'HH:MM:SS'
-    hours, minutes, seconds = (
-        int(float(str(total_time // 3600).zfill(2))),
-        int(float(str((total_time % 3600) // 60).zfill(2))),
-        int(float(str(round(total_time % 60)).zfill(2))),
-    )
-    elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
+    elapsed_time_formatted = Utils.format_elapsed_time(time.time() - start_time)
 
     if args.silent.lower() == "false":
         notifier.pipeline_end(

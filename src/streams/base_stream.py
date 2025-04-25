@@ -44,16 +44,6 @@ class Stream(ABC):
         """
         pass
 
-    # @abstractmethod
-    # def stage_stream(self, **kwargs):
-    #     """
-    #     Process the transformed data and write it to the staging layer.
-
-    #     Args:
-    #         **kwargs: Additional arguments for staging
-    #     """
-    #     pass
-
     @abstractmethod
     def set_loader(self, **kwargs):
         """

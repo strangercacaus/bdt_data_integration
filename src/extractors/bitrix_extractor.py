@@ -196,14 +196,15 @@ class BitrixAPIExtractor(GenericAPIExtractor):
         
         data = [
             {
-                "ID": key,
+                "ID": int(key) if key.isdigit() else i,
                 "SUCCESS": True,
-                "CONTENT": json.dumps({ "ID": key} | list_data[key])
+                "CONTENT": json.dumps({"ID": key, **list_data[key]})
             }
-        for key in enumerate (list_data.keys())
+            for i, key in enumerate(list_data.keys())
         ]
         
         return pd.DataFrame(data, dtype=str)
+
     def get_extract_function(self, mode=("table", "enum", "endpoint", "list", "fields")):
         # sourcery skip: assign-if-exp, remove-redundant-if
         if mode == "table":

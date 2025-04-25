@@ -2,10 +2,11 @@ import json
 import logging
 import requests
 import pandas as pd
-
+from datetime import datetime, timedelta
 from .base_extractor import GenericAPIExtractor
 
 logger = logging.getLogger(__name__)
+
 
 class NotionDatabaseAPIExtractor(GenericAPIExtractor):
     """
@@ -16,6 +17,7 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         - database_id (str): ID do banco de dados do Notion.
         - token (str): Bearer Token da conta conectada à integração.
     """
+
     def __init__(self, token, database_id, **kwargs):
         """
         Inicializa um extrator para a API do Notion.
@@ -26,8 +28,8 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
             **kwargs: Argumentos nomeados adicionais.
         """
         # Definir o source diretamente - não usar kwargs para isso
-        super().__init__(source='notion', token=token, **kwargs)
-        self.base_endpoint = 'https://api.notion.com/v1/databases'
+        super().__init__(source="notion", token=token, **kwargs)
+        self.base_endpoint = "https://api.notion.com/v1/databases"
         self.database_id = database_id
         self.writer = kwargs.get("writer")
 
@@ -50,23 +52,32 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         return {
             "Authorization": f"Bearer {self.token}",
             "Notion-Version": "2021-08-16",
-            "Content-Type": "application/json",
-            "Data": "{}",
+            "Content-Type": "application/json"
         }
 
-    def _get_next_payload(self, next_cursor=None):
+    def _get_next_payload(self, next_cursor=None, query_filter=None):
         """
         Gera o payload para a próxima requisição, incluindo o cursor de início.
 
         Args:
             next_cursor (str, optional): O cursor para a próxima página de resultados.
+            query_filter (dict, optional): Filtro de consulta a ser aplicado.
 
         Returns:
             dict: O payload para a próxima requisição.
         """
-        return {"start_cursor": next_cursor} if next_cursor else {}
+        payload = {}
+        if next_cursor:
+            payload["start_cursor"] = next_cursor
 
-    def _extract_next_cursor_from_response(self, response):
+        # Se query_filter foi fornecido, incorpore-o diretamente
+        if query_filter and isinstance(query_filter, dict):
+            # Merge the query_filter into the payload without nesting
+            payload |= query_filter
+
+        return payload
+
+    def _extract_next_cursor(self, response):
         """
         Extrai o próximo cursor da resposta da API.
 
@@ -110,13 +121,18 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
             payload = {}
         endpoint = self._get_endpoint()
         headers = self._get_headers()
-        logger.info(f"Enviando requisição POST para {endpoint}")
+
+        # Log da requisição para depuração
+        logger.info(f"POST {endpoint}")
+        logger.info(f"Headers: {headers}")
+        logger.info(f"Payload: {payload}")
+
         response = requests.post(url=endpoint, headers=headers, json=payload)
         response.raise_for_status()
-        
+
         return response.json()
 
-    def fetch_paginated(self, **kwargs):
+    def fetch_paginated(self, query_filter=None, **kwargs):
         """
         Obtém dados paginados da API do Notion.
 
@@ -130,31 +146,38 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         next_cursor = None
         logger.info(f"Tentando obter dados de {self._get_endpoint()}")
         while True:
-                payload = self._get_next_payload(next_cursor)
-                response = self.post_data(payload=payload)
-                successful_requests += 1
-                logger.info(f"Página {successful_requests} obtida.")
-                yield response["results"]
-                next_cursor = self._extract_next_cursor_from_response(response)
-                if not next_cursor:
-                    break      
+            payload = self._get_next_payload(next_cursor, query_filter)
+            response = self.post_data(payload=payload)
+            successful_requests += 1
+            logger.info(f"Página {successful_requests} obtida.")
+            yield response["results"]
+            next_cursor = self._extract_next_cursor(response)
+            if not next_cursor:
+                break
 
-    def run(self, schemaless=True):
+    def run(self, days: int = 0):
         """
         Executa a rotina principal do extrator, consolidando os dados extraídos.
 
         Returns:
             tuple[list, str]: Uma tupla contendo a lista de registros extraídos e a data atual.
         """
-        if not schemaless:
-            return pd.DataFrame([record for page in self.fetch_paginated() for record in page], dtype=str)
+        query_filter = None
+        if days > 0:
+            start_date = datetime.now() - timedelta(days=days)
+            query_filter = {
+                "filter": {
+                    "timestamp": "last_edited_time",
+                    "last_edited_time": {"on_or_after": start_date.strftime("%Y-%m-%d")},
+                }
+            }
         data = [
             {
-                "ID": record.get('id'),
+                "ID": record.get("id"),
                 "SUCCESS": True,
                 "CONTENT": json.dumps(record),
             }
-            for page in self.fetch_paginated() 
+            for page in self.fetch_paginated(query_filter)
             for record in page
         ]
-        return pd.DataFrame(data, dtype=str) 
+        return pd.DataFrame(data, dtype=str)

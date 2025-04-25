@@ -35,12 +35,12 @@ class NotionStream(Stream):
             token=token, database_id=database_id
         )
 
-    def extract_stream(self, **kwargs) -> None:
+    def extract_stream(self, days: int = 0, **kwargs) -> None:
         """
         Extrai dados da API Notion e escreve para a camada raw.
         """
 
-        return self.extractor.run()
+        return self.extractor.run(days=days)
 
     def set_table_definition(self, ddl):
         self.table_definition = ddl

@@ -124,24 +124,26 @@ def main():
     df = handler._load_sync_meta()
 
     # obtendo as informações das tabelas que serão processadas
-    columns_to_fetch = ["table_name", "vars", "target_name"]
-    bendito_data = df[(df["source"] == "bendito") & (df["active"] == True)][
+    columns_to_fetch = [
+        "source_name",
+        "vars",
+        "target_name",
+        "unique_id_property",
+        "updated_at_property",
+        "mode",
+    ]
+    active_tables = df[(df["origin"] == "bendito") & (df["active"] == True)][
         columns_to_fetch
     ]
 
-    bendito_data["mode"] = bendito_data["vars"].apply(
-        lambda x: x.get("type", None) if x else None
-    )
-    active_tables = bendito_data[["table_name", "target_name", "mode"]]
-
     @notifier.error_handler
-    def replicate_table(origin_table_name, target_table_name):
+    def replicate_table(source_name, target_name):
 
         logger = logging.getLogger("replicate_database")
 
         if args.extract.lower() == "true":
 
-            stream = BenditoStream(source_name=origin_table_name, config=config)
+            stream = BenditoStream(source_name=source_name, config=config)
 
             stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
 
@@ -150,7 +152,7 @@ def main():
             if args.load.lower() == "true":
 
                 ddl = f"""
-                CREATE TABLE IF NOT EXISTS {origin}.{target_table_name}(
+                CREATE TABLE IF NOT EXISTS {origin}.{target_name}(
                     "ID" varchar NOT NULL,
                     "SUCCESS" bool,
                     "CONTENT" jsonb
@@ -166,7 +168,7 @@ def main():
                 try:
                     stream.load_stream(
                         records,
-                        target_table=target_table_name,
+                        target_table=target_name,
                         target_schema=origin,
                         chunksize=args.chunk_size,
                     )
@@ -175,56 +177,52 @@ def main():
                     return 0
                 return 0
             else:
-                logger.info(f"Pulando load em {origin_table_name}")
+                logger.info(f"Pulando load em {target_name}")
                 return 0
         elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {origin_table_name}: Nada a carregar")
+            logger.info(f"Pulando load em {source_name}: Nada a carregar")
             return 0
-
-    base_dir = os.path.join(os.getcwd(), "data")
-    dir_path = os.path.join(base_dir, "raw")
-    os.makedirs(dir_path, exist_ok=True)
-    bendito_logger.info(f"Garantindo que o diretório {dir_path} existe.")
 
     total = 0
     success = 0
 
     if args.table == "all":
-
-        for i, table in active_tables.iterrows():
+        for row in active_tables.itertuples():
             total += 1
-            origin_table_name = table["table_name"]
-            target_table_name = table["target_name"] or table["table_name"]
+            source_name = row.source_name
+            target_name = row.target_name or row.source_name
             handler.update_table_meta(
-                origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+                source_name, last_sync_attempt_at=datetime.datetime.now()
             )
 
             try:
-                replicate_table(origin_table_name, target_table_name)
+                replicate_table(source_name, target_name)
                 success += 1
                 handler.update_table_meta(
-                    origin_table_name, last_successful_sync_at=datetime.datetime.now()
+                    source_name, last_successful_sync_at=datetime.datetime.now()
                 )
             except Exception as e:
                 success += 0
                 raise e
 
-    else:
+    elif args.table in active_tables["source_name"].values:
         total += 1
-        origin_table_name = args.table
-        target_table_name = f"bdt_raw_{args.table}"
+        source_name = args.table
+        target_name = f"bdt_raw_{args.table}"
         handler.update_table_meta(
-            origin_table_name, last_sync_attempt_at=datetime.datetime.now()
+            source_name, last_sync_attempt_at=datetime.datetime.now()
         )
         try:
-            replicate_table(origin_table_name, target_table_name)
+            replicate_table(source_name, target_name)
             success += 1
             handler.update_table_meta(
-                origin_table_name, last_successful_sync_at=datetime.datetime.now()
+                source_name, last_successful_sync_at=datetime.datetime.now()
             )
         except Exception as e:
             success += 0
             raise e
+    else:
+        raise ValueError("Nome da tabela inválido ou não configurado")
 
     if args.transform.lower() == "true":
 
@@ -261,17 +259,7 @@ def main():
 
         dbt_runner.run(models=origin, target_schema=origin)
 
-    end_time = time.time()
-    total_time = end_time - start_time
-    elapsed_time = str(datetime.timedelta(seconds=total_time))
-
-    # Convert elapsed_time from string format 'H:MM:SS.ssssss' to 'HH:MM:SS'
-    hours, minutes, seconds = (
-        int(float(str(total_time // 3600).zfill(2))),
-        int(float(str((total_time % 3600) // 60).zfill(2))),
-        int(float(str(round(total_time % 60)).zfill(2))),
-    )
-    elapsed_time_formatted = f"{hours}:{minutes}:{seconds}"
+    elapsed_time_formatted = Utils.format_elapsed_time(time.time() - start_time)
 
     # Update the notifier.pipeline_end call with the formatted time
     if args.silent.lower() == "false":
