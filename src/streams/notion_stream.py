@@ -8,6 +8,7 @@ from extractors.notion_extractor import NotionDatabaseAPIExtractor
 
 logger = logging.getLogger(__name__)
 
+
 class NotionStream(Stream):
 
     def __init__(self, source_name, config, **kwargs):
@@ -72,5 +73,5 @@ class NotionStream(Stream):
             df=records,
             target_table=target_table,
             target_schema=target_schema,
-            mode='replace',
+            mode="replace",
         )

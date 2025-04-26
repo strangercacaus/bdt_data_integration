@@ -1,9 +1,13 @@
+import os
 import json
 import logging
 import requests
 import pandas as pd
+from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from .base_extractor import GenericAPIExtractor
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +22,7 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         - token (str): Bearer Token da conta conectada à integração.
     """
 
-    def __init__(self, token, database_id, **kwargs):
+    def __init__(self, token, database_id):
         """
         Inicializa um extrator para a API do Notion.
 
@@ -27,11 +31,9 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
             database_id (str): ID do banco de dados do Notion.
             **kwargs: Argumentos nomeados adicionais.
         """
-        # Definir o source diretamente - não usar kwargs para isso
-        super().__init__(source="notion", token=token, **kwargs)
-        self.base_endpoint = "https://api.notion.com/v1/databases"
+        super().__init__(origin="notion", token=token)
+        self.base_url = "https://api.notion.com/v1/databases"
         self.database_id = database_id
-        self.writer = kwargs.get("writer")
 
     def _get_endpoint(self) -> str:
         """
@@ -40,7 +42,7 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         Returns:
             str: O endpoint formatado para a consulta do banco de dados.
         """
-        return f"{self.base_endpoint}/{self.database_id}/query"
+        return f"{self.base_url}/{self.database_id}/query"
 
     def _get_headers(self):
         """
@@ -121,11 +123,6 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
             payload = {}
         endpoint = self._get_endpoint()
         headers = self._get_headers()
-
-        # Log da requisição para depuração
-        logger.info(f"POST {endpoint}")
-        logger.info(f"Headers: {headers}")
-        logger.info(f"Payload: {payload}")
 
         response = requests.post(url=endpoint, headers=headers, json=payload)
         response.raise_for_status()

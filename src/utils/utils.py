@@ -1,6 +1,7 @@
 import os
 import logging
 import sqlparse
+import argparse
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -40,25 +41,16 @@ class Utils:
         Returns:
             dict: Configurações padrão do projeto.
         """
-        # Configuração fixa definida diretamente no código
-        config = {
-
+        logger.info('Configuração padrão carregada.')
+        return {
             # Parâmetros de conexão padrão
-            'POSTGRES': {
-                'pool_size': 5,
-                'max_overflow': 10,
-                'timeout': 30
-            },
-            
+            'POSTGRES': {'pool_size': 5, 'max_overflow': 10, 'timeout': 30},
             # Configurações de logging
             'LOGGING': {
                 'level': 'INFO',
-                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            }
+                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            },
         }
-        
-        logger.info('Configuração padrão carregada.')
-        return config
         
     @staticmethod
     def format_elapsed_time(total_seconds):
@@ -76,4 +68,80 @@ class Utils:
         seconds = int(total_seconds % 60)
         
         return f"{hours}:{minutes:02d}:{seconds:02d}"
+        
+    @staticmethod
+    def get_parser(description="Run data integration pipeline"):
+        """
+        Cria e configura um parser de argumentos padrão para os scripts de pipeline.
+        
+        Args:
+            description (str): Descrição do parser
+            
+        Returns:
+            argparse.ArgumentParser: Parser configurado com argumentos padrão
+        """
+        parser = argparse.ArgumentParser(description=description)
+        
+        # Tabela específica ou todas
+        parser.add_argument(
+            "--table",
+            type=str,
+            default="all",
+            help="Specific table to process (default: all tables)",
+        )
+        
+        # Tamanho do chunk para inserção
+        parser.add_argument(
+            "--chunk-size",
+            type=int,
+            default=1000,
+            help="Chunk size for data loading (default: 1000)",
+        )
+        
+        # Controle de extração
+        parser.add_argument(
+            "--extract",
+            type=str,
+            default="true",
+            choices=["true", "false"],
+            help="Turns data extraction on/off for table (default: True)",
+        )
+        
+        # Controle de carregamento
+        parser.add_argument(
+            "--load",
+            type=str,
+            default="true",
+            choices=["true", "false"],
+            help="Turns data loading on/off for table (default: True)",
+        )
+        
+        # Controle de transformação
+        parser.add_argument(
+            "--transform",
+            type=str,
+            default="true",
+            choices=["true", "false"],
+            help="Turns data transformation on/off for table (default: True)",
+        )
+        
+        # Controle de notificações
+        parser.add_argument(
+            "--silent",
+            type=str,
+            default="false",
+            choices=["true", "false"],
+            help="Turns notification on/off (default: False)",
+        )
+        
+        # Controle de atualização de configurações DBT
+        parser.add_argument(
+            "--update-dbt-config",
+            type=str,
+            default="true",
+            choices=["true", "false"],
+            help="Update DBT model configurations before running (default: True)",
+        )
+        
+        return parser
         

@@ -30,7 +30,7 @@ class TestGenericAPIExtractor:
     def test_init(self):
         """Test initialization of GenericAPIExtractor."""
         extractor = self.ConcreteAPIExtractor("test_source", "test_token")
-        assert extractor.source == "test_source"
+        assert extractor.origin == "test_source"
         assert extractor.token == "test_token"
     
     def test_abstract_methods(self):

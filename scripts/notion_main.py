@@ -3,7 +3,6 @@ import time
 import logging
 import datetime
 from dotenv import load_dotenv
-import argparse
 import sys
 from pathlib import Path
 
@@ -16,69 +15,13 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from bdt_data_integration.src.streams.notion_stream import NotionStream
 from bdt_data_integration.src.utils.utils import Utils
 from bdt_data_integration.src.utils.notifier import WebhookNotifier
-from bdt_data_integration.src.metadata.sync_metadata import SyncMetadataHandler
+from metadata.table_configuration import TableConfiguration
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
 def main():
-
-    # Parser de argumentos para a execução do script
-    parser = argparse.ArgumentParser(
-        description="Run the Bitrix data integration pipeline"
-    )
-
-    # Define uma tabela específica para processar, se não for definido, todas as fontes do notion no bendito_intelligence_metadata serão processadas
-    parser.add_argument(
-        "--table",
-        type=str,
-        default="all",
-        help="Specific table to process (default: all tables)",
-    )
-
-    # Define o tamanho do chunk no df.to_sql para o carregamento de dados, se não for definido, o tamanho padrão será 1000 registros
-    parser.add_argument(
-        "--chunk-size",
-        type=int,
-        default=1000,
-        help="Chunk size for data loading (default: 1000)",
-    )
-
-    # Define se os dados serão extraídos da fonte, true por padrão
-    parser.add_argument(
-        "--extract",
-        type=str,
-        default="true",
-        choices=["true", "false"],
-        help="Turns data extraction on/off for table (default: True)",
-    )
-
-    # Define se os dados já existentes no diretório /data/raw serão carregados para banco de dados, true por padrão
-    parser.add_argument(
-        "--load",
-        type=str,
-        default="true",
-        choices=["true", "false"],
-        help="Turns data loading on/off for table (default: True)",
-    )
-
-    # Define se os modelos de transformação do dbt serão executados, true por padrão
-    parser.add_argument(
-        "--transform",
-        type=str,
-        default="true",
-        choices=["true", "false"],
-        help="Turns data transformation on/off for table (default: True)",
-    )
-
-    # Suprime a notificação no final da execução do script, false por padrão
-    parser.add_argument(
-        "--silent",
-        type=str,
-        default="false",
-        choices=["true", "false"],
-        help="Turns notifcation on / off (default: True)",
-    )
-
+    # Create command line argument parser using the utility method
+    parser = Utils.get_parser("Run the Notion data integration pipeline")
     args = parser.parse_args()
 
     # Configura os diferentes níveis de log para o script
@@ -126,33 +69,35 @@ def main():
     notifier_url = os.environ["DEEPNOTE_BENDITO_BI_WEBHOOK"]
 
     start_time = time.time()
-    notifier = WebhookNotifier(url=notifier_url, pipeline="notion_pipeline")
+    notifier = WebhookNotifier(
+        url=notifier_url, pipeline="notion_pipeline", silent=args.silent.lower()
+    )
 
     # Carrega algumas configurações globais do projeto, vai ser morto em breve pq ficou inutilizado
     config = Utils.load_config()
 
     # Cria uma conexão com o banco de dados de metadados e carrega as informações das tabelas que serão processadas
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
-    engine = create_engine(url, poolclass=QueuePool, pool_size=5, max_overflow=10)
-    handler = SyncMetadataHandler(engine, origin)
-    active_tables = handler._load_sync_meta()
+    config_handler = TableConfiguration(url, origin)
+    tables = config_handler.get_table_configuration()
+    active_tables = tables[tables["active"] == True]
 
     # Define a função que vai processar a extração e o carregamento dos dados
-    @notifier.error_handler
-    def replicate_database(source_name, identifier, target_name, days):
-        # Define logger for this function
-        logger = logging.getLogger("replicate_database")
+    logger = logging.getLogger("replicate_database")
 
-        stream = NotionStream(source_name=source_name, config=config)
+    @notifier.error_handler
+    def replicate_database(row):  # Define logger for this function
+
+        stream = NotionStream(source_name=row.source_name, config=config)
 
         if args.extract.lower() == "true":
-            stream.set_extractor(database_id=identifier, token=token)
+            stream.set_extractor(database_id=row.source_identifier, token=token)
 
-            records = stream.extract_stream(days=days)
+            records = stream.extract_stream(days=row.days_interval)
 
             if args.load.lower() == "true":
                 ddl = f"""
-                CREATE TABLE IF NOT EXISTS {origin}.{target_name}(
+                CREATE TABLE IF NOT EXISTS {origin}.{row.target_name}(
                     "ID" varchar NOT NULL,
                     "SUCCESS" bool,
                     "CONTENT" jsonb
@@ -167,7 +112,7 @@ def main():
                 try:
                     stream.load_stream(
                         records,
-                        target_table=target_name,
+                        target_table=row.target_name,
                         target_schema=origin,
                         chunksize=1000,
                     )
@@ -175,10 +120,10 @@ def main():
                     logger.error(f"Erro ao carregar dados: {e}")
                     return 0
         elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {source_name}: Nada a carregar")
+            logger.info(f"Pulando load em {row.source_name}: Nada a carregar")
             return 0
         else:
-            logger.info(f"Pulando load em {source_name}: Nada a carregar")
+            logger.info(f"Pulando load em {row.source_name}: Nada a carregar")
             return 0
 
     total = 0
@@ -189,19 +134,18 @@ def main():
         if args.table == "all":
             for row in active_tables.itertuples():
                 total += 1
-                source_name = row.source_name
-                target_name = row.target_name or row.source_name
-                identifier = row.source_identifier
-                days = row.days_interval
-                handler.update_table_meta(
-                    source_name, last_sync_attempt_at=datetime.datetime.now()
+                config_handler.update_table_configuration(
+                    row.id,
+                    row.source_name,
+                    last_sync_attempt_at=datetime.datetime.now(),
                 )
 
                 try:
-                    replicate_database(source_name, identifier, target_name, days)
+                    replicate_database(row)
                     success += 1
-                    handler.update_table_meta(
-                        source_name,
+                    config_handler.update_table_configuration(
+                        row.id,
+                        row.source_name,
                         last_successful_sync_at=datetime.datetime.now(),
                     )
                 except Exception as e:
@@ -209,18 +153,16 @@ def main():
                     success += 0
         elif args.table in active_tables["source_name"].values:
             total += 1
-            source_name = args.table
-            row = active_tables.loc[active_tables["source_name"] == source_name].iloc[0]
-            target_name = row.target_name or source_name
-            identifier = row.source_identifier
-            handler.update_table_meta(
-                source_name, last_sync_attempt_at=datetime.datetime.now()
+            config_handler.update_table_configuration(
+                row.id, row.source_name, last_sync_attempt_at=datetime.datetime.now()
             )
             try:
-                replicate_database(source_name, identifier, target_name)
+                replicate_database(row)
                 success += 1
-                handler.update_table_meta(
-                    source_name, last_successful_sync_at=datetime.datetime.now()
+                config_handler.update_table_configuration(
+                    row.id,
+                    row.source_name,
+                    last_successful_sync_at=datetime.datetime.now(),
                 )
             except Exception as e:
                 print(f"Error: {e}")
@@ -260,14 +202,17 @@ def main():
         project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
     )
 
+    if args.update_dbt_config.lower() == "true":
+        logger.info("Atualizando configurações dos modelos DBT...")
+        dbt_runner.update_model_configs(tables, origin)
+
     dbt_runner.run(models="notion", target_schema=origin)
 
     elapsed_time_formatted = Utils.format_elapsed_time(time.time() - start_time)
 
-    if args.silent.lower() == "false":
-        notifier.pipeline_end(
-            text=f"Execução de pipeline encerrada: notion_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-        )
+    notifier.pipeline_end(
+        text=f"Execução de pipeline encerrada: notion_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+    )
 
 
 if __name__ == "__main__":

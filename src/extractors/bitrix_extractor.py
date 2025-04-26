@@ -1,10 +1,16 @@
+from datetime import timedelta
+import datetime
 import json
 import logging
+import os
 import requests
 import pandas as pd
+from dotenv import load_dotenv
 import time
 import random
 from bdt_data_integration.src.extractors.base_extractor import GenericAPIExtractor
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)  # This will also use the module's name
 
@@ -19,7 +25,7 @@ class BitrixAPIExtractor(GenericAPIExtractor):
         - bitrix_user_id (str): ID do usuário Bitrix.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """
         Inicializa um extrator para a API do Bitrix24.
 
@@ -28,17 +34,15 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             **kwargs: Argumentos nomeados, incluindo 'token', 'bitrix_url', 'bitrix_user_id' e 'writer'.
         """
         # Forçar que o source seja sempre 'bitrix', independente do que foi passado
-        kwargs["source"] = "bitrix"
-        super().__init__(*args, **kwargs)
-        self.token = kwargs.get("token")
-        self.bitrix_url = kwargs.get("bitrix_url")
-        self.bitrix_user_id = kwargs.get("bitrix_user_id")
+        super().__init__(origin="bitrix", token=os.environ.get("BITRIX_TOKEN"))
+        self.base_url = os.environ.get("BITRIX_URL")
+        self.user_id = os.environ.get("BITRIX_USER_ID")
 
     def _get_endpoint(self):
         return None
 
     def _base_endpoint(self):
-        return f"https://{self.bitrix_url}/rest/{self.bitrix_user_id}/{self.token}/"
+        return f"https://{self.base_url}/rest/{self.user_id}/{self.token}/"
 
     def _list_url(self, endpoint_id):
         return self._base_endpoint() + f"{endpoint_id}.list.json"
@@ -49,7 +53,7 @@ class BitrixAPIExtractor(GenericAPIExtractor):
     def _raw_url(self, endpoint_id) -> str:
         return self._base_endpoint() + f"{endpoint_id}"
 
-    def fetch_paginated(self, url, start=0, **kwargs):
+    def fetch_paginated(self, url, start=0):
         start = 0
         while True:
             params = {"start": start}
@@ -66,10 +70,12 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             else:
                 break
 
-    def fetch_list(self, endpoint_id, **kwargs):
-
+    def fetch_list(self, endpoint_id, days=0, updated_at=None):
         records = []
         url = self._list_url(endpoint_id)
+        days = int(days)
+        if days > 0 and updated_at:
+            url += f"?FILTER[>{updated_at}]={(datetime.datetime.now() - datetime.timedelta(days=days)).strftime('%Y-%m-%d')}"
 
         for response in self.fetch_paginated(url, start=0):
             if isinstance(response, list):
@@ -86,8 +92,8 @@ class BitrixAPIExtractor(GenericAPIExtractor):
                 raise Exception("Invalid Result Format")
         return pd.DataFrame(records, dtype=str)
 
-    def extract_as_table(self, endpoint_id):
-        list_data = self.fetch_list(endpoint_id)
+    def extract_as_table(self, endpoint_id, days=0, updated_at=None):
+        list_data = self.fetch_list(endpoint_id, days, updated_at)
         if list_data.empty:
             return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"])
         results = pd.DataFrame(list_data["ID"])
@@ -153,7 +159,7 @@ class BitrixAPIExtractor(GenericAPIExtractor):
 
         return pd.DataFrame(results, dtype=str)
 
-    def extract_as_enum(self, endpoint_id):
+    def extract_as_enum(self, endpoint_id, *args):  # We don't need days/updated_at here
         url = self._raw_url(endpoint_id)
         response = requests.get(url)
         response.raise_for_status()
@@ -171,8 +177,8 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             logger.warning(f"WARNING: Nenhum dado presente em {url}")
             return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"], dtype=str)
 
-    def extract_as_list(self, endpoint_id):
-        list_data = self.fetch_list(endpoint_id)
+    def extract_as_list(self, endpoint_id, days=0, updated_at=None):
+        list_data = self.fetch_list(endpoint_id, days, updated_at)
 
         # Converter o DataFrame inteiro para JSON com tratamento de NaN
         list_json = list_data.replace({pd.NA: None}).to_json(orient="records")
@@ -190,22 +196,24 @@ class BitrixAPIExtractor(GenericAPIExtractor):
 
         return pd.DataFrame(data, dtype=str)
 
-    def extract_as_fields(self, endpoint_id):
-        url = self._base_endpoint() + 'crm.' + endpoint_id
-        list_data = requests.get(url).json().get('result')
-        
+    def extract_as_fields(self, endpoint_id, *args):  # We don't need days/updated_at here
+        url = self._base_endpoint() + "crm." + endpoint_id
+        list_data = requests.get(url).json().get("result")
+
         data = [
             {
                 "ID": int(key) if key.isdigit() else i,
                 "SUCCESS": True,
-                "CONTENT": json.dumps({"ID": key, **list_data[key]})
+                "CONTENT": json.dumps({"ID": key, **list_data[key]}),
             }
             for i, key in enumerate(list_data.keys())
         ]
-        
+
         return pd.DataFrame(data, dtype=str)
 
-    def get_extract_function(self, mode=("table", "enum", "endpoint", "list", "fields")):
+    def get_extract_function(
+        self, mode=("table", "enum", "endpoint", "list", "fields")
+    ):
         # sourcery skip: assign-if-exp, remove-redundant-if
         if mode == "table":
             return self.extract_as_table
@@ -213,10 +221,26 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             return self.extract_as_enum
         elif mode == "list":
             return self.extract_as_list
-        elif mode == 'fields':
+        elif mode == "fields":
             return self.extract_as_fields
         else:
             raise ValueError(f"Modo de extração inválido: {mode}")
 
-    def run(self, mode, endpoint_id):
-        return self.get_extract_function(mode)(endpoint_id)
+    def run(self, endpoint_id, mode, days=0, updated_at=None):
+        """
+        Run the extraction with the specified mode.
+        
+        Args:
+            endpoint_id: The Bitrix endpoint ID
+            mode: Extraction mode ('table', 'enum', 'endpoint', 'list', 'fields')
+            days: Number of days to look back (optional)
+            updated_at: Name of the updated_at column in Bitrix (optional)
+            
+        Returns:
+            DataFrame with the extracted data
+        """
+        # Get the extraction function based on mode
+        extract_func = self.get_extract_function(mode)
+        
+        # Call the function with appropriate arguments
+        return extract_func(endpoint_id, days, updated_at)

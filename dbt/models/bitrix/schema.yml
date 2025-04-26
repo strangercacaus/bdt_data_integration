@@ -1,0 +1,178 @@
+version: 2
+models:
+- name: bdt_processed_crm.activity
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.activity
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_user.get
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_user.get
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.enum.activitynotifytype
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.enum.activitynotifytype
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.dealcategory.stage
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.dealcategory.stage
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.catalog
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.catalog
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.enum.activitydirection
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.enum.activitydirection
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.deal.recurring
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.deal.recurring
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.lead
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.lead
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.enum.addresstype
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.enum.addresstype
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.deal.userfield
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.deal.userfield
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.enum.activitypriority
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.enum.activitypriority
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.contact.userfield
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.contact.userfield
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.company.userfield
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.company.userfield
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.currency
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.currency
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.enum.ownertype
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.enum.ownertype
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_deal.fields
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_deal.fields
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.deal
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.deal
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.dealcategory
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.dealcategory
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.status
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.status
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.contact
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.contact
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.product
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.product
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_crm.company
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_crm.company
+  config:
+    materialized: table
+    enabled: true

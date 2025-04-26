@@ -328,7 +328,7 @@ class PostgresLoader(BaseLoader):
         target_table: str,
         target_schema: str,
         mode="replace",
-        **kwargs,
+        chunksize=1000,
     ):
         """
         Carrega os dados de um DataFrame na tabela de destino.
@@ -349,9 +349,6 @@ class PostgresLoader(BaseLoader):
             f"Iniciando load_data para {target_table} em {target_schema}, modo: {mode}"
         )
 
-        # Define o tamanho do chunk para o carregamento em partes
-        chunksize = kwargs.get("chunksize", 1000)
-        # Define o schema para o carregamento        # Verifica se o schema existe
         schema_exists = self.check_if_schema_exists(target_schema)
 
         # Se o schema não existe, cria o schema

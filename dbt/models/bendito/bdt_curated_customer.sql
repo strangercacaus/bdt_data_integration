@@ -1,14 +1,3 @@
-{{ config(
-        materialized = 'table',
-        unique_key = 'id',
-        post_hook=[
-            "ALTER TABLE {{ this }} ADD PRIMARY KEY (id)",
-            "GRANT SELECT ON {{ this }} TO bendito_metabase",
-            "CREATE INDEX IF NOT EXISTS idx_time_creation ON {{ this }} (time_creation)",
-            "CREATE INDEX IF NOT EXISTS idx_time_modification ON {{ this }} (time_modification)",
-            "CREATE INDEX IF NOT EXISTS idx_status ON {{ this }} (status)"
-        ],
-    )}}
 SELECT ("CONTENT"->>'id')::integer AS id,
 ("CONTENT"->>'type')::integer AS type,
 ("CONTENT"->>'status')::integer AS status,

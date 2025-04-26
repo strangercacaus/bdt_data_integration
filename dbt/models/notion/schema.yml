@@ -1,0 +1,26 @@
+version: 2
+models:
+- name: bdt_processed_e508b1c6-1bef-41ac-94d5-e48abfe61ebe
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_e508b1c6-1bef-41ac-94d5-e48abfe61ebe
+  config:
+    materialized: incremental
+    enabled: true
+- name: bdt_processed_3290a9e9f0bf4d84bc57aae53f635e7e
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_3290a9e9f0bf4d84bc57aae53f635e7e
+  config:
+    materialized: incremental
+    enabled: true
+- name: bdt_processed_126fee6194ad807ab909c739f8cc9d61
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_126fee6194ad807ab909c739f8cc9d61
+  config:
+    materialized: incremental
+    enabled: true

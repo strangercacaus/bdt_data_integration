@@ -25,7 +25,7 @@ class BenditoStream(Stream):
         self.source_name = source_name
         self.output_name = kwargs.get("output_name", self.source_name)
 
-    def set_extractor(self, token, separator=";"):
+    def set_extractor(self):
         """
         Set up the BenditoAPIExtractor for this stream.
 
@@ -33,21 +33,19 @@ class BenditoStream(Stream):
             token (str): Bendito API token
             separator (str): CSV separator
         """
-        self.extractor = BenditoAPIExtractor(token=token)
-        self.separator = separator
+        self.extractor = BenditoAPIExtractor()
 
-    def extract_stream(self, custom_query=None, page_size=500, **kwargs) -> None:
+    def extract_stream(
+        self,
+        source_name,
+        days,
+        page_size: int = 1000,
+        update_property: str = "time_modification",
+    ) -> None:
 
-        separator = kwargs.get("separator", ";")
-
-        order_col = kwargs.get("order_col", 1)
-
-        if custom_query:
-            query = custom_query.strip().rstrip(";")
-        else:
-            query = f'select * from "{self.source_name}" order by {order_col} asc'
-
-        return self.extractor.run(query=query, separator=separator, page_size=page_size)
+        return self.extractor.run(
+            page_size=page_size, source_name=source_name, days=days, updated_at_property=update_property
+        )
 
     def set_table_definition(self, ddl):
         self.table_definition = ddl

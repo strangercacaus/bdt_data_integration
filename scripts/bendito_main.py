@@ -2,7 +2,6 @@ import os
 import time
 import logging
 import datetime
-import argparse
 from dotenv import load_dotenv
 import sys
 from pathlib import Path
@@ -15,65 +14,22 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from bdt_data_integration.src.streams.bendito_stream import BenditoStream
 from bdt_data_integration.src.utils.utils import Utils
 from bdt_data_integration.src.utils.notifier import WebhookNotifier
-from bdt_data_integration.src.metadata.sync_metadata import SyncMetadataHandler
+from metadata.table_configuration import TableConfiguration
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
 def main():
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Run the Bendito data integration pipeline"
-    )
-    parser.add_argument(
-        "--table",
-        type=str,
-        default="all",
-        help="Table for data extraction (default: all)",
-    )
+    # Create command line argument parser using the utility method
+    parser = Utils.get_parser("Run the Bendito data integration pipeline")
+
     parser.add_argument(
         "--page_size",
         type=int,
         default=5000,
         help="Page size for data extraction (default: 5000)",
     )
-    parser.add_argument(
-        "--chunk_size",
-        type=int,
-        default=5000,
-        help="Chunk size for data insertion (default: 5000)",
-    )
-    parser.add_argument(
-        "--extract",
-        type=str,
-        default="true",
-        choices=["true", "false"],
-        help="Turns data extraction on/off for table (default: True)",
-    )
-
-    parser.add_argument(
-        "--load",
-        default="true",
-        choices=["true", "false"],
-        help="Turns data loading on/off for table (default: True)",
-    )
-
-    parser.add_argument(
-        "--transform",
-        default="true",
-        choices=["true", "false"],
-        help="Turns data transformation on/off for table (default: True)",
-    )
-
-    parser.add_argument(
-        "--silent",
-        type=str,
-        default="false",
-        choices=["true", "false"],
-        help="Turns notifcation on / off (default: True)",
-    )
 
     args = parser.parse_args()
-
     # Set up the root logger
     logging.basicConfig(
         level=logging.DEBUG,  # Set to DEBUG to capture all log messages
@@ -104,55 +60,50 @@ def main():
     logging.getLogger().setLevel(logging.DEBUG)
 
     load_dotenv()
+
     origin = "bendito"
     host = os.environ["DESTINATION_HOST"]
     user = os.environ["DESTINATION_ROOT_USER"]
     password = os.environ["DESTINATION_ROOT_PASSWORD"]
     db_name = os.environ["DESTINATION_DB_NAME"]
-    notifier_url = os.environ["DEEPNOTE_BENDITO_BI_WEBHOOK"]
-
-    start_time = time.time()
-    notifier = WebhookNotifier(url=notifier_url, pipeline="bendito_pipeline")
 
     # Carregando configurações globais do projeto
     config = Utils.load_config()
+    start_time = time.time()
+
+    notifier_url = os.environ["DEEPNOTE_BENDITO_BI_WEBHOOK"]
+    notifier = WebhookNotifier(
+        url=notifier_url, pipeline="bendito_pipeline", silent=args.silent.lower()
+    )
 
     # Carregando configurações de sincronização das tabelas
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
-    engine = create_engine(url, poolclass=QueuePool, pool_size=5, max_overflow=10)
-    handler = SyncMetadataHandler(engine, origin)
-    df = handler._load_sync_meta()
+    config_handler = TableConfiguration(url, origin)
+    tables = config_handler.get_table_configuration()
+    active_tables = tables[tables["active"] == True]
 
-    # obtendo as informações das tabelas que serão processadas
-    columns_to_fetch = [
-        "source_name",
-        "vars",
-        "target_name",
-        "unique_id_property",
-        "updated_at_property",
-        "mode",
-    ]
-    active_tables = df[(df["origin"] == "bendito") & (df["active"] == True)][
-        columns_to_fetch
-    ]
+    logger = logging.getLogger("replicate_database")
 
     @notifier.error_handler
-    def replicate_table(source_name, target_name):
-
-        logger = logging.getLogger("replicate_database")
+    def replicate_table(row):
 
         if args.extract.lower() == "true":
 
-            stream = BenditoStream(source_name=source_name, config=config)
+            stream = BenditoStream(source_name=row.source_name, config=config)
 
-            stream.set_extractor(os.environ["BENDITO_BI_TOKEN"])
+            stream.set_extractor()
 
-            records = stream.extract_stream(separator=";", page_size=args.page_size)
+            records = stream.extract_stream(
+                source_name=row.source_name,
+                days=row.days_interval,
+                updated_at_property=row.updated_at_property,
+                page_size=args.page_size,
+            )
 
             if args.load.lower() == "true":
 
                 ddl = f"""
-                CREATE TABLE IF NOT EXISTS {origin}.{target_name}(
+                CREATE TABLE IF NOT EXISTS {origin}.{row.target_name}(
                     "ID" varchar NOT NULL,
                     "SUCCESS" bool,
                     "CONTENT" jsonb
@@ -168,7 +119,7 @@ def main():
                 try:
                     stream.load_stream(
                         records,
-                        target_table=target_name,
+                        target_table=row.target_name,
                         target_schema=origin,
                         chunksize=args.chunk_size,
                     )
@@ -177,50 +128,61 @@ def main():
                     return 0
                 return 0
             else:
-                logger.info(f"Pulando load em {target_name}")
+                logger.info(f"Pulando load em {row.target_name}")
                 return 0
         elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {source_name}: Nada a carregar")
+            logger.info(f"Pulando load em {row.source_name}: Nada a carregar")
             return 0
 
     total = 0
     success = 0
 
     if args.table == "all":
-        for row in active_tables.itertuples():
-            total += 1
-            source_name = row.source_name
-            target_name = row.target_name or row.source_name
-            handler.update_table_meta(
-                source_name, last_sync_attempt_at=datetime.datetime.now()
-            )
+        if args.extract.lower() == "true":
+            for row in active_tables.itertuples():
+                total += 1
+                config_handler.update_table_configuration(
+                    row.id,
+                    row.source_name,
+                    last_sync_attempt_at=datetime.datetime.now(),
+                )
 
+                try:
+                    replicate_table(row)
+                    success += 1
+                    config_handler.update_table_configuration(
+                        row.id,
+                        row.source_name,
+                        last_successful_sync_at=datetime.datetime.now(),
+                    )
+
+                except Exception as e:
+                    success += 0
+                    raise e
+        else:
+            logger.info("Pulando extração de dados")
+
+    elif args.table in active_tables["source_name"].values:
+        if args.extract.lower() == "true":
+            total += 1
+            row = active_tables.loc[active_tables["source_name"] == args.table].iloc[0]
+            config_handler.update_table_configuration(
+                row.id, row.source_name, last_sync_attempt_at=datetime.datetime.now()
+            )
             try:
-                replicate_table(source_name, target_name)
+                replicate_table(row)
                 success += 1
-                handler.update_table_meta(
-                    source_name, last_successful_sync_at=datetime.datetime.now()
+                config_handler.update_table_configuration(
+                    row.id,
+                    row.source_name,
+                    last_successful_sync_at=datetime.datetime.now(),
                 )
             except Exception as e:
                 success += 0
                 raise e
-
-    elif args.table in active_tables["source_name"].values:
-        total += 1
-        source_name = args.table
-        target_name = f"bdt_raw_{args.table}"
-        handler.update_table_meta(
-            source_name, last_sync_attempt_at=datetime.datetime.now()
-        )
-        try:
-            replicate_table(source_name, target_name)
-            success += 1
-            handler.update_table_meta(
-                source_name, last_successful_sync_at=datetime.datetime.now()
-            )
-        except Exception as e:
-            success += 0
-            raise e
+        else:
+            logger.info(f"Pulando extração de dados para a tabela {args.table}")
+            logger.info(f"Pulando o carregamento de dados para a tabela {args.table}")
     else:
         raise ValueError("Nome da tabela inválido ou não configurado")
 
@@ -257,15 +219,20 @@ def main():
             project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
         )
 
+        # Atualizar configurações dos modelos antes de executar
+        if args.update_dbt_config.lower() == "true":
+            logger.info("Atualizando configurações dos modelos DBT...")
+            dbt_runner.update_model_configs(tables, origin)
+
         dbt_runner.run(models=origin, target_schema=origin)
+    else:
+        logger.info("Pulando transformações dbt")
 
     elapsed_time_formatted = Utils.format_elapsed_time(time.time() - start_time)
-
     # Update the notifier.pipeline_end call with the formatted time
-    if args.silent.lower() == "false":
-        notifier.pipeline_end(
-            text=f"Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-        )
+    notifier.pipeline_end(
+        text=f"Execução de pipeline encerrada: bendito_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+    )
 
 
 if __name__ == "__main__":

@@ -1,11 +1,3 @@
-{{ config(
-        materialized = 'table',
-        unique_key = 'id',
-        post_hook=[
-            "ALTER TABLE {{ this }} ADD PRIMARY KEY (domain, value)",
-            "GRANT SELECT ON {{ this }} TO bendito_metabase",
-        ],
-    )}}
 SELECT ("CONTENT"->>'domain')::character varying AS domain,
 ("CONTENT"->>'value')::integer AS value,
 ("CONTENT"->>'language')::character varying AS language,

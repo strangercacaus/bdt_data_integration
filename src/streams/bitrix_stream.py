@@ -20,9 +20,8 @@ class BitrixStream(Stream):
         super().__init__(source_name, config, **kwargs)
         self.source = "bitrix"
         self.source_name = source_name
-        self.output_name = kwargs.get("output_name", self.source_name)
 
-    def set_extractor(self, **kwargs):
+    def set_extractor(self):
         """
         Configura o BitrixAPIExtractor para esta stream.
 
@@ -30,32 +29,20 @@ class BitrixStream(Stream):
             database_id (str): ID do banco de dados Notion
             token (str): Token da API Notion
         """
+        self.extractor = BitrixAPIExtractor()
 
-        separator = kwargs.get("separator", ";")
+    def extract_stream(self, row):
+        """
+        Extracts data from Bitrix using the configured extractor.
+        
+        Args:
+            row: Row from the configuration table with source_name, extraction_strategy, 
+                days_interval, and updated_at_column
 
-        token = kwargs.get("token", None)
-
-        bitrix_url = kwargs.get("bitrix_url", None)
-
-        bitrix_user_id = kwargs.get("bitrix_user_id", None)
-
-        if any(var is None for var in [token, bitrix_url, bitrix_user_id]):
-            raise ValueError(
-                "Variável obrigatória omitida em BitrixStream.set_extractor"
-            )
-
-        self.extractor = BitrixAPIExtractor(
-            source=self.source,
-            token=token,
-
-            separator=separator,
-            bitrix_url=bitrix_url,
-            bitrix_user_id=bitrix_user_id,
-        )
-
-    def extract_stream(self, mode) -> None:
-
-        return self.extractor.run(mode, self.source_name)
+        Returns:
+            DataFrame: The extracted data
+        """
+        return self.extractor.run(row.source_identifier, row.extraction_strategy, row.days_interval, row.updated_at_property)
 
     def set_table_definition(self, ddl):
         self.table_definition = ddl
@@ -72,13 +59,15 @@ class BitrixStream(Stream):
         self.loader = PostgresLoader(engine)
         self.loader.table_definition = self.table_definition
 
-    def load_stream(self, records, target_schema, target_table, **kwargs):
+    def load_stream(self, records, target_schema, target_table, chunksize=None):
         """
         Carrega os dados na camada staging no banco de dados de destino.
 
         Args:
+            records (pd.DataFrame): DataFrame com os registros a serem carregados
             target_schema (str): Nome do esquema de destino
-            **kwargs: Argumentos adicionais para o carregamento
+            target_table (str): Nome da tabela de destino
+            chunksize (int, optional): Tamanho do chunk para carregamento em lotes
         """
 
         logger.info(f"Chamando load_data com raw_data.shape: {records.shape}")
@@ -88,4 +77,5 @@ class BitrixStream(Stream):
             target_table=target_table,
             target_schema=target_schema,
             mode="replace",
+            chunksize=chunksize
         )

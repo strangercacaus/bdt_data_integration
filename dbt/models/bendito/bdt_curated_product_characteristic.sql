@@ -1,12 +1,3 @@
-{{ config(
-        materialized = 'table',
-        unique_key = 'id',
-        post_hook=[
-            "ALTER TABLE {{ this }} ADD PRIMARY KEY (id)",
-            "GRANT SELECT ON {{ this }} TO bendito_metabase",
-
-        ],
-    )}}
 SELECT ("CONTENT"->>'id_product')::integer AS id_product,
 ("CONTENT"->>'id')::integer AS id,
 ("CONTENT"->>'id_characteristic')::integer AS id_characteristic,

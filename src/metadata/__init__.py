@@ -1,5 +1,5 @@
-from .sync_metadata import SyncMetadataHandler
+from .table_configuration import TableConfiguration
 
 __all__ = [
-    'SyncMetadataHandler'
+    'TableConfiguration'
 ]

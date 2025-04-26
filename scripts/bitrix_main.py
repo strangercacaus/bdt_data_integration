@@ -2,7 +2,6 @@ import os
 import time
 import logging
 import datetime
-import argparse
 from dotenv import load_dotenv
 import sys
 from pathlib import Path
@@ -15,61 +14,13 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from bdt_data_integration.src.streams.bitrix_stream import BitrixStream
 from bdt_data_integration.src.utils.utils import Utils
 from bdt_data_integration.src.utils.notifier import WebhookNotifier
-from bdt_data_integration.src.metadata.sync_metadata import SyncMetadataHandler
+from metadata.table_configuration import TableConfiguration
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
 def main():
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Run the Bitrix data integration pipeline"
-    )
-    parser.add_argument(
-        "--table",
-        type=str,
-        default="all",
-        help="Specific table to process (default: all tables)",
-    )
-
-    parser.add_argument(
-        "--chunk-size",
-        type=int,
-        default=1000,
-        help="Chunk size for data loading (default: 1000)",
-    )
-
-    parser.add_argument(
-        "--extract",
-        type=str,
-        default="true",
-        choices=["true", "false"],
-        help="Turns data extraction on/off for table (default: True)",
-    )
-
-    parser.add_argument(
-        "--load",
-        type=str,
-        default="true",
-        choices=["true", "false"],
-        help="Turns data loading on/off for table (default: True)",
-    )
-
-    parser.add_argument(
-        "--transform",
-        type=str,
-        default="true",
-        choices=["true", "false"],
-        help="Turns data transformation on/off for table (default: True)",
-    )
-
-    parser.add_argument(
-        "--silent",
-        type=str,
-        default="false",
-        choices=["true", "false"],
-        help="Turns notifcation on / off (default: True)",
-    )
-
+    # Create command line argument parser using the utility method
+    parser = Utils.get_parser("Run the Bitrix data integration pipeline")    
     args = parser.parse_args()
     # Set up the root logger
     logging.basicConfig(
@@ -102,9 +53,6 @@ def main():
 
     load_dotenv()
     origin = "bitrix"
-    token = os.environ["BITRIX_TOKEN"]
-    bitrix_url = os.environ["BITRIX_URL"]
-    bitrix_user_id = os.environ["BITRIX_USER_ID"]
     host = os.environ["DESTINATION_HOST"]
     user = os.environ["DESTINATION_ROOT_USER"]
     password = os.environ["DESTINATION_ROOT_PASSWORD"]
@@ -112,34 +60,33 @@ def main():
     notifier_url = os.environ["DEEPNOTE_BENDITO_BI_WEBHOOK"]
 
     start_time = time.time()
-    notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")
+    notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline", silent=args.silent.lower())
 
     # Carregando configurações globais do projeto
     config = Utils.load_config()
 
     # Carregando configurações de sincronização das tabelas
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
-    engine = create_engine(url, poolclass=QueuePool, pool_size=5, max_overflow=10)
-    handler = SyncMetadataHandler(engine, origin)
-    active_tables = handler._load_sync_meta()
+    config_handler = TableConfiguration(url, origin)
+    tables = config_handler.get_table_configuration()
+    active_tables = tables[tables["active"] == True]
 
+    logger = logging.getLogger("replicate_database")
     @notifier.error_handler
-    def replicate_table(source_name, target_name, mode="table"):
+    def replicate_table(row):
 
-        logger = logging.getLogger("replicate_database")
 
         if args.extract.lower() == "true":
 
-            stream = BitrixStream(source_name=source_name, config=config)
+            stream = BitrixStream(source_name=row.source_name, config=config)
 
-            stream.set_extractor(
-                token=token, bitrix_url=bitrix_url, bitrix_user_id=bitrix_user_id
-            )
-            records = stream.extract_stream(mode)
+            stream.set_extractor()
+            
+            records = stream.extract_stream(row)
 
             if args.load.lower() == "true":
                 ddl = f"""
-                CREATE TABLE IF NOT EXISTS {origin}.{target_name}(
+                CREATE TABLE IF NOT EXISTS {origin}.{row.target_name}(
                     "ID" varchar NOT NULL,
                     "SUCCESS" bool,
                     "CONTENT" jsonb
@@ -155,20 +102,19 @@ def main():
                 try:
                     stream.load_stream(
                         records,
-                        target_table=target_name,
+                        target_table=row.target_name,
                         target_schema=origin,
-                        chunksize=args.chunk_size,
-                        schema_file_type=mode,
+                        chunksize=args.chunk_size
                     )
                     return 1
                 except Exception as e:
                     logger.error(f"Erro ao carregar dados: {e}")
                     return 0
             else:
-                logger.info(f"Pulando load em {source_name}")
+                logger.info(f"Pulando load em {row.source_name}")
                 return 0
         elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {source_name}: Nada a carregar")
+            logger.info(f"Pulando load em {row.source_name}: Nada a carregar")
             return 0
 
     total = 0
@@ -177,35 +123,30 @@ def main():
     if args.table.lower() == "all":
         for row in active_tables.itertuples():
             total += 1
-            source_name = row.source_name
-            target_name = row.target_name or row.source_name
-            mode = row[6] if hasattr(row, "_fields") and "mode" in row._fields else "table"
-            handler.update_table_meta(
-                source_name, last_sync_attempt_at=datetime.datetime.now()
+            config_handler.update_table_configuration(
+                row.id, row.source_name, last_sync_attempt_at=datetime.datetime.now()
             )
 
             try:
-                success += replicate_table(source_name, target_name, mode) or 0
-                handler.update_table_meta(
-                    source_name,
+                success += replicate_table(row) or 0
+                config_handler.update_table_configuration(
+                    row.id,
+                    row.source_name,
                     last_successful_sync_at=datetime.datetime.now(),
                 )
             except Exception as e:
                 success += 0
                 raise e
     elif args.table in active_tables["source_name"].values:
-        source_name = args.table
-        row = active_tables.loc[active_tables["source_name"] == source_name].iloc[0]
-        target_name = row.target_name or source_name
-        mode = row["mode"]
+        row = active_tables.loc[active_tables["source_name"] == args.table].iloc[0]
         total += 1
-        handler.update_table_meta(
-            source_name, last_sync_attempt_at=datetime.datetime.now()
+        config_handler.update_table_configuration(
+            row.id, row.source_name, last_sync_attempt_at=datetime.datetime.now()
         )
         try:
-            success += replicate_table(source_name, target_name, mode) or 0
-            handler.update_table_meta(
-                source_name, last_successful_sync_at=datetime.datetime.now()
+            success += replicate_table(row) or 0
+            config_handler.update_table_configuration(
+                row.id, row.source_name, last_successful_sync_at=datetime.datetime.now()
             )
         except Exception as e:
             success += 0
@@ -248,18 +189,19 @@ def main():
         dbt_runner = DBTRunner(
             project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
         )
+        
+        if args.update_dbt_config.lower() == "true":
+            logger.info("Atualizando configurações dos modelos DBT...")
+            dbt_runner.update_model_configs(tables, origin)
 
         # Run only Bitrix models, passando o schema de destino
         dbt_runner.run(models=origin, target_schema=origin)
 
-    notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline")
-
     elapsed_time_formatted = Utils.format_elapsed_time(time.time() - start_time)
 
-    if args.silent.lower() == "false":
-        notifier.pipeline_end(
-            text=f"Execução de pipeline encerrada: bitrix_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
-        )
+    notifier.pipeline_end(
+        text=f"Execução de pipeline encerrada: bitrix_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
+    )
 
 if __name__ == "__main__":
     main()

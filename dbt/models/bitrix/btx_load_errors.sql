@@ -1,4 +1,4 @@
-{{ config(materialized = 'table') }}
+{{ config(materialized = 'table', enabled = false) }}
 select 
     'btx_raw_activity' as data_source,
     now() as checked_at,

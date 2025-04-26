@@ -7,7 +7,7 @@ class GenericExtractor(ABC):
     """
     Classe abstrata que define um extrator de dados e os métodos obrigatórios.
     """
-    def __init__(self, source: str, *args, **kwargs):
+    def __init__(self, source: str):
         self.source = source
 
 class GenericAPIExtractor(GenericExtractor):
@@ -24,7 +24,7 @@ class GenericAPIExtractor(GenericExtractor):
         - Uma lista de objetos JSON com todas as entradas de um sistema.
     """
     def __init__(
-        self, source: str, token, *args, **kwargs
+        self, origin: str, token, *args, **kwargs
     ) -> None:
         """
         Inicializa um objeto da classe GenericAPIExtractor.
@@ -35,8 +35,8 @@ class GenericAPIExtractor(GenericExtractor):
             writer: O objeto responsável por gravar os dados extraídos.
             **kwargs: Argumentos adicionais para configuração do extrator.
         """
-        super().__init__(source, *args, **kwargs)
-        self.source = source
+        super().__init__(origin, *args, **kwargs)
+        self.origin = origin
         self.token = token
 
     @abstractmethod
