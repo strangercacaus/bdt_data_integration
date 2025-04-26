@@ -39,12 +39,12 @@ class BenditoStream(Stream):
         self,
         source_name,
         days,
+        updated_at_property,
         page_size: int = 1000,
-        update_property: str = "time_modification",
     ) -> None:
 
         return self.extractor.run(
-            page_size=page_size, source_name=source_name, days=days, updated_at_property=update_property
+            page_size=page_size, source_name=source_name, days=days, updated_at_property=updated_at_property
         )
 
     def set_table_definition(self, ddl):

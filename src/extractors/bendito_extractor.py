@@ -23,7 +23,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         - token (str): Bearer Token da conta conectada à integração.
     """
 
-    def __init__(self, token):
+    def __init__(self):
         """
         Inicializa um extrator para a API do Bendito.
 
@@ -71,7 +71,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             logger.error(f"{__name__}: {response.text}")
         return response
 
-    def fetch_paginated(self, query, page_size, **kwargs):
+    def fetch_paginated(self, query, page_size):
         """
         Obtém dados paginados da API Bendito.
 
@@ -133,7 +133,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         """
         query = self.get_query(source_name, days, updated_at_property)
         records = list(
-            self.fetch_paginated(query, page_size, days, updated_at_property)
+            self.fetch_paginated(query, page_size)
         )
 
         df = pd.concat(records, ignore_index=True)
