@@ -17,7 +17,7 @@ class WebhookNotifier:
         url (str): A URL do webhook para onde as notificações serão enviadas.
         pipeline (str): O nome do pipeline que está sendo monitorado.
     """
-    def __init__(self, url, pipeline, silent=False):
+    def __init__(self, url, pipeline, silent='false'):
         """
         Inicializa o WebhookNotifier com a URL do webhook e o nome do pipeline.
 
@@ -42,7 +42,7 @@ class WebhookNotifier:
         text = kwargs.get('text',None)
         message = text or f'Iniciando pipeline: {self.pipeline}'
         url = self.url
-        if not self.silent:
+        if self.silent == 'true':
             payload = json.dumps({"content": f'Iniciando pipeline: {message}'})
             headers = {
                 'Content-Type': 'application/json'
@@ -65,7 +65,7 @@ class WebhookNotifier:
         text = kwargs.get('text',None)
         message = text or f'Execução de pipeline encerrada: {self.pipeline}'
         url = self.url
-        if not self.silent:
+        if self.silent == 'true':
             payload = json.dumps({"content": message})
             headers = {
                 'Content-Type': 'application/json'
@@ -88,7 +88,7 @@ class WebhookNotifier:
         url = self.url
         # Convert the exception to a string and split it into lines if needed
         error_message = str(e).splitlines()[:2]  # Take only the first 2 lines of the error message
-        if not self.silent:
+        if self.silent == 'true':
             payload = json.dumps({"content": f'Erro na execução do pipeline: {self.pipeline}.\n{" ".join(error_message)}'})
             headers = {
                 'Content-Type': 'application/json'
@@ -136,7 +136,7 @@ class WebhookNotifier:
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                if not self.silent:
+                if self.silent =='true':
                     self.pipeline_error(e)
                 else:
                     logger.info(f"Silent mode: {e}")
@@ -154,4 +154,4 @@ class DiscordNotifier(discord.Client):
         self.token = token
         self.channel_id = channel_id
         self.pipeline = pipeline
-        self.client = discord.client 
+        self.client = discord.client
