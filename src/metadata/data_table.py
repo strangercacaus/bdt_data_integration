@@ -34,19 +34,19 @@ class DataTable:
         self.updated_at = updated_at
 
     @property
-    def raw_name(self):
+    def raw_model_name(self):
         return (
             f"{self.get_suffix(self.origin)}_raw_{self.source_name.replace('.', '_')}"
         )
     @property
-    def processed_name(self):
+    def processed_model_name(self):
         return f"{self.get_suffix(self.origin)}_processed_{self.source_name.replace('.', '_')}"
     @property
-    def curated_name(self):
+    def curated_model_name(self):
         return f"{self.get_suffix(self.origin)}_curated_{self.source_name.replace('.', '_')}"
     @property
     def schemaless_ddl(self):
-        return f"""CREATE TABLE IF NOT EXISTS {self.origin}.{self.raw_name}(
+        return f"""CREATE TABLE IF NOT EXISTS {self.origin}.{self.raw_model_name}(
                     "ID" varchar NOT NULL,
                     "SUCCESS" bool,
                     "CONTENT" jsonb

@@ -27,11 +27,12 @@ class DBTRunner:
     def run_command(
         self,
         command,
+        select=None,
         models=None,
         exclude=None,
         selector=None,
         vars_dict=None,
-        select=None,
+        full_refresh=False,
     ):
         """
         Executa um comando dbt.
@@ -78,6 +79,9 @@ class DBTRunner:
         if select:
             cmd.extend(["--select", select])
 
+        if full_refresh:
+            cmd.extend(["--full-refresh", "true"])
+
         # Log do comando
         logger.info(f"Executando comando dbt: {' '.join(cmd)}")
 
@@ -105,7 +109,7 @@ class DBTRunner:
             return False
 
     def run(
-        self, models=None, exclude=None, selector=None, target_schema=None, select=None
+        self, models=None, exclude=None, selector=None, target_schema=None, select=None, full_refresh=False
     ):
         """
         Executa o comando 'dbt run'.
@@ -120,7 +124,15 @@ class DBTRunner:
             bool: True se o comando for bem-sucedido, False caso contrário
         """
         vars_dict = {"target_schema": target_schema} if target_schema else None
-        return self.run_command("run", models, exclude, selector, vars_dict, select)
+        return self.run_command(
+            command="run",
+            models=models,
+            exclude=exclude,
+            selector=selector,
+            vars_dict=vars_dict,
+            select=select,
+            full_refresh=full_refresh
+        )
 
     def test(
         self, models=None, exclude=None, selector=None, target_schema=None, select=None
@@ -282,7 +294,11 @@ class DBTRunner:
         Returns:
             dict: Updated schema configuration
         """
-        suffix = self.get_suffix(origin)
+        try:
+            suffix = {"bendito": "bdt", "notion": "ntn", "bitrix": "btx"}.get(origin)
+        except Exception as e:
+            logger.error(f"Error getting suffix for origin {origin}: {e}")
+            return schema_config
         
         existing_models = {
             model.get("name"): model for model in schema_config["models"]
