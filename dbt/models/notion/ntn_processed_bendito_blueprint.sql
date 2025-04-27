@@ -1,6 +1,3 @@
-{{ config(
-	materialized = 'view',
-)}}
 select 
 	"ID" as page_id,
 	("CONTENT" -> 'parent') as parent,

@@ -20,11 +20,7 @@ class BaseLoader(ABC):
     @abstractmethod
     def load_data(
         self,
-        df: pd.DataFrame,
-        target_table: str,
-        target_schema: str,
-        mode=("append", "replace"),
-        **kwargs
+        df: pd.DataFrame
     ):
         """
         Load data from a DataFrame into the target destination.

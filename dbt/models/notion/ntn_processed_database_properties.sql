@@ -1,9 +1,3 @@
-{{ config(
-    materialized = 'view',
-    post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ]
-)}}
 select distinct
 	"CONTENT" -> 'parent' ->> 'database_id' as database_id,
 	'ntn_raw_universal_task_database' as database_name,

@@ -6,35 +6,38 @@ from .base_stream import Stream
 from loaders.postgres_loader import PostgresLoader
 from extractors.bitrix_extractor import BitrixAPIExtractor
 
-logger = logging.getLogger(__name__)  # This will use the module's name
+logger = logging.getLogger(__name__)
+
+
 class BitrixStream(Stream):
-    def __init__(self, source_name, config, **kwargs):
+    def __init__(self, table):
         """
-        Inicializa uma BitrixStream com um nome de fonte e uma configuração.
+        Inicializa uma BitrixStream com um objeto DataTable.
 
         Args:
-            source_name (str): Nome da tabela fonte da stream
-            config (dict): Dicionário de configuração
-            **kwargs: Argumentos adicionais
+            table (DataTable): Objeto DataTable com as configurações da fonte
         """
-        super().__init__(source_name, config, **kwargs)
-        self.source = "bitrix"
-        self.source_name = source_name
+        super().__init__(table)
+        self.extractor = None
+        self.loader = None
+        self.ddl = None
 
     def set_extractor(self):
         """
         Configura o BitrixAPIExtractor para esta stream.
-
-        Args:
-            database_id (str): ID do banco de dados Notion
-            token (str): Token da API Notion
         """
-        self.extractor = BitrixAPIExtractor()
+        self.extractor = BitrixAPIExtractor(self.table)
 
-    def extract_stream(self, row):
+    def extract_stream(self):
         """
         Extracts data from Bitrix using the configured extractor.
         
+        
+        Args:
+            row: Row from the configuration table with source_name, extraction_strategy, 
+                days_interval, and updated_at_column
+
+
         Args:
             row: Row from the configuration table with source_name, extraction_strategy, 
                 days_interval, and updated_at_column
@@ -42,40 +45,41 @@ class BitrixStream(Stream):
         Returns:
             DataFrame: The extracted data
         """
-        return self.extractor.run(row.source_identifier, row.extraction_strategy, row.days_interval, row.updated_at_property)
-
-    def set_table_definition(self, ddl):
-        self.table_definition = ddl
+        logger.info("Extracting data from Bitrix API")
+        if not self.extractor:
+            self.set_extractor()
+        return self.extractor.run()
 
     def set_loader(self, engine):
         """
-        Configura o PostgresLoader para esta stream.
+        Set up the PostgreSQLLoader for this stream.
 
         Args:
-            engine (sqlalchemy.engine.Engine): SQLAlchemy engine para a conexão com o banco de dados
-            schema_file_path (str): Caminho para o arquivo de esquema para criar tabelas
-            schema_file_type (Literal["template", "info_schema", "schema"]): Tipo de arquivo de esquema
+            engine (sqlalchemy.engine.Engine): SQLAlchemy engine for database connection
         """
-        self.loader = PostgresLoader(engine)
-        self.loader.table_definition = self.table_definition
+        self.loader = PostgresLoader(engine, self.table)
+        self.loader.table_definition = self.table.schemaless_ddl
+        logger.info(f"PostgreSQLLoader set for {self.table.source_name}")
 
-    def load_stream(self, records, target_schema, target_table, chunksize=None):
+    def load_stream(self, records, chunksize=None):
         """
         Carrega os dados na camada staging no banco de dados de destino.
 
         Args:
             records (pd.DataFrame): DataFrame com os registros a serem carregados
-            target_schema (str): Nome do esquema de destino
-            target_table (str): Nome da tabela de destino
             chunksize (int, optional): Tamanho do chunk para carregamento em lotes
         """
+        
+        if not self.loader:
+            raise ValueError("Loader not set. Call set_loader() first.")
 
-        logger.info(f"Chamando load_data com raw_data.shape: {records.shape}")
+        if not isinstance(records, pd.DataFrame):
+            raise TypeError("Records must be a pandas DataFrame")
 
-        self.loader.load_data(
-            df=records,
-            target_table=target_table,
-            target_schema=target_schema,
-            mode="replace",
-            chunksize=chunksize
+        logger.info(f"{__name__} Chamando load_data com raw_data.shape: {records.shape}")
+
+        logger.info(
+            f"Loading {len(records)} records into {self.table.origin}.{self.table.target_name}"
         )
+
+        self.loader.load_data(df=records, chunksize=chunksize, mode="replace")

@@ -1,26 +1,29 @@
 version: 2
 models:
-- name: bdt_processed_action_items
+- name: ntn_processed_action_items
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_action_items
+- name: ntn_curated_action_items
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
-- name: bdt_processed_bendito_blueprint
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_bendito_blueprint
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_universal_task_database
+    unique_key: page_id
+- name: ntn_processed_universal_task_database
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_universal_task_database
+- name: ntn_curated_universal_task_database
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
+    unique_key: page_id
+- name: ntn_processed_bendito_blueprint
+  config:
+    materialized: view
+    enabled: true
+- name: ntn_curated_bendito_blueprint
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: page_id

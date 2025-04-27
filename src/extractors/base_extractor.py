@@ -1,14 +1,14 @@
 import logging
-from abc import ABC, abstractmethod
-
+from abc import ABC, abstractmethod 
+from metadata.data_table import DataTable
 logger = logging.getLogger(__name__)
 
 class GenericExtractor(ABC):
     """
     Classe abstrata que define um extrator de dados e os métodos obrigatórios.
     """
-    def __init__(self, source: str):
-        self.source = source
+    def __init__(self, table: DataTable):
+        self.table = table
 
 class GenericAPIExtractor(GenericExtractor):
     """

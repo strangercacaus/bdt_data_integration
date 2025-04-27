@@ -29,7 +29,7 @@ class WebhookNotifier:
         self.pipeline = pipeline
         self.silent = silent
 
-    def pipeline_start(self, **kwargs):
+    def pipeline_start(self, text=None):
         """
         Envia uma notificação de início de execução do pipeline.
 
@@ -39,10 +39,9 @@ class WebhookNotifier:
         Returns:
             None
         """
-        text = kwargs.get('text',None)
         message = text or f'Iniciando pipeline: {self.pipeline}'
         url = self.url
-        if self.silent == 'true':
+        if self.silent == 'false':
             payload = json.dumps({"content": f'Iniciando pipeline: {message}'})
             headers = {
                 'Content-Type': 'application/json'
@@ -52,7 +51,7 @@ class WebhookNotifier:
         else:
             logger.info(f"Silent mode: {message}")
 
-    def pipeline_end(self, **kwargs):
+    def pipeline_end(self, text=None):
         """
         Envia uma notificação de fim de execução do pipeline.
 
@@ -62,10 +61,9 @@ class WebhookNotifier:
         Returns:
             None
         """
-        text = kwargs.get('text',None)
         message = text or f'Execução de pipeline encerrada: {self.pipeline}'
         url = self.url
-        if self.silent == 'true':
+        if self.silent == 'false':
             payload = json.dumps({"content": message})
             headers = {
                 'Content-Type': 'application/json'
@@ -88,7 +86,7 @@ class WebhookNotifier:
         url = self.url
         # Convert the exception to a string and split it into lines if needed
         error_message = str(e).splitlines()[:2]  # Take only the first 2 lines of the error message
-        if self.silent == 'true':
+        if self.silent == 'false':
             payload = json.dumps({"content": f'Erro na execução do pipeline: {self.pipeline}.\n{" ".join(error_message)}'})
             headers = {
                 'Content-Type': 'application/json'

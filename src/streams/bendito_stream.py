@@ -11,74 +11,81 @@ logger = logging.getLogger(__name__)
 
 class BenditoStream(Stream):
 
-    def __init__(self, source_name, config, **kwargs):
+    def __init__(self, table):
         """
-        Initialize a BenditoStream with a source name and configuration.
+        Initialize a BenditoStream with a DataTable object.
 
         Args:
-            source_name (str): Nome da tabela fonte da stream
-            config (dict): Configuration dictionary
-            **kwargs: Additional arguments
+            table (DataTable): DataTable object with source configuration
         """
-        super().__init__(source_name, config, **kwargs)
-        self.source = "bendito"
-        self.source_name = source_name
-        self.output_name = kwargs.get("output_name", self.source_name)
+        super().__init__(table)
+        self.extractor = None
+        self.loader = None
 
     def set_extractor(self):
         """
         Set up the BenditoAPIExtractor for this stream.
+        """
+        self.extractor = BenditoAPIExtractor(self.table)
+        logger.info(f"BenditoAPIExtractor set for {self.table.source_name}")
+
+    def extract_stream(self, page_size: int = 1000):
+        """
+        Extract data from Bendito API and return as DataFrame.
 
         Args:
-            token (str): Bendito API token
-            separator (str): CSV separator
+            page_size (int): Page size for data extraction
+
+        Returns:
+            DataFrame: The extracted data
         """
-        self.extractor = BenditoAPIExtractor()
+        logger.info(f"Extracting data from Bendito API for {self.table.source_name}")
+        if not self.extractor:
+            logger.info("Extractor not set, setting it now")
+            self.set_extractor()
 
-    def extract_stream(
-        self,
-        source_name,
-        days,
-        updated_at_property,
-        page_size: int = 1000,
-    ) -> None:
+        return self.extractor.run(page_size=page_size)
 
-        return self.extractor.run(
-            page_size=page_size, source_name=source_name, days=days, updated_at_property=updated_at_property
-        )
+    def set_table_definition(self, table_definition=None):
+        """
+        Set the table definition for this stream.
 
-    def set_table_definition(self, ddl):
-        self.table_definition = ddl
+        Args:
+            table_definition (str, optional): SQL DDL statement for table creation
+        """
+        if not table_definition:
+            table_definition = self.table.schemaless_ddl
+
+        self.table_definition = table_definition
+        logger.info(f"Table definition set for {self.table.source_name}")
 
     def set_loader(self, engine):
         """
-        Set up the PostgresLoader for this stream.
+        Set up the PostgreSQLLoader for this stream.
 
         Args:
-            user (str): Database username
-            password (str): Database password
-            host (str): Database host
-            db_name (str): Database name
-            schema_file_path (str): Path to schema file
-            schema_file_type (str): Type of schema file
+            engine (sqlalchemy.engine.Engine): SQLAlchemy engine for database connection
         """
-        self.loader = PostgresLoader(engine)
-        self.loader.table_definition = self.table_definition
+        self.loader = PostgresLoader(engine, self.table)
+        self.loader.table_definition = self.table.schemaless_ddl
+        logger.info(f"PostgreSQLLoader set for {self.table.source_name}")
 
-    def load_stream(self, records, target_schema, target_table, **kwargs):
+    def load_stream(self, records, chunksize=None):
         """
-        Load the staged data into the target database.
+        Load the data into the target database.
 
         Args:
-            target_schema (str): Name of the target schema
-            **kwargs: Additional arguments for loading
+            records (pd.DataFrame): DataFrame with records to be loaded
+            chunksize (int, optional): Chunk size for batch loading
         """
+        if not self.loader:
+            raise ValueError("Loader not set. Call set_loader() first.")
 
-        logger.info(f"Chamando load_data com raw_data.shape: {records.shape}")
+        if not isinstance(records, pd.DataFrame):
+            raise TypeError("Records must be a pandas DataFrame")
 
-        self.loader.load_data(
-            df=records,
-            target_table=target_table,
-            target_schema=target_schema,
-            mode="replace",
+        logger.info(
+            f"Loading {len(records)} records into {self.table.origin}.{self.table.target_name}"
         )
+
+        self.loader.load_data(df=records, chunksize=chunksize, mode="replace")

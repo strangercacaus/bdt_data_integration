@@ -158,126 +158,167 @@ class DBTRunner:
         vars_dict = {"target_schema": target_schema} if target_schema else None
         return self.run_command("build", models, exclude, selector, vars_dict, select)
 
-    def update_model_configs(self, active_tables, origin):
+    def update_model_configs(self, tables, origin):
         """
-        Atualiza as configurações dos modelos DBT com base nos metadados das tabelas ativas.
-
-        Estrutura esperada do DataFrame active_tables:
-        - active: boolean indicando se o modelo deve estar ativo
-        - source_identifier: nome original da fonte de dados na origem
-        - unique_id_property: chave primária na origem (apenas para modelos curated)
-        - materialization_strategy: estratégia de materialização (apenas para modelos curated)
-
-        Os modelos seguem o padrão de nomenclatura:
-        - Modelos processados: bdt_processed_<source_identifier>
-        - Modelos curados: bdt_curated_<source_identifier>
+        Updates DBT model configurations based on active tables metadata.
 
         Args:
-            active_tables (DataFrame): DataFrame com configurações das tabelas
-            origin (str): Origem dos dados (ex: 'bendito', 'notion', etc.)
+            active_tables (DataFrame): Configuration DataFrame containing:
+                - active: boolean for model activation status
+                - source_name: name of the data source
+                - source_identifier: original source identifier
+                - unique_id_property: primary key (for curated models)
+                - materialization_strategy: materialization strategy (for curated models)
+            origin (str): Data origin ('bendito', 'notion', 'bitrix')
 
         Returns:
-            bool: True se a atualização foi bem-sucedida, False caso contrário
+            bool: Success status of the update operation
         """
-        logger.info(f"Atualizando configurações de modelos DBT para origem: {origin}")
-
         try:
-            # Caminho para o diretório de modelos da origem
-            models_dir = Path(self.project_dir) / "models" / origin
-            models_dir.mkdir(parents=True, exist_ok=True)
+            models_dir = self._ensure_models_directory(origin)
+            schema_config = self._load_existing_schema(models_dir)
 
-            # Caminho para o arquivo schema.yml
-            schema_path = models_dir / "schema.yml"
-
-            # Estrutura básica do schema.yml
-            schema_config = {"version": 2, "models": []}
-
-            # Carregar schema existente, se houver
-            if schema_path.exists():
-                with open(schema_path, "r") as f:
-                    try:
-                        existing_schema = yaml.safe_load(f)
-                        if existing_schema and "models" in existing_schema:
-                            schema_config = existing_schema
-                    except Exception as e:
-                        logger.warning(
-                            f"Erro ao carregar schema existente, criando novo: {e}"
-                        )
-
-            # Processando cada tabela ativa
-            model_configs = []
-
-            for _, row in active_tables.iterrows():
-                source_name = row.get("source_name")
-                active = row.get("active", True)
-
-                if source_name:
-                    # Configurar modelo processado (sempre view)
-                    processed_model_name = f"bdt_processed_{source_name}"
-                    processed_config = {
-                        "name": processed_model_name,
-                        "config": {"materialized": "view", "enabled": bool(active)},
-                    }
-                    model_configs.append(processed_config)
-
-                    # Configurar modelo curado (pode ser view, table ou incremental)
-                    curated_model_name = f"bdt_curated_{source_name}"
-                    materialization = row.get("materialization_strategy", "view")
-                    unique_key = row.get("unique_id_property")
-
-                    curated_config = {
-                        "name": curated_model_name,
-                        "config": {
-                            "materialized": materialization,
-                            "enabled": bool(active),
-                        },
-                    }
-
-                    # Adiciona unique_key apenas se estiver definido e for incremental
-                    if unique_key and materialization == "incremental":
-                        curated_config["config"]["unique_key"] = unique_key
-
-                    model_configs.append(curated_config)
-
-            # Atualizar modelos existentes ou adicionar novos
-            updated_models = []
-
-            for new_config in model_configs:
-                model_name = new_config["name"]
-
-                if existing_model := next(
-                    (m for m in schema_config["models"] if m.get("name") == model_name),
-                    None,
-                ):
-                    # Atualizar configuração existente
-                    existing_model["config"] = new_config["config"]
-                    updated_models.append(existing_model)
-                else:
-                    # Adicionar nova configuração
-                    updated_models.append(new_config)
-
-            # Filtrar apenas os modelos da origem atual
-            other_models = [
-                m
-                for m in schema_config["models"]
-                if not (
-                    m.get("name", "").startswith("bdt_processed_")
-                    or m.get("name", "").startswith("bdt_curated_")
-                )
-            ]
-
-            # Combinar com outros modelos que não seguem o padrão
-            schema_config["models"] = other_models + updated_models
-
-            # Escrever arquivo schema.yml atualizado
-            with open(schema_path, "w") as f:
-                yaml.dump(schema_config, f, default_flow_style=False, sort_keys=False)
-
-            logger.info(
-                f"Configurações de modelos DBT atualizadas com sucesso: {schema_path}"
+            model_configs = self._generate_model_configs(tables)
+            updated_schema = self._update_schema_config(
+                schema_config, 
+                model_configs, 
+                origin
             )
-            return True
+
+            return self._save_schema_config(models_dir, updated_schema)
 
         except Exception as e:
-            logger.error(f"Erro ao atualizar configurações de modelos DBT: {e}")
+            logger.error(f"Failed to update DBT model configurations: {e}")
+            return False
+
+    def _ensure_models_directory(self, origin):
+        """Creates and returns the models directory path."""
+        models_dir = Path(self.project_dir) / "models" / origin
+        models_dir.mkdir(parents=True, exist_ok=True)
+        return models_dir
+
+    def _load_existing_schema(self, models_dir):
+        """Loads existing schema.yml if present, or returns default structure."""
+        schema_path = models_dir / "schema.yml"
+        default_schema = {"version": 2, "models": []}
+
+        if not schema_path.exists():
+            return default_schema
+
+        try:
+            with open(schema_path, "r") as f:
+                existing_schema = yaml.safe_load(f)
+                return (
+                    existing_schema
+                    if existing_schema and "models" in existing_schema
+                    else default_schema
+                )
+        except Exception as e:
+            logger.warning(f"Error loading existing schema, creating new: {e}")
+            return default_schema
+
+    def _create_model_config(
+        self, model_name, materialization, active, unique_key=None
+    ):
+        """Creates a single model configuration."""
+        config = {
+            "name": model_name,
+            "config": {"materialized": materialization, "enabled": bool(active)},
+        }
+
+        if unique_key and materialization == "incremental":
+            config["config"]["unique_key"] = unique_key
+
+        return config
+
+    def _generate_model_configs(self, tables):
+        """
+        Generates configurations for processed and curated models.
+        
+        Args:
+            active_tables (DataFrame): Table configurations
+            origin (str): Data origin ('bendito', 'notion', 'bitrix')
+        
+        Returns:
+            list: List of model configurations
+        """
+        model_configs = []
+
+        for table in tables:
+            source_name = table.source_name
+            if not source_name:
+                continue
+
+            active = table.active
+
+            # Processed model config
+            processed_model = self._create_model_config(
+                model_name=table.processed_model_name,
+                materialization="view",
+                active=active,
+            )
+            model_configs.append(processed_model)
+
+            # Curated model config
+            curated_model = self._create_model_config(
+                model_name=table.curated_model_name,
+                materialization=table.materialization_strategy,
+                active=active,
+                unique_key=table.unique_id_property,
+            )
+            model_configs.append(curated_model)
+
+        return model_configs
+
+    def _update_schema_config(self, schema_config, new_configs, origin):
+        """
+        Updates schema configuration with new model configs.
+        
+        Args:
+            schema_config (dict): Existing schema configuration
+            new_configs (list): New model configurations to add/update
+            origin (str): Data origin ('bendito', 'notion', 'bitrix')
+        
+        Returns:
+            dict: Updated schema configuration
+        """
+        suffix = self.get_suffix(origin)
+        
+        existing_models = {
+            model.get("name"): model for model in schema_config["models"]
+        }
+        updated_models = []
+
+        # Update or add new configurations
+        for new_config in new_configs:
+            model_name = new_config["name"]
+            if model_name in existing_models:
+                existing_models[model_name]["config"] = new_config["config"]
+                updated_models.append(existing_models[model_name])
+            else:
+                updated_models.append(new_config)
+
+        # Preserve models from other origins
+        other_models = [
+            model
+            for name, model in existing_models.items()
+            if not (
+                name.startswith(f"{suffix}_processed_")
+                or name.startswith(f"{suffix}_curated_")
+            )
+        ]
+
+        schema_config["models"] = other_models + updated_models
+        return schema_config
+
+    def _save_schema_config(self, models_dir, schema_config):
+        """Saves the schema configuration to file."""
+        schema_path = models_dir / "schema.yml"
+        try:
+            with open(schema_path, "w") as f:
+                yaml.dump(schema_config, f, default_flow_style=False, sort_keys=False)
+            logger.info(f"Successfully updated DBT model configurations: {schema_path}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to save schema configuration: {e}")
             return False

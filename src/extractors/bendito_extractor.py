@@ -15,24 +15,22 @@ load_dotenv()
 
 class BenditoAPIExtractor(GenericAPIExtractor):
     """
-    Extrator para a extração de dados da API Database Query do Notion.
+    Extrator para a extração de dados da API do Bendito.
 
     Atributos:
-        - identifier (str): Identificador do extrator, neste caso, 'notion'.
-        - base_endpoint (str): URL base da API do Notion, 'https://api.notion.com/v1'.
-        - token (str): Bearer Token da conta conectada à integração.
+        - base_endpoint (str): URL base da API do Bendito.
+        - token (str): Token de autenticação para a API Bendito.
     """
 
-    def __init__(self):
+    def __init__(self, table):
         """
         Inicializa um extrator para a API do Bendito.
-
+        
         Args:
-            token (str): Token de autenticação para a API Bendito.
-            **kwargs: Argumentos nomeados adicionais como 'writer' ou 'schema'.
+            table (DataTable): Objeto DataTable com as configurações da fonte
         """
         # Definir o source diretamente - não usar kwargs para isso
-        super().__init__(origin="bendito", token=os.environ.get("BENDITO_BI_TOKEN"))
+        super().__init__(table, token=os.environ.get("BENDITO_BI_TOKEN"))
 
     def _get_endpoint(self) -> str:
         """
@@ -59,10 +57,11 @@ class BenditoAPIExtractor(GenericAPIExtractor):
         """
         Método para enviar dados para a API.
 
-        Este método deve ser implementado para realizar chamadas POST à API.
+        Args:
+            payload: Dados a serem enviados para a API
 
         Returns:
-            None: Este método deve ser implementado.
+            Response: Resposta da API
         """
         endpoint = self._get_endpoint()
         headers = self._get_headers()
@@ -80,9 +79,7 @@ class BenditoAPIExtractor(GenericAPIExtractor):
 
         Args:
             query (str): A consulta a ser realizada na API.
-            page_size (int, optional): O número de registros por página. Padrão é 200.
-            separator (str, optional): O separador a ser utilizado nos dados. Padrão é ','.
-            compression (bool, optional): Indica se a compressão deve ser aplicada. Padrão é False.
+            page_size (int): O número de registros por página.
 
         Yields:
             pd.DataFrame: Um gerador que produz DataFrames com os dados extraídos de cada página.
@@ -112,30 +109,37 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             if response_len < page_size:
                 break
 
-    def get_query(self, source_name, days, updated_at_property):
-        query = f'select * from public."{source_name}" where true'
-        if days > 0:
-            query += f" and {updated_at_property} >= current_date - {days} days"
+    def get_query(self):
+        """
+        Builds the SQL query for the Bendito API.
+            
+        Returns:
+            str: SQL query string
+        """
+        query = f'select * from public."{self.table.source_name}" where true'
+        if self.table.days_interval > 0:
+            query += f" and {self.table.updated_at_property} >= current_date - {self.table.days_interval} days"
         query += " order by 1 asc"
         return query
 
-    def run(self, source_name, days, updated_at_property, page_size=1000):
+    def run(self, page_size=1000):
         """
         Executa a rotina principal do extrator, consolidando os dados extraídos.
 
-        Este método coleta todos os dados paginados e os combina em um único DataFrame.
-
         Args:
-            **kwargs: Argumentos adicionais, incluindo 'query', 'page_size', 'separator' e 'compression'.
+            page_size (int): Page size for pagination
 
         Returns:
-            pd.DataFrame: Um DataFrame contendo todos os dados extraídos e combinados com as colunas ID, SUCCESS e CONTENT.
+            pd.DataFrame: DataFrame with columns ID, SUCCESS, and CONTENT
         """
-        query = self.get_query(source_name, days, updated_at_property)
+        query = self.get_query()
         records = list(
             self.fetch_paginated(query, page_size)
         )
 
+        if not records:
+            return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"])
+            
         df = pd.concat(records, ignore_index=True)
 
         logger.info(f"{__name__}: Fim da extração.")

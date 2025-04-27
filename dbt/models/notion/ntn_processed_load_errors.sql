@@ -1,5 +1,3 @@
-{{ config(materialized = 'table') }}
-
 select 
     'ntn_raw_universal_task_database' as data_source,
     now() as checked_at,

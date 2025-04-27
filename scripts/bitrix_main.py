@@ -14,13 +14,13 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from bdt_data_integration.src.streams.bitrix_stream import BitrixStream
 from bdt_data_integration.src.utils.utils import Utils
 from bdt_data_integration.src.utils.notifier import WebhookNotifier
-from metadata.table_configuration import TableConfiguration
+from metadata.configuration_helper import ConfigurationHelper
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
 def main():
     # Create command line argument parser using the utility method
-    parser = Utils.get_parser("Run the Bitrix data integration pipeline")    
+    parser = Utils.get_parser("Run the Bitrix data integration pipeline")
     args = parser.parse_args()
     # Set up the root logger
     logging.basicConfig(
@@ -60,40 +60,36 @@ def main():
     notifier_url = os.environ["DEEPNOTE_BENDITO_BI_WEBHOOK"]
 
     start_time = time.time()
-    notifier = WebhookNotifier(url=notifier_url, pipeline="bitrix_pipeline", silent=args.silent.lower())
+    notifier = WebhookNotifier(
+        url=notifier_url, pipeline="bitrix_pipeline", silent=args.silent.lower()
+    )
 
     # Carregando configurações globais do projeto
     config = Utils.load_config()
 
     # Carregando configurações de sincronização das tabelas
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
-    config_handler = TableConfiguration(url, origin)
+    config_handler = ConfigurationHelper(url, origin)
     tables = config_handler.get_table_configuration()
-    active_tables = tables[tables["active"] == True]
+
+    if args.table == "all":
+        active_tables = [table for table in tables if table.active]
+    elif args.table in [table.source_name for table in tables]:
+        active_tables = [table for table in tables if table.source_name == args.table]
+    else:
+        raise ValueError("Nome da base de dados inválido ou não configurado")
 
     logger = logging.getLogger("replicate_database")
+
     @notifier.error_handler
-    def replicate_table(row):
-
-
+    def replicate_table(table):
         if args.extract.lower() == "true":
-
-            stream = BitrixStream(source_name=row.source_name, config=config)
-
+            stream = BitrixStream(table)
             stream.set_extractor()
-            
-            records = stream.extract_stream(row)
+            records = stream.extract_stream()
 
             if args.load.lower() == "true":
-                ddl = f"""
-                CREATE TABLE IF NOT EXISTS {origin}.{row.target_name}(
-                    "ID" varchar NOT NULL,
-                    "SUCCESS" bool,
-                    "CONTENT" jsonb
-                    );"""
-
-                stream.set_table_definition(ddl)
-
+                stream.set_table_definition()
                 stream.set_loader(
                     engine=create_engine(
                         f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
@@ -102,60 +98,43 @@ def main():
                 try:
                     stream.load_stream(
                         records,
-                        target_table=row.target_name,
-                        target_schema=origin,
-                        chunksize=args.chunk_size
+                        chunksize=args.chunk_size,
                     )
                     return 1
                 except Exception as e:
                     logger.error(f"Erro ao carregar dados: {e}")
                     return 0
             else:
-                logger.info(f"Pulando load em {row.source_name}")
+                logger.info(f"Pulando load em {table.source_name}")
                 return 0
         elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {row.source_name}: Nada a carregar")
+            logger.info(f"Pulando load em {table.source_name}: Nada a carregar")
+            return 0
+        else:
+            logger.info(f"Pulando {table.source_name}: Nenhuma operação solicitada")
             return 0
 
     total = 0
     success = 0
 
-    if args.table.lower() == "all":
-        for row in active_tables.itertuples():
-            total += 1
-            config_handler.update_table_configuration(
-                row.id, row.source_name, last_sync_attempt_at=datetime.datetime.now()
-            )
-
-            try:
-                success += replicate_table(row) or 0
-                config_handler.update_table_configuration(
-                    row.id,
-                    row.source_name,
-                    last_successful_sync_at=datetime.datetime.now(),
-                )
-            except Exception as e:
-                success += 0
-                raise e
-    elif args.table in active_tables["source_name"].values:
-        row = active_tables.loc[active_tables["source_name"] == args.table].iloc[0]
+    for table in active_tables:
         total += 1
         config_handler.update_table_configuration(
-            row.id, row.source_name, last_sync_attempt_at=datetime.datetime.now()
+            table.id, table.source_name, last_sync_attempt_at=datetime.datetime.now()
         )
+
         try:
-            success += replicate_table(row) or 0
-            config_handler.update_table_configuration(
-                row.id, row.source_name, last_successful_sync_at=datetime.datetime.now()
-            )
+            check = replicate_table(table) or 0
+            if check == 1:
+                config_handler.update_table_configuration(
+                    table.id,
+                    table.source_name,
+                    last_successful_sync_at=datetime.datetime.now(),
+                )
+            success += check
         except Exception as e:
             success += 0
             raise e
-    else:
-        raise ValueError("Nome da tabela inválido ou não configurado")
-
-    total = 0
-    success = 0
     # Execute dbt transformations for bitrix models after all tables have been loaded
     logger = logging.getLogger("dbt_runner")
     logger.info("Executando transformações dbt para os modelos do Bitrix")
@@ -189,7 +168,7 @@ def main():
         dbt_runner = DBTRunner(
             project_dir=str(dbt_project_dir), profiles_dir=str(dbt_profiles_dir)
         )
-        
+
         if args.update_dbt_config.lower() == "true":
             logger.info("Atualizando configurações dos modelos DBT...")
             dbt_runner.update_model_configs(tables, origin)
@@ -202,6 +181,7 @@ def main():
     notifier.pipeline_end(
         text=f"Execução de pipeline encerrada: bitrix_pipeline.\nTotal de tabelas programadas para replicação: {total}, tabelas replicadas com sucesso: {success}, tempo de execução: {elapsed_time_formatted}"
     )
+
 
 if __name__ == "__main__":
     main()

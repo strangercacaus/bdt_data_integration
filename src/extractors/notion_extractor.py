@@ -22,18 +22,16 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         - token (str): Bearer Token da conta conectada à integração.
     """
 
-    def __init__(self, token, database_id):
+    def __init__(self, table):
         """
         Inicializa um extrator para a API do Notion.
 
         Args:
-            token (str): Token de acesso à API do Notion.
-            database_id (str): ID do banco de dados do Notion.
-            **kwargs: Argumentos nomeados adicionais.
+            table (DataTable): Objeto DataTable com as configurações da fonte
         """
-        super().__init__(origin="notion", token=token)
+        token = os.environ.get("NOTION_APIKEY")
+        super().__init__(table, token=token)
         self.base_url = "https://api.notion.com/v1/databases"
-        self.database_id = database_id
 
     def _get_endpoint(self) -> str:
         """
@@ -42,7 +40,7 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         Returns:
             str: O endpoint formatado para a consulta do banco de dados.
         """
-        return f"{self.base_url}/{self.database_id}/query"
+        return f"{self.base_url}/{self.table.source_identifier}/query"
 
     def _get_headers(self):
         """
@@ -91,12 +89,9 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         """
         return response.get("next_cursor") if response.get("has_more") else None
 
-    def get_data(self, **kwargs) -> tuple[int, any]:
+    def get_data(self) -> tuple[int, any]:
         """
         Realiza uma chamada GET à API do Notion para obter dados.
-
-        Args:
-            **kwargs: Argumentos adicionais para a requisição.
 
         Returns:
             tuple[int, any]: Um tupla contendo o código de status e os dados retornados.
@@ -108,16 +103,15 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
         response.raise_for_status()
         return response.status_code, response.json()
 
-    def post_data(self, payload=None, **kwargs) -> tuple[int, any]:
+    def post_data(self, payload=None):
         """
         Realiza uma chamada POST à API do Notion.
 
         Args:
-            json (dict, optional): O corpo da requisição em formato JSON.
-            **kwargs: Argumentos adicionais para a requisição.
+            payload (dict, optional): O corpo da requisição em formato JSON.
 
         Returns:
-            tuple[int, any]: Um tupla contendo o código de status e os dados retornados.
+            dict: Os dados retornados pela API.
         """
         if payload is None:
             payload = {}
@@ -129,15 +123,15 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
 
         return response.json()
 
-    def fetch_paginated(self, query_filter=None, **kwargs):
+    def fetch_paginated(self, query_filter=None):
         """
         Obtém dados paginados da API do Notion.
 
         Args:
-            **kwargs: Argumentos adicionais, incluindo o tipo de paginação.
+            query_filter (dict, optional): Filtro de consulta a ser aplicado.
 
         Yields:
-            dict: Um gerador que produz os resultados de cada página.
+            list: Um gerador que produz os resultados de cada página.
         """
         successful_requests = 0
         next_cursor = None
@@ -152,16 +146,16 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
             if not next_cursor:
                 break
 
-    def run(self, days: int = 0):
+    def run(self):
         """
         Executa a rotina principal do extrator, consolidando os dados extraídos.
 
         Returns:
-            tuple[list, str]: Uma tupla contendo a lista de registros extraídos e a data atual.
+            DataFrame: Um DataFrame com as colunas ID, SUCCESS e CONTENT
         """
         query_filter = None
-        if days > 0:
-            start_date = datetime.now() - timedelta(days=days)
+        if self.table.days_interval > 0:
+            start_date = datetime.now() - timedelta(days=self.table.days_interval)
             query_filter = {
                 "filter": {
                     "timestamp": "last_edited_time",
@@ -177,4 +171,8 @@ class NotionDatabaseAPIExtractor(GenericAPIExtractor):
             for page in self.fetch_paginated(query_filter)
             for record in page
         ]
+        
+        if not data:
+            return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"])
+            
         return pd.DataFrame(data, dtype=str)

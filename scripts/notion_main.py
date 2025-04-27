@@ -15,7 +15,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from bdt_data_integration.src.streams.notion_stream import NotionStream
 from bdt_data_integration.src.utils.utils import Utils
 from bdt_data_integration.src.utils.notifier import WebhookNotifier
-from metadata.table_configuration import TableConfiguration
+from metadata.configuration_helper import ConfigurationHelper
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 
 
@@ -78,32 +78,27 @@ def main():
 
     # Cria uma conexão com o banco de dados de metadados e carrega as informações das tabelas que serão processadas
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
-    config_handler = TableConfiguration(url, origin)
+    config_handler = ConfigurationHelper(url, origin)
     tables = config_handler.get_table_configuration()
-    active_tables = tables[tables["active"] == True]
+
+    if args.table == "all":
+        active_tables = [table for table in tables if table.active]
+    elif args.table in [table.source_name for table in tables]:
+        active_tables = [table for table in tables if table.source_name == args.table]
+    else:
+        raise ValueError("Nome da base de dados inválido ou não configurado")
 
     # Define a função que vai processar a extração e o carregamento dos dados
     logger = logging.getLogger("replicate_database")
 
     @notifier.error_handler
-    def replicate_database(row):  # Define logger for this function
-
-        stream = NotionStream(source_name=row.source_name, config=config)
-
+    def replicate_database(table):  # Define logger for this function
         if args.extract.lower() == "true":
-            stream.set_extractor(database_id=row.source_identifier, token=token)
-
-            records = stream.extract_stream(days=row.days_interval)
+            stream = NotionStream(table)
+            stream.set_extractor()
+            records = stream.extract_stream()
 
             if args.load.lower() == "true":
-                ddl = f"""
-                CREATE TABLE IF NOT EXISTS {origin}.{row.target_name}(
-                    "ID" varchar NOT NULL,
-                    "SUCCESS" bool,
-                    "CONTENT" jsonb
-                    );"""
-                stream.set_table_definition(ddl)
-
                 stream.set_loader(
                     engine=create_engine(
                         f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
@@ -112,18 +107,20 @@ def main():
                 try:
                     stream.load_stream(
                         records,
-                        target_table=row.target_name,
-                        target_schema=origin,
                         chunksize=1000,
                     )
+                    return 1  # Success case
                 except Exception as e:
                     logger.error(f"Erro ao carregar dados: {e}")
                     return 0
+            else:
+                logger.info(f"Pulando load em {table.source_name}")
+                return 0
         elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {row.source_name}: Nada a carregar")
+            logger.info(f"Pulando load em {table.source_name}: Nada a carregar")
             return 0
         else:
-            logger.info(f"Pulando load em {row.source_name}: Nada a carregar")
+            logger.info(f"Pulando {table.source_name}: Nenhuma operação solicitada")
             return 0
 
     total = 0
@@ -131,44 +128,25 @@ def main():
 
     if args.extract.lower() == "true" or args.load.lower() == "true":
 
-        if args.table == "all":
-            for row in active_tables.itertuples():
-                total += 1
-                config_handler.update_table_configuration(
-                    row.id,
-                    row.source_name,
-                    last_sync_attempt_at=datetime.datetime.now(),
-                )
-
-                try:
-                    replicate_database(row)
-                    success += 1
-                    config_handler.update_table_configuration(
-                        row.id,
-                        row.source_name,
-                        last_successful_sync_at=datetime.datetime.now(),
-                    )
-                except Exception as e:
-                    print(f"Error: {e}")
-                    success += 0
-        elif args.table in active_tables["source_name"].values:
+        for table in active_tables:
             total += 1
             config_handler.update_table_configuration(
-                row.id, row.source_name, last_sync_attempt_at=datetime.datetime.now()
+                table.id,
+                table.source_name,
+                last_sync_attempt_at=datetime.datetime.now(),
             )
+
             try:
-                replicate_database(row)
-                success += 1
-                config_handler.update_table_configuration(
-                    row.id,
-                    row.source_name,
-                    last_successful_sync_at=datetime.datetime.now(),
-                )
+                check = replicate_database(table) or 0
+                if check == 1:
+                    success += 1
+                    config_handler.update_table_configuration(
+                        table.id,
+                        table.source_name,
+                        last_successful_sync_at=datetime.datetime.now(),
+                    )
             except Exception as e:
                 print(f"Error: {e}")
-                success += 0
-        else:
-            raise ValueError("Nome da base de dados inválido ou não configurado")
 
     if args.transform.lower() == "true":
 
@@ -203,8 +181,8 @@ def main():
     )
 
     if args.update_dbt_config.lower() == "true":
-        logger.info("Atualizando configurações dos modelos DBT...")
-        dbt_runner.update_model_configs(tables, origin)
+            logger.info("Atualizando configurações dos modelos DBT...")
+            dbt_runner.update_model_configs(tables, origin)
 
     dbt_runner.run(models="notion", target_schema=origin)
 

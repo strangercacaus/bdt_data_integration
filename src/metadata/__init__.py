@@ -1,5 +1,6 @@
-from .table_configuration import TableConfiguration
+from .configuration_helper import ConfigurationHelper
 
 __all__ = [
-    'TableConfiguration'
+    'configuration_helper',
+    'data_table'
 ]

@@ -1,178 +1,184 @@
 version: 2
 models:
-- name: bdt_processed_crm.activity
+- name: btx_processed_crm_contact
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_crm.activity
+- name: btx_curated_crm_contact
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
-- name: bdt_processed_user.get
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_user.get
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.enum.activitynotifytype
+    unique_key: id
+- name: btx_processed_crm_company
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_crm.enum.activitynotifytype
+- name: btx_curated_crm_company
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
-- name: bdt_processed_crm.dealcategory.stage
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.dealcategory.stage
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.catalog
+    unique_key: id
+- name: btx_processed_crm_product
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_crm.catalog
+- name: btx_curated_crm_product
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
-- name: bdt_processed_crm.enum.activitydirection
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.enum.activitydirection
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.deal.recurring
+    unique_key: id
+- name: btx_processed_crm_activity
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_crm.deal.recurring
+- name: btx_curated_crm_activity
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: btx_processed_crm_enum_ownertype
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_enum_ownertype
   config:
     materialized: table
-    enabled: true
-- name: bdt_processed_crm.lead
+    enabled: false
+- name: btx_processed_crm_contact_userfield
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_contact_userfield
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_enum_activitypriority
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_enum_activitypriority
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_dealcategory_stage
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_dealcategory_stage
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_deal_fields
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_deal_fields
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_lead
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_crm.lead
+- name: btx_curated_crm_lead
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: btx_processed_crm_catalog
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_catalog
   config:
     materialized: table
-    enabled: true
-- name: bdt_processed_crm.enum.addresstype
+    enabled: false
+- name: btx_processed_crm_enum_activitydirection
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_enum_activitydirection
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_deal_recurring
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_deal_recurring
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_enum_addresstype
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_enum_addresstype
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_deal_userfield
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_deal_userfield
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_user_get
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_user_get
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_company_userfield
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_company_userfield
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_currency
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_currency
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_enum_activitynotifytype
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_enum_activitynotifytype
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_status
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_status
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_dealcategory
+  config:
+    materialized: view
+    enabled: false
+- name: btx_curated_crm_dealcategory
+  config:
+    materialized: table
+    enabled: false
+- name: btx_processed_crm_deal
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_crm.enum.addresstype
+- name: btx_curated_crm_deal
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
-- name: bdt_processed_crm.deal.userfield
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.deal.userfield
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.enum.activitypriority
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.enum.activitypriority
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.contact.userfield
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.contact.userfield
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.company.userfield
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.company.userfield
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.currency
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.currency
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.enum.ownertype
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.enum.ownertype
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_deal.fields
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_deal.fields
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.deal
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.deal
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.dealcategory
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.dealcategory
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.status
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.status
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.contact
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.contact
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.product
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.product
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_crm.company
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_crm.company
-  config:
-    materialized: table
-    enabled: true
+    unique_key: id

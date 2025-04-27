@@ -11,67 +11,49 @@ logger = logging.getLogger(__name__)
 
 class NotionStream(Stream):
 
-    def __init__(self, source_name, config, **kwargs):
-        """
-        Inicializa uma NotionStream com um nome de fonte e uma configuração.
+    def __init__(self, table):
+        """Initialize NotionStream with the DataTable object containing configuration"""
+        super().__init__(table)
 
-        Args:
-            source_name (str): Nome da tabela fonte da stream
-            config (dict): Dicionário de configuração
-            **kwargs: Argumentos adicionais
-        """
-        super().__init__(source_name, config, **kwargs)
-        self.source = "notion"
-        self.output_name = kwargs.get("output_name", self.source_name)
+    def set_extractor(self):
+        """Set the extractor for Notion API"""
+        self.extractor = NotionDatabaseAPIExtractor(self.table)
 
-    def set_extractor(self, database_id, token):
-        """
-        Configura o NotionDatabaseAPIExtractor para esta stream.
+    def extract_stream(self):
+        """Extract data from Notion API and write to raw_layer
 
-        Args:
-            database_id (str): ID do banco de dados Notion
-            token (str): Token da API Notion
+        Returns:
+            DataFrame: The extracted data
         """
-        self.extractor = NotionDatabaseAPIExtractor(
-            token=token, database_id=database_id
-        )
-
-    def extract_stream(self, days: int = 0, **kwargs) -> None:
-        """
-        Extrai dados da API Notion e escreve para a camada raw.
-        """
-
-        return self.extractor.run(days=days)
-
-    def set_table_definition(self, ddl):
-        self.table_definition = ddl
+        logger.info("Extracting data from Notion API")
+        if not self.extractor:
+            self.set_extractor()
+        return self.extractor.run()
 
     def set_loader(self, engine):
         """
-        Configura o PostgresLoader para esta stream.
+        Set up the PostgreSQLLoader for this stream.
 
         Args:
-            engine (sqlalchemy.engine.Engine): SQLAlchemy engine para a conexão com o banco de dados
-            schema_file_path (str): Caminho para o arquivo de esquema para criar tabelas
-            schema_file_type (Literal["template", "info_schema", "schema"]): Tipo de arquivo de esquema
+            engine (sqlalchemy.engine.Engine): SQLAlchemy engine for database connection
         """
-        self.loader = PostgresLoader(engine)
-        self.loader.table_definition = self.table_definition
+        self.loader = PostgresLoader(engine, self.table)
+        self.loader.table_definition = self.table.schemaless_ddl
+        logger.info(f"PostgreSQLLoader set for {self.table.source_name}")
 
-    def load_stream(self, records, target_schema: str, target_table: str, **kwargs):
-        """
-        Carrega os dados na camada staging no banco de dados de destino.
+    def load_stream(self, records, chunksize=None):
+        """Load data into the target schema and table
 
         Args:
-            target_schema (str): Nome do esquema de destino
-            **kwargs: Argumentos adicionais para o carregamento
+            data (DataFrame): DataFrame containing the data to be loaded
         """
+        if not self.loader:
+            raise ValueError("Loader not set. Call set_loader() first.")
 
-        logger.info(f"Chamando load_data com staged_data.shape: {records.shape}")
+        if not isinstance(records, pd.DataFrame):
+            raise TypeError("Records must be a pandas DataFrame")
 
-        self.loader.load_data(
-            df=records,
-            target_table=target_table,
-            target_schema=target_schema,
-            mode="replace",
+        logger.info(
+            f"Loading {len(records)} records into {self.table.origin}.{self.table.target_name}"
         )
+        self.loader.load_data(df=records, chunksize=chunksize, mode="replace")

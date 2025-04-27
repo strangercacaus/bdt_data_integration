@@ -1,6 +1,8 @@
 import logging
 from abc import ABC, abstractmethod
 
+from metadata.data_table import DataTable
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -12,7 +14,7 @@ class Stream(ABC):
     """
 
     @abstractmethod
-    def __init__(self, source_name, config, **kwargs):
+    def __init__(self, table: DataTable):
         """
         Initialize a stream with a source name and configuration.
 
@@ -21,9 +23,7 @@ class Stream(ABC):
             config (dict): Configuration dictionary
             **kwargs: Additional arguments
         """
-        self.source_name = source_name
-        self.config = config
-
+        self.table = table
     @abstractmethod
     def set_extractor(self, **kwargs):
         """
