@@ -22,13 +22,6 @@ def main():
     # Create command line argument parser using the utility method
     parser = Utils.get_parser("Run the Bendito data integration pipeline")
 
-    parser.add_argument(
-        "--page_size",
-        type=int,
-        default=5000,
-        help="Page size for data extraction (default: 5000)",
-    )
-
     args = parser.parse_args()
     # Set up the root logger
     logging.basicConfig(
@@ -68,7 +61,6 @@ def main():
     db_name = os.environ["DESTINATION_DB_NAME"]
 
     # Carregando configurações globais do projeto
-    config = Utils.load_config()
     start_time = time.time()
 
     notifier_url = os.environ["DEEPNOTE_BENDITO_BI_WEBHOOK"]

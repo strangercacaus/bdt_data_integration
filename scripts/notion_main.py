@@ -73,9 +73,6 @@ def main():
         url=notifier_url, pipeline="notion_pipeline", silent=args.silent.lower()
     )
 
-    # Carrega algumas configurações globais do projeto, vai ser morto em breve pq ficou inutilizado
-    config = Utils.load_config()
-
     # Cria uma conexão com o banco de dados de metadados e carrega as informações das tabelas que serão processadas
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
     config_handler = ConfigurationHelper(url, origin)

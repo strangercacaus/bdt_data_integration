@@ -29,29 +29,6 @@ class Utils:
             return bool(parsed)  # Returns True if there are parsed statements
         except Exception as e:
             return False
-
-    @staticmethod
-    def load_config():
-        """
-        Retorna a configuração padrão do projeto.
-        
-        Esta implementação simplificada fornece configurações fixas definidas diretamente no código,
-        sem necessidade de arquivos externos ou busca complexa por configurações.
-        
-        Returns:
-            dict: Configurações padrão do projeto.
-        """
-        logger.info('Configuração padrão carregada.')
-        return {
-            # Parâmetros de conexão padrão
-            'POSTGRES': {'pool_size': 5, 'max_overflow': 10, 'timeout': 30},
-            # Configurações de logging
-            'LOGGING': {
-                'level': 'INFO',
-                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            },
-        }
-        
     @staticmethod
     def format_elapsed_time(total_seconds):
         """
@@ -98,6 +75,12 @@ class Utils:
             help="Chunk size for data loading (default: 1000)",
         )
         
+        parser.add_argument(
+            "--page_size",
+            type=int,
+            default=5000,
+            help="Page size for data extraction (default: 1000)",
+        )
         # Controle de extração
         parser.add_argument(
             "--extract",

@@ -27,7 +27,7 @@ class WebhookNotifier:
         """
         self.url = url
         self.pipeline = pipeline
-        self.silent = silent
+        self.silent = silent.lower()
 
     def pipeline_start(self, text=None):
         """
@@ -49,7 +49,7 @@ class WebhookNotifier:
             response = requests.request("POST", url, headers=headers, data=payload)
             logger.info(f"Webhook Response: {response.text}")
         else:
-            logger.info(f"Silent mode: {message}")
+            logger.info(f"{__name__}: Silent mode: {message}")
 
     def pipeline_end(self, text=None):
         """
@@ -71,7 +71,7 @@ class WebhookNotifier:
             response = requests.request("POST", url, headers=headers, data=payload)
             logger.info(f"Webhook Response: {response.text}")
         else:
-            logger.info(f"Silent mode: {message}")
+            logger.info(f"{__name__}: Silent mode: {message}")
 
     def pipeline_error(self, e=None):
         """
@@ -94,7 +94,7 @@ class WebhookNotifier:
             response = requests.request("POST", url, headers=headers, data=payload)
             logger.info(f"Webhook Response: {response.text}")
         else:
-            logger.info(f"Silent mode: {error_message}")
+            logger.info(f"{__name__}: Silent mode: {e}")
 
     def error_handler(self, func):
         """

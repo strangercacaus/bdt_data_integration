@@ -64,9 +64,6 @@ def main():
         url=notifier_url, pipeline="bitrix_pipeline", silent=args.silent.lower()
     )
 
-    # Carregando configurações globais do projeto
-    config = Utils.load_config()
-
     # Carregando configurações de sincronização das tabelas
     url = f"postgresql+psycopg2://{user}:{password}@{host}:5432/bendito_intelligence_metadata"
     config_handler = ConfigurationHelper(url, origin)
