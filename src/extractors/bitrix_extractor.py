@@ -183,7 +183,7 @@ class BitrixAPIExtractor(GenericAPIExtractor):
             return pd.DataFrame(columns=["ID", "SUCCESS", "CONTENT"], dtype=str)
 
     def extract_as_list(self):
-        list_data = self.fetch_list(self.table.source_identifier, self.table.days_interval, self.table.updated_at_property)
+        list_data = self.fetch_list()
 
         # Converter o DataFrame inteiro para JSON com tratamento de NaN
         list_json = list_data.replace({pd.NA: None}).to_json(orient="records")

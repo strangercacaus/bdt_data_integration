@@ -85,10 +85,6 @@ models:
     materialized: incremental
     enabled: true
     unique_key: id
-- name: btx_processed_crm_catalog
-  config:
-    materialized: view
-    enabled: false
 - name: btx_curated_crm_catalog
   config:
     materialized: table
@@ -132,34 +128,6 @@ models:
 - name: btx_curated_user_get
   config:
     materialized: table
-    enabled: false
-- name: btx_processed_crm_company_userfield
-  config:
-    materialized: view
-    enabled: false
-- name: btx_curated_crm_company_userfield
-  config:
-    materialized: table
-    enabled: false
-- name: btx_processed_crm_currency
-  config:
-    materialized: view
-    enabled: false
-- name: btx_curated_crm_currency
-  config:
-    materialized: table
-    enabled: false
-- name: btx_processed_crm_enum_activitynotifytype
-  config:
-    materialized: view
-    enabled: false
-- name: btx_curated_crm_enum_activitynotifytype
-  config:
-    materialized: table
-    enabled: false
-- name: btx_processed_crm_status
-  config:
-    materialized: view
     enabled: false
 - name: btx_curated_crm_status
   config:
