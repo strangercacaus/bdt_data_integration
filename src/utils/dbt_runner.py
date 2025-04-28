@@ -1,9 +1,9 @@
 import logging
 import subprocess
 import json
-import os
 import yaml
 from pathlib import Path
+import shutil  # Adicionar import para shutil
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,23 @@ class DBTRunner:
         """
         self.project_dir = project_dir
         self.profiles_dir = profiles_dir
+        # Encontrar o caminho do executável dbt
+        self.dbt_path = shutil.which("dbt")
+
+    def get_suffix(self, origin):
+        """
+        Returns the suffix for a given origin.
+        
+        Args:
+            origin (str): The origin ('bendito', 'notion', 'bitrix')
+            
+        Returns:
+            str: The suffix for the origin
+        """
+        origin_suffixes = {"bendito": "bdt", "notion": "ntn", "bitrix": "btx"}
+        if origin not in origin_suffixes:
+            raise ValueError(f"Unsupported origin: {origin}")
+        return origin_suffixes[origin]
 
     def run_command(
         self,
@@ -39,36 +56,46 @@ class DBTRunner:
 
         Args:
             command (str): O comando dbt a ser executado (run, test, build, etc.)
+            select (str, optional): String de seleção de modelos
             models (str, optional): String de modelos a serem incluídos
             exclude (str, optional): String de modelos a serem excluídos
             selector (str, optional): Seletor a ser usado
             vars_dict (dict, optional): Variáveis a serem passadas para o dbt
+            full_refresh (bool, optional): Se deve fazer um refresh completo
 
         Returns:
             bool: True se o comando for bem-sucedido, False caso contrário
         """
-        # Prepara o comando base
-        cmd = ["dbt", command]
+        # Verifica se o dbt está instalado
+        if not self.dbt_path:
+            self.dbt_path = shutil.which("dbt")  # Tentar novamente localizar o dbt
+            
+            if not self.dbt_path:
+                logger.error("Executável dbt não encontrado. Por favor, instale o dbt: pip install dbt-core dbt-postgres")
+                return False
+                
+        # Prepara o comando base usando o caminho completo do dbt
+        cmd = [self.dbt_path, command]
 
         # Adiciona opções de diretório do projeto
         if self.project_dir:
-            cmd.extend(["--project-dir", self.project_dir])
+            cmd.extend(["--project-dir", str(self.project_dir)])
 
         # Adiciona opções de diretório do profiles
         if self.profiles_dir:
-            cmd.extend(["--profiles-dir", self.profiles_dir])
+            cmd.extend(["--profiles-dir", str(self.profiles_dir)])
 
         # Adiciona opções de modelos
         if models:
-            cmd.extend(["--models", models])
+            cmd.extend(["--models", str(models)])
 
         # Adiciona opções de exclusão
         if exclude:
-            cmd.extend(["--exclude", exclude])
+            cmd.extend(["--exclude", str(exclude)])
 
         # Adiciona opções de seletor
         if selector:
-            cmd.extend(["--selector", selector])
+            cmd.extend(["--selector", str(selector)])
 
         # Adiciona variáveis dinâmicas
         if vars_dict:
@@ -77,7 +104,7 @@ class DBTRunner:
             cmd.extend(["--vars", vars_json])
 
         if select:
-            cmd.extend(["--select", select])
+            cmd.extend(["--select", str(select)])
 
         if full_refresh:
             cmd.extend(["--full-refresh", "true"])
@@ -295,7 +322,7 @@ class DBTRunner:
             dict: Updated schema configuration
         """
         try:
-            suffix = {"bendito": "bdt", "notion": "ntn", "bitrix": "btx"}.get(origin)
+            suffix = self.get_suffix(origin)
         except Exception as e:
             logger.error(f"Error getting suffix for origin {origin}: {e}")
             return schema_config

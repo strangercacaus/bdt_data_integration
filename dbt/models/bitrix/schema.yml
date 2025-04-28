@@ -36,46 +36,70 @@ models:
     materialized: incremental
     enabled: true
     unique_key: id
+- name: btx_processed_crm_company_userfield
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_crm_company_userfield
+  config:
+    materialized: table
+    enabled: true
+- name: btx_processed_crm_deal_userfield
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_crm_deal_userfield
+  config:
+    materialized: table
+    enabled: true
+- name: btx_processed_crm_enum_activitynotifytype
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_crm_enum_activitynotifytype
+  config:
+    materialized: table
+    enabled: true
+- name: btx_processed_crm_currency
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_crm_currency
+  config:
+    materialized: table
+    enabled: true
 - name: btx_processed_crm_enum_ownertype
   config:
     materialized: view
-    enabled: false
+    enabled: true
 - name: btx_curated_crm_enum_ownertype
   config:
     materialized: table
-    enabled: false
-- name: btx_processed_crm_contact_userfield
-  config:
-    materialized: view
-    enabled: false
-- name: btx_curated_crm_contact_userfield
-  config:
-    materialized: table
-    enabled: false
-- name: btx_processed_crm_enum_activitypriority
-  config:
-    materialized: view
-    enabled: false
-- name: btx_curated_crm_enum_activitypriority
-  config:
-    materialized: table
-    enabled: false
-- name: btx_processed_crm_dealcategory_stage
-  config:
-    materialized: view
-    enabled: false
-- name: btx_curated_crm_dealcategory_stage
-  config:
-    materialized: table
-    enabled: false
+    enabled: true
 - name: btx_processed_deal_fields
   config:
     materialized: view
-    enabled: false
+    enabled: true
 - name: btx_curated_deal_fields
   config:
     materialized: table
-    enabled: false
+    enabled: true
+- name: btx_processed_user_get
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_user_get
+  config:
+    materialized: table
+    enabled: true
+- name: btx_processed_crm_catalog
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_crm_catalog
+  config:
+    materialized: table
+    enabled: true
 - name: btx_processed_crm_lead
   config:
     materialized: view
@@ -85,62 +109,70 @@ models:
     materialized: incremental
     enabled: true
     unique_key: id
-- name: btx_curated_crm_catalog
-  config:
-    materialized: table
-    enabled: false
 - name: btx_processed_crm_enum_activitydirection
   config:
     materialized: view
-    enabled: false
+    enabled: true
 - name: btx_curated_crm_enum_activitydirection
   config:
     materialized: table
-    enabled: false
+    enabled: true
 - name: btx_processed_crm_deal_recurring
   config:
     materialized: view
-    enabled: false
+    enabled: true
 - name: btx_curated_crm_deal_recurring
   config:
     materialized: table
-    enabled: false
+    enabled: true
 - name: btx_processed_crm_enum_addresstype
   config:
     materialized: view
-    enabled: false
+    enabled: true
 - name: btx_curated_crm_enum_addresstype
   config:
     materialized: table
-    enabled: false
-- name: btx_processed_crm_deal_userfield
+    enabled: true
+- name: btx_processed_crm_enum_activitypriority
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_crm_enum_activitypriority
+  config:
+    materialized: table
+    enabled: true
+- name: btx_processed_crm_contact_userfield
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_crm_contact_userfield
+  config:
+    materialized: table
+    enabled: true
+- name: btx_processed_crm_dealcategory_stage
   config:
     materialized: view
     enabled: false
-- name: btx_curated_crm_deal_userfield
-  config:
-    materialized: table
-    enabled: false
-- name: btx_processed_user_get
-  config:
-    materialized: view
-    enabled: false
-- name: btx_curated_user_get
-  config:
-    materialized: table
-    enabled: false
-- name: btx_curated_crm_status
+- name: btx_curated_crm_dealcategory_stage
   config:
     materialized: table
     enabled: false
 - name: btx_processed_crm_dealcategory
   config:
     materialized: view
-    enabled: false
+    enabled: true
 - name: btx_curated_crm_dealcategory
   config:
     materialized: table
-    enabled: false
+    enabled: true
+- name: btx_processed_crm_status
+  config:
+    materialized: view
+    enabled: true
+- name: btx_curated_crm_status
+  config:
+    materialized: table
+    enabled: true
 - name: btx_processed_crm_deal
   config:
     materialized: view

@@ -148,7 +148,8 @@ def main():
         logger = logging.getLogger("dbt_runner")
         logger.info("Executando transformações dbt para os modelos do Bendito")
 
-        dbt_project_dir = Path(__file__).parent.parent / "dbt"
+        # Use the utility function to get the dbt project directory
+        dbt_project_dir = Utils.get_dbt_project_dir()
         dbt_profiles_dir = dbt_project_dir
 
         # Verificar se o diretório existe

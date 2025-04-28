@@ -15,14 +15,19 @@ setup(
         "discord==2.3.2",
         "ratelimit==2.2.1",
         "python-dotenv==1.0.0",
-        "numpy==1.25.2",
+        "numpy==1.26.4",
         "pandas==2.1.4",
         "pytz==2025.2",
         "tzdata==2025.2",
         "requests==2.31.0",
         "jinja2>=3.1.3,<4",
         "python-dotenv==1.0.0",
-        "protobuf>=5,<6"
+        "protobuf>=5,<6",
+        "dbt_core-1.9.4",
+        "dbt_postgres-1.9.0",
+        "dbt-extractor<=0.6,>=0.5.0",
+        "dbt-semantic-interfaces<0.8,>=0.7.4"
+        
     ],
     author="Cauê Marchionatti Ausec",
     author_email="caue@bendito.digital",

@@ -1,4 +1,3 @@
-import os
 import logging
 from dotenv import load_dotenv
 import argparse
@@ -8,6 +7,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from bdt_data_integration.src.utils.dbt_runner import DBTRunner
+from bdt_data_integration.src.utils.utils import Utils
 
 
 def main():
@@ -49,24 +49,15 @@ def main():
     # Set the root logger to ensure all child loggers are visible
     logging.getLogger().setLevel(logging.DEBUG)
 
-    # Define base path for schema files relative to package base
-    project_root = Path(__file__).parent.parent.parent
-    schema_dir = project_root / "schema" / "public"
-    os.makedirs(schema_dir, exist_ok=True)
-
     load_dotenv()
     source = "public"
-    host = os.environ["DESTINATION_HOST"]
-    user = os.environ["DESTINATION_ROOT_USER"]
-    password = os.environ["DESTINATION_ROOT_PASSWORD"]
-    db_name = os.environ["DESTINATION_DB_NAME"]
-    notifier_url = os.environ["MAKE_NOTIFICATION_WEBHOOK"]
 
     # Execute dbt transformations for bitrix models after all tables have been loaded
     logger = logging.getLogger("dbt_runner")
     logger.info("Executando transformações dbt para os modelos de Public")
 
-    dbt_project_dir = Path(__file__).parent.parent / "dbt"
+    # Use the utility function to get the dbt project directory
+    dbt_project_dir = Utils.get_dbt_project_dir()
     dbt_profiles_dir = dbt_project_dir
 
     # Verificar se o diretório existe

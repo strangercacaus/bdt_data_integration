@@ -1,29 +1,167 @@
 version: 2
 models:
-- name: bdt_processed_invoice_item
+- name: bdt_processed_characteristic_value_dependency_rules
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_invoice_item
+- name: bdt_curated_characteristic_value_dependency_rules
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_team_child
+- name: bdt_processed_health_app
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_team_child
+- name: bdt_curated_health_app
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_route_execution
+- name: bdt_processed_customer_ncm_st
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_customer_ncm_st
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_ipi_operacao
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_ipi_operacao
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_city
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_city
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_country
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_country
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_saldo_flex_historico
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_route_execution
+- name: bdt_curated_saldo_flex_historico
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_anp
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_anp
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_invoice_issuance
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_invoice_issuance
   config:
     materialized: table
     enabled: true
+- name: bdt_processed_icms_origem
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_icms_origem
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_contact
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_customer_contact
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_product_bom
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_product_bom
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_person_address
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_person_address
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_notification
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_notification
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_resale
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_resale
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_tasks
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_customer_tasks
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_nf_configuration
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_customer_nf_configuration
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_ncm_st
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_ncm_st
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cofins_operacao
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_cofins_operacao
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_invoice_status_log
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_invoice_status_log
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
 - name: bdt_processed_imported_nfe
   config:
     materialized: view
@@ -37,14 +175,6 @@ models:
     materialized: view
     enabled: true
 - name: bdt_curated_comercial_politics_rules_criteria
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_saldo_flex
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_saldo_flex
   config:
     materialized: table
     enabled: true
@@ -64,19 +194,11 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_customer_user
+- name: bdt_processed_product_characteristic
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_customer_user
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_invoice_issuance
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_invoice_issuance
+- name: bdt_curated_product_characteristic
   config:
     materialized: table
     enabled: true
@@ -88,11 +210,11 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_services
+- name: bdt_processed_InvoiceStatuses
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_services
+- name: bdt_curated_InvoiceStatuses
   config:
     materialized: table
     enabled: true
@@ -120,30 +242,31 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_goals
+- name: bdt_processed_token_info
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_goals
+- name: bdt_curated_token_info
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_saldo_flex_historico
+- name: bdt_processed_log
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_saldo_flex_historico
+- name: bdt_curated_log
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_invoice_status_log
+- name: bdt_processed_product
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_invoice_status_log
+- name: bdt_curated_product
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
+    unique_key: id
 - name: bdt_processed_invoice_approvers
   config:
     materialized: view
@@ -165,14 +288,6 @@ models:
     materialized: view
     enabled: true
 - name: bdt_curated_workflow
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_log
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_log
   config:
     materialized: table
     enabled: true
@@ -208,11 +323,43 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_family
+- name: bdt_processed_services
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_family
+- name: bdt_curated_services
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_goals
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_goals
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer_user
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_customer_user
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_saldo_flex
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_saldo_flex
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_domain
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_domain
   config:
     materialized: table
     enabled: true
@@ -232,11 +379,11 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_product_characteristic
+- name: bdt_processed_customer_buyer
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_product_characteristic
+- name: bdt_curated_customer_buyer
   config:
     materialized: table
     enabled: true
@@ -248,14 +395,102 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_characteristic_value_pricing
+- name: bdt_processed_customer_plans
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_characteristic_value_pricing
+- name: bdt_curated_customer_plans
   config:
     materialized: table
     enabled: true
+- name: bdt_processed_sku_pricing
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_sku_pricing
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cnae
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_cnae
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_pis_operacao
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_pis_operacao
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_notes
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_customer_notes
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_icms_operacao
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_icms_operacao
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_market
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_market
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_services_taxation
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_services_taxation
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cfop
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_cfop
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_product_pricing
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_product_pricing
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_custom_field_entity
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_custom_field_entity
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_person_contact
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_person_contact
+  config:
+    materialized: table
+    enabled: false
 - name: bdt_processed_characteristic_value_dependency
   config:
     materialized: view
@@ -285,14 +520,6 @@ models:
     materialized: view
     enabled: true
 - name: bdt_curated_classes_characteristic
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_customer_plans
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_customer_plans
   config:
     materialized: table
     enabled: true
@@ -344,14 +571,15 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_person
+- name: bdt_processed_invoice
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_person
+- name: bdt_curated_invoice
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
+    unique_key: id
 - name: bdt_processed_custom_group
   config:
     materialized: view
@@ -368,11 +596,19 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_customer_buyer
+- name: bdt_processed_comercial_politics
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_customer_buyer
+- name: bdt_curated_comercial_politics
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_feedback_response
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_feedback_response
   config:
     materialized: table
     enabled: true
@@ -408,22 +644,24 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_feedback_response
+- name: bdt_processed_person
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_feedback_response
+- name: bdt_curated_person
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
-- name: bdt_processed_comercial_politics
+    unique_key: id
+- name: bdt_processed_product_warehouse
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_comercial_politics
+- name: bdt_curated_product_warehouse
   config:
-    materialized: table
+    materialized: incremental
     enabled: true
+    unique_key: id
 - name: bdt_processed_payment_method
   config:
     materialized: view
@@ -440,11 +678,27 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_product_classes
+- name: bdt_processed_characteristic_value_pricing
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_product_classes
+- name: bdt_curated_characteristic_value_pricing
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_family
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_family
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_payment_log
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_payment_log
   config:
     materialized: table
     enabled: true
@@ -456,51 +710,19 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_buyer
+- name: bdt_processed_invoice_change
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_buyer
+- name: bdt_curated_invoice_change
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_payment_plan
+- name: bdt_processed_product_collection
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_payment_plan
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_cart
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_cart
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_custom_field_entity
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_custom_field_entity
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_product_sku_data
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_product_sku_data
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_invoice
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_invoice
+- name: bdt_curated_product_collection
   config:
     materialized: table
     enabled: true
@@ -520,67 +742,19 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_visit
+- name: bdt_processed_buyer
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_visit
+- name: bdt_curated_buyer
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_lostreason
+- name: bdt_processed_product_classes
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_lostreason
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_product
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_product
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_route_workflow
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_route_workflow
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_product_warehouse
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_product_warehouse
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_state
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_state
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_client
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_client
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_invoice_change
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_invoice_change
+- name: bdt_curated_product_classes
   config:
     materialized: table
     enabled: true
@@ -592,6 +766,39 @@ models:
   config:
     materialized: table
     enabled: true
+- name: bdt_processed_route_workflow
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_route_workflow
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_client
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_client
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_sequence
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_sequence
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_characteristic_value_pricing_rules
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_characteristic_value_pricing_rules
+  config:
+    materialized: table
+    enabled: true
 - name: bdt_processed_user_profile
   config:
     materialized: view
@@ -600,11 +807,11 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_plans
+- name: bdt_processed_product_sku_data
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_plans
+- name: bdt_curated_product_sku_data
   config:
     materialized: table
     enabled: true
@@ -616,35 +823,11 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_characteristic_value_dependency_rules
+- name: bdt_processed_visit
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_characteristic_value_dependency_rules
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_team
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_team
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_product_sku
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_product_sku
-  config:
-    materialized: table
-    enabled: true
-- name: bdt_processed_goals_invoice_rules
-  config:
-    materialized: view
-    enabled: true
-- name: bdt_curated_goals_invoice_rules
+- name: bdt_curated_visit
   config:
     materialized: table
     enabled: true
@@ -656,19 +839,172 @@ models:
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_product_collection
+- name: bdt_processed_state
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_product_collection
+- name: bdt_curated_state
   config:
     materialized: table
     enabled: true
-- name: bdt_processed_characteristic_value_pricing_rules
+- name: bdt_processed_lostreason
   config:
     materialized: view
     enabled: true
-- name: bdt_curated_characteristic_value_pricing_rules
+- name: bdt_curated_lostreason
   config:
     materialized: table
     enabled: true
+- name: bdt_processed_goals_invoice_rules
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_goals_invoice_rules
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_team
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_team
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_payment_plan
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_payment_plan
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_plans
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_plans
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_product_sku
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_product_sku
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer_ncm_icms
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_customer_ncm_icms
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_invoice_item_characteristic
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_invoice_item_characteristic
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_notificationvalidation
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_notificationvalidation
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_route_execution
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_route_execution
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_invoice_item
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_invoice_item
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_team_child
+  config:
+    materialized: view
+    enabled: true
+- name: bdt_curated_team_child
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer_ncm
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_customer_ncm
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cest
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_cest
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_icms
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_icms
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_ncm_icms_cfop_csosn
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_customer_ncm_icms_cfop_csosn
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_ncm
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_ncm
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cart
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_cart
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_payment_method_price_table
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_payment_method_price_table
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cart_item
+  config:
+    materialized: view
+    enabled: false
+- name: bdt_curated_cart_item
+  config:
+    materialized: table
+    enabled: false

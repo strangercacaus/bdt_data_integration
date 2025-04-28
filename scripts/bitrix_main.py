@@ -7,7 +7,6 @@ import sys
 from pathlib import Path
 
 from sqlalchemy import create_engine
-from sqlalchemy.pool import QueuePool
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
@@ -138,7 +137,8 @@ def main():
 
     if args.transform.lower() == "true":
 
-        dbt_project_dir = Path(__file__).parent.parent / "dbt"
+        # Use the utility function to get the dbt project directory
+        dbt_project_dir = Utils.get_dbt_project_dir()
         dbt_profiles_dir = dbt_project_dir
 
         # Verificar se o diretório existe

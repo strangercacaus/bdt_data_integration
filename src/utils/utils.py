@@ -1,7 +1,7 @@
-import os
 import logging
 import sqlparse
 import argparse
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -128,3 +128,17 @@ class Utils:
         
         return parser
         
+    @staticmethod
+    def get_dbt_project_dir():
+        """
+        Returns the absolute path to the dbt project directory.
+        This ensures consistent path handling across all scripts.
+        
+        Returns:
+            Path: The absolute path to the dbt project directory
+        """
+        # Get the absolute path to the repository root
+        repo_root = Path(__file__).parent.parent.parent
+        
+        # Return the path to the dbt directory
+        return repo_root / "dbt"
