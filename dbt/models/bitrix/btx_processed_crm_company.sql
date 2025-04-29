@@ -51,5 +51,5 @@ select
     NULLIF(REPLACE("CONTENT"->>'UF_CRM_1726940183689','false',''),'')::varchar AS uf_crm_1726940183689,
     NULLIF(REPLACE("CONTENT"->>'UF_CRM_COMPANY_1720014986901','false',''),'')::varchar AS uf_crm_company_1720014986901,
     NULLIF(REPLACE("CONTENT"->>'UF_CRM_COMPANY_1738069980122','false',''),'')::int2 AS uf_crm_company_1738069980122
-from {{ source('bitrix', 'btx_raw_company') }}
+from {{ source('bitrix', 'btx_raw_crm_company') }}
 WHERE "SUCCESS" = true

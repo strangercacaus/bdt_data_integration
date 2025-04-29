@@ -80,4 +80,4 @@ select
     -- Additional fields
     ("CONTENT"->>'COMMENTS') AS comments,
     ("CONTENT"-> 'LINK') AS link
-FROM {{ source('bitrix', 'btx_raw_lead') }}
+FROM {{ source('bitrix', 'btx_raw_crm_lead') }}

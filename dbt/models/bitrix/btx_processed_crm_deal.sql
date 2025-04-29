@@ -137,5 +137,5 @@ SELECT
     ("CONTENT"->>'UF_CRM_DEAL_1738069820827')::text as uf_crm_deal_1738069820827,
     ("CONTENT"->>'UF_CRM_DEAL_1722632496832')::varchar as uf_crm_deal_1722632496832,
     NULLIF("CONTENT"->>'UF_CRM_1744677619','')::int2 as uf_crm_1744677619
-from {{ source('bitrix', 'btx_raw_deal') }}
+from {{ source('bitrix', 'btx_raw_crm_deal') }}
 WHERE "SUCCESS" = true

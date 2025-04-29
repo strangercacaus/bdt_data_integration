@@ -15,14 +15,3 @@ target-path: "target"
 clean-targets:
   - "target"
   - "dbt_packages"
-
-models:
-  bdt_transformations:
-    bitrix:
-      +materialized: table
-    notion:
-      +materialized: table
-    bendito:
-      +materialized: table
-    public:
-      +materialized: table 

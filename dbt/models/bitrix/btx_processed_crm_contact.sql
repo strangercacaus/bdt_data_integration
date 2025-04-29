@@ -78,5 +78,5 @@ SELECT
     NULLIF("CONTENT"->>'UF_CRM_CONTACT_1724942591655','false')::varchar AS uf_crm_contact_1724942591655,
     NULLIF(NULLIF("CONTENT"->>'UF_CRM_CONTACT_1724942632826','false'),'')::int2 AS uf_crm_contact_1724942632826,
     NULLIF("CONTENT"->>'UF_CRM_CONTACT_1725540305021','false')::varchar AS uf_crm_contact_1725540305021
-FROM {{source('bitrix', 'btx_raw_contact')}}
+FROM {{source('bitrix', 'btx_raw_crm_contact')}}
 WHERE "SUCCESS" = true

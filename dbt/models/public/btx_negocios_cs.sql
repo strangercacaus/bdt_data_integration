@@ -127,18 +127,18 @@ select
 	--x.cp_como_fazem_gestao_de_pedidos_hj,
 	--x.cp_email_da_pessoa_ponto_focal
 from
-	bitrix.deal x
-left join bitrix.btx_processed_dealcategory x1
+	{{ ref('crm_deal') }} x
+left join {{ref('btx_processed_crm_dealcategory')}} x1
 	on x.id_categoria = x1.id
-left join bitrix.btx_processed_dealcategory_stage x2
+left join {{ref('btx_processed_crm_dealcategory_stage')}} x2
 	on x.id_estagio = x2.status_id
-left join bitrix.user x3
+left join {{ref('btx_user')}} x3
 	on x.id_atribuido_por = x3.id
-left join bitrix.user x4
+left join {{ref('btx_user')}} x4
 	on x.id_modificdo_por  = x4.id
-left join bitrix.user x5
+left join {{ref('btx_user')}} x5
 	on x.id_ultima_atividade_por = x5.id
-left join bitrix.user x6
+left join {{ref('btx_user')}} x6
 	on x.id_criado_por = x6.id
-left join bitrix.user x7
+left join {{ref('btx_user')}} x7
 	on x.id_movido_por = x7.id

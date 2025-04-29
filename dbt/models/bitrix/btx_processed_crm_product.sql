@@ -32,5 +32,5 @@ SELECT
     -- User references
     NULLIF("CONTENT"->>'CREATED_BY', '')::int2 AS created_by,
     NULLIF("CONTENT"->>'MODIFIED_BY', '')::int2 AS modified_by
-FROM {{ source('bitrix', 'btx_raw_product') }}
+FROM {{ source('bitrix', 'btx_raw_crm_product') }}
 WHERE "SUCCESS" = true

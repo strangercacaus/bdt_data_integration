@@ -325,31 +325,36 @@ class DBTRunner:
             logger.error(f"Error getting suffix for origin {origin}: {e}")
             return schema_config
 
+        # Create a dictionary of existing models for quick lookup
         existing_models = {
             model.get("name"): model for model in schema_config["models"]
         }
-        updated_models = []
-
-        # Update or add new configurations
+        
+        # Create a set of all current model names with the current origin's prefix
+        current_origin_models = {
+            name for name in existing_models.keys() 
+            if name.startswith(f"{suffix}_processed_") or name.startswith(f"{suffix}_curated_")
+        }
+        
+        # Filter out models from the current origin to prevent duplication
+        filtered_models = [
+            model for model in schema_config["models"]
+            if model.get("name") not in current_origin_models
+        ]
+        
+        # Add all new model configurations
+        result_models = filtered_models.copy()
         for new_config in new_configs:
             model_name = new_config["name"]
-            if model_name in existing_models:
-                existing_models[model_name]["config"] = new_config["config"]
-                updated_models.append(existing_models[model_name])
+            # If the model already exists in filtered models (from another origin), update it
+            # Otherwise, add it as a new model
+            if model_name in existing_models and model_name not in current_origin_models:
+                existing_model = existing_models[model_name]
+                existing_model["config"] = new_config["config"]
             else:
-                updated_models.append(new_config)
+                result_models.append(new_config)
 
-        # Preserve models from other origins
-        other_models = [
-            model
-            for name, model in existing_models.items()
-            if not (
-                name.startswith(f"{suffix}_processed_")
-                or name.startswith(f"{suffix}_curated_")
-            )
-        ]
-
-        schema_config["models"] = other_models + updated_models
+        schema_config["models"] = result_models
         return schema_config
 
     def _save_schema_config(self, models_dir, schema_config):

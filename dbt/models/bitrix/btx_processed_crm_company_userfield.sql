@@ -19,6 +19,6 @@ select
 	NULLIF("CONTENT" ->> 'LIST_COLUMN_LABEL', '') :: jsonb as list_column_label,
 	NULLIF("CONTENT" ->> 'LIST_FILTER_LABEL', '') :: jsonb as list_filter_label
 from
-	{{ source('bitrix', 'btx_raw_company_userfield') }}
+	{{ source('bitrix', 'btx_raw_crm_company_userfield') }}
 WHERE
 	"SUCCESS" = true

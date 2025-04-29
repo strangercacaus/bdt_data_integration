@@ -37,5 +37,5 @@ SELECT
 	-- Time zone settings
 	("CONTENT"->>'TIME_ZONE')::varchar AS time_zone,
 	NULLIF("CONTENT"->>'TIME_ZONE_OFFSET','')::int4 AS time_zone_offset
-FROM {{ source('bitrix', 'btx_raw_crm_user') }}
+FROM {{ source('bitrix', 'btx_raw_user') }}
 WHERE "SUCCESS" = true

@@ -3,7 +3,7 @@ models:
 - name: action_items
   config:
     materialized: incremental
-    enabled: true
+    enabled: false
     unique_key: page_id
 - name: universal_task_database
   config:
@@ -18,27 +18,12 @@ models:
 - name: ntn_processed_action_items
   config:
     materialized: ephemeral
-    enabled: true
-- name: action_items
-  config:
-    materialized: incremental
-    enabled: true
-    unique_key: page_id
+    enabled: false
 - name: ntn_processed_bendito_blueprint
   config:
     materialized: ephemeral
     enabled: true
-- name: bendito_blueprint
-  config:
-    materialized: incremental
-    enabled: true
-    unique_key: page_id
 - name: ntn_processed_universal_task_database
   config:
     materialized: ephemeral
     enabled: true
-- name: universal_task_database
-  config:
-    materialized: incremental
-    enabled: true
-    unique_key: page_id

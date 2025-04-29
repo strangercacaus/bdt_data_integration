@@ -59,5 +59,5 @@ SELECT
     -- Source and origin
     ("CONTENT"->>'ORIGIN_ID') AS origin_id,
     ("CONTENT"->>'ORIGINATOR_ID') AS originator_id
-FROM {{ source('bitrix', 'btx_raw_activity') }}
+FROM {{ source('bitrix', 'btx_raw_crm_activity') }}
 WHERE "SUCCESS" = TRUE
