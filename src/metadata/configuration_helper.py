@@ -48,6 +48,8 @@ class ConfigurationHelper:
                         last_sync_attempt_at=row["last_sync_attempt_at"],
                         created_at=row["created_at"],
                         updated_at=row["updated_at"],
+                        run_dbt_processed=bool(row["run_dbt_processed"]),
+                        run_dbt_curated=bool(row["run_dbt_curated"]),
                     )
                     for row in result_dataframe.to_dict('records')
                 ]

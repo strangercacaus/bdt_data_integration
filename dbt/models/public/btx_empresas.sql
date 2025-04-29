@@ -45,12 +45,12 @@ select
 	x.cp_status_da_empresa,
 	x.cp_ha_quanto_tempo_a_empresa_existe
 from
-	bitrix.btx_curated_company x
-left join bitrix.btx_curated_user x1
+	bitrix.company x
+left join bitrix.user x1
 	on x.id_criado_por = x1.id
-left join bitrix.btx_curated_user x2
+left join bitrix.user x2
 	on x.id_modificado_por = x2.id
-left join bitrix.btx_curated_user x3
+left join bitrix.user x3
 	on x.id_atribuido_por = x3.id
-left join bitrix.btx_curated_user x4
+left join bitrix.user x4
 	on x.id_ultima_atividade_por = x4.id

@@ -1,28 +1,43 @@
 version: 2
 models:
-- name: ntn_processed_action_items
-  config:
-    materialized: view
-    enabled: true
-- name: ntn_curated_action_items
+- name: action_items
   config:
     materialized: incremental
     enabled: true
     unique_key: page_id
-- name: ntn_processed_universal_task_database
+- name: universal_task_database
   config:
-    materialized: view
+    materialized: incremental
     enabled: true
-- name: ntn_curated_universal_task_database
+    unique_key: page_id
+- name: bendito_blueprint
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: page_id
+- name: ntn_processed_action_items
+  config:
+    materialized: ephemeral
+    enabled: true
+- name: action_items
   config:
     materialized: incremental
     enabled: true
     unique_key: page_id
 - name: ntn_processed_bendito_blueprint
   config:
-    materialized: view
+    materialized: ephemeral
     enabled: true
-- name: ntn_curated_bendito_blueprint
+- name: bendito_blueprint
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: page_id
+- name: ntn_processed_universal_task_database
+  config:
+    materialized: ephemeral
+    enabled: true
+- name: universal_task_database
   config:
     materialized: incremental
     enabled: true

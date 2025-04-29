@@ -16,6 +16,8 @@ class DataTable:
         last_sync_attempt_at: str = None,
         created_at: str = None,
         updated_at: str = None,
+        run_dbt_processed: bool = True,
+        run_dbt_curated: bool = True,
     ):
         self.id = id
         self.origin = origin
@@ -32,6 +34,8 @@ class DataTable:
         self.last_sync_attempt_at = last_sync_attempt_at
         self.created_at = created_at
         self.updated_at = updated_at
+        self.run_dbt_processed = run_dbt_processed
+        self.run_dbt_curated = run_dbt_curated
 
     @property
     def raw_model_name(self):
@@ -43,7 +47,7 @@ class DataTable:
         return f"{self.get_suffix(self.origin)}_processed_{self.source_name.replace('.', '_')}"
     @property
     def curated_model_name(self):
-        return f"{self.get_suffix(self.origin)}_curated_{self.source_name.replace('.', '_')}"
+        return f"{self.source_name.replace('.', '_')}"
     @property
     def schemaless_ddl(self):
         return f"""CREATE TABLE IF NOT EXISTS {self.origin}.{self.raw_model_name}(

@@ -1,4 +1,3 @@
-{{ config(materialized = 'view', unique_key = 'id',) }}
 select
 	"ID" :: int4 as id,
 	("CONTENT" ->> 'FIELD_NAME') :: varchar as field_name,
@@ -20,6 +19,6 @@ select
 	NULLIF("CONTENT" ->> 'LIST_COLUMN_LABEL', '') :: jsonb as list_column_label,
 	NULLIF("CONTENT" ->> 'LIST_FILTER_LABEL', '') :: jsonb as list_filter_label
 from
-	{{ source('bitrix', 'btx_raw_contact_userfield') }}
+	{{ source('bitrix', 'btx_raw_company_userfield') }}
 WHERE
 	"SUCCESS" = true

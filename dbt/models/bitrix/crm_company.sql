@@ -1,10 +1,3 @@
-{{ config(
-	materialized = 'table',
-	unique_key = 'id',
-	post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ],
-)}}
 select
 	id,
 	title as titulo,
@@ -44,4 +37,4 @@ select
 	uf_crm_company_1720014986901 as cp_cnpj,
 	uf_crm_company_1738069980122 as cp_ha_quanto_tempo_a_empresa_existe
 from
-	{{ref('btx_processed_company')}}
+	{{ref('btx_processed_crm_company')}}

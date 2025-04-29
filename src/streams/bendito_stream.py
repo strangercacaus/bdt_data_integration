@@ -85,7 +85,7 @@ class BenditoStream(Stream):
             raise TypeError("Records must be a pandas DataFrame")
 
         logger.info(
-            f"Loading {len(records)} records into {self.table.origin}.{self.table.target_name}"
+            f"Loading {len(records)} records into {self.table.origin}.{self.table.raw_model_name}"
         )
 
         self.loader.load_data(df=records, chunksize=chunksize, mode="replace")

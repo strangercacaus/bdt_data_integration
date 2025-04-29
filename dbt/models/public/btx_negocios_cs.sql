@@ -45,7 +45,7 @@ select
 	(
 		select 
 			value 
-		from bitrix.btx_curated_userfield_options o 
+		from bitrix.userfield_options o 
 		where o.id = x.cp_forma_pgto_implementacao 
 		and o.field_name = 'UF_CRM_1719234611470'
 	)
@@ -53,7 +53,7 @@ select
 		(
 		select 
 			value 
-		from bitrix.btx_curated_userfield_options o 
+		from bitrix.userfield_options o 
 		where o.id = x.cp_forma_pgto_recorrencia 
 		and o.field_name = 'UF_CRM_1719234653377'
 	)
@@ -108,7 +108,7 @@ select
 	ARRAY(
 	SELECT o.value
 	FROM jsonb_array_elements(x.cp_plano) e
-	JOIN bitrix.btx_curated_userfield_options o 
+	JOIN bitrix.userfield_options o 
 	ON e::int = o.id 
 	AND o.field_name = 'UF_CRM_DEAL_1719236124580'),';') AS plano,
 	x.cp_tem_desenvolvimento_bendito::int::bool as tem_desenvolvimento_bendito,
@@ -116,7 +116,7 @@ select
 	ARRAY(
 	SELECT o.value
 	FROM jsonb_array_elements(x.cp_tipo_de_desenvolvimento) e
-	JOIN bitrix.btx_curated_userfield_options o 
+	JOIN bitrix.userfield_options o 
 	ON e::int = o.id 
 	AND o.field_name = 'UF_CRM_DEAL_1725540759541'),'; ') AS tipo_de_desenvolvimento--,
 	--x.cp_expectativa_valor_recorrencia as ,
@@ -127,18 +127,18 @@ select
 	--x.cp_como_fazem_gestao_de_pedidos_hj,
 	--x.cp_email_da_pessoa_ponto_focal
 from
-	bitrix.btx_curated_deal x
+	bitrix.deal x
 left join bitrix.btx_processed_dealcategory x1
 	on x.id_categoria = x1.id
 left join bitrix.btx_processed_dealcategory_stage x2
 	on x.id_estagio = x2.status_id
-left join bitrix.btx_curated_user x3
+left join bitrix.user x3
 	on x.id_atribuido_por = x3.id
-left join bitrix.btx_curated_user x4
+left join bitrix.user x4
 	on x.id_modificdo_por  = x4.id
-left join bitrix.btx_curated_user x5
+left join bitrix.user x5
 	on x.id_ultima_atividade_por = x5.id
-left join bitrix.btx_curated_user x6
+left join bitrix.user x6
 	on x.id_criado_por = x6.id
-left join bitrix.btx_curated_user x7
+left join bitrix.user x7
 	on x.id_movido_por = x7.id

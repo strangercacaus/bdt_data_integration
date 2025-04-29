@@ -1,10 +1,3 @@
-{{ config(
-	materialized = 'table',
-	unique_key = 'id',
-	post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ],
-)}}
 select
 	id,
 	title as titulo,
@@ -66,4 +59,4 @@ select
 	uf_crm_telegramusername_wz as usuario_telegram_wz,
 	"comments" as comentarios,
 	(SELECT array_agg(e->>'VALUE') FROM jsonb_array_elements(link) AS e) as link
-from {{ref('btx_processed_lead')}}
+from {{ref('btx_processed_crm_lead')}}

@@ -1,10 +1,3 @@
-{{ config(
-	materialized = 'table',
-	unique_key = 'id',
-	post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ],
-)}}
 select
 	-- Identificadores primários
 	id,
@@ -42,4 +35,4 @@ select
 	-- Campos personalizados
 	property_45 as property_45
 from
-	{{ref('btx_processed_product')}}
+	{{ref('btx_processed_crm_product')}}

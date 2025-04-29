@@ -1,7 +1,3 @@
-{{ config(
-	materialized = 'view',
-	unique_key = 'id',
-)}}
 SELECT
 	-- Primary identifiers
 	"ID"::int2 AS id,
@@ -41,5 +37,5 @@ SELECT
 	-- Time zone settings
 	("CONTENT"->>'TIME_ZONE')::varchar AS time_zone,
 	NULLIF("CONTENT"->>'TIME_ZONE_OFFSET','')::int4 AS time_zone_offset
-FROM {{ source('bitrix', 'btx_raw_user') }}
+FROM {{ source('bitrix', 'btx_raw_crm_user') }}
 WHERE "SUCCESS" = true

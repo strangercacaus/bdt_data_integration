@@ -1,10 +1,3 @@
-{{ config(
-	materialized = 'table',
-	unique_key = 'id',
-	post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ],
-)}}
 select
 	id,
 	date_create as criado_em,
@@ -65,4 +58,4 @@ select
 	uf_crm_telegramid_wz,
 	uf_crm_telegramusername_wz
 from
-	{{ref('btx_processed_contact')}}
+	{{ref('btx_processed_crm_contact')}}

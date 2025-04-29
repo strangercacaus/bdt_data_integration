@@ -10,4 +10,4 @@ select
 	(jsonb_array_elements(list)->>'ID')::int4 as id,
 	jsonb_array_elements(list)->>'VALUE' as value
 from
-	{{ref('btx_curated_userfield')}}
+	{{ref('crm_userfield')}}

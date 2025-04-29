@@ -82,45 +82,35 @@ def main():
 
     logger = logging.getLogger("replicate_database")
 
-    @notifier.error_handler
+    # @notifier.error_handler
     def replicate_table(table):
-        if args.extract.lower() == "true":
-            stream = BenditoStream(table)
-            stream.set_extractor()
-            records = stream.extract_stream(page_size=args.page_size)
-
-            if args.load.lower() == "true":
-                stream.set_table_definition()
-                stream.set_loader(
-                    engine=create_engine(
-                        f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
-                    )
-                )
-                try:
-                    stream.load_stream(
-                        records,
-                        chunksize=args.chunk_size,
-                    )
-                    return 1  # Success case
-                except Exception as e:
-                    logger.error(f"Erro ao carregar dados: {e}")
-                    return 0
-            else:
-                logger.info(f"Pulando load em {table.source_name}")
-                return 0
-        elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {table.source_name}: Nada a carregar")
-            return 0
-        else:
-            logger.info(f"Pulando {table.source_name}: Nenhuma operação solicitada")
+        
+        if args.extract.lower() == "false":
+            return 1
+        stream = BenditoStream(table)
+        stream.set_extractor()
+        records = stream.extract_stream(page_size=args.page_size)
+        stream.set_table_definition()
+        stream.set_loader(
+            engine=create_engine(
+                f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
+            )
+        )
+        try:
+            stream.load_stream(
+                records,
+                chunksize=args.chunk_size,
+            )
+            return 1
+        except Exception as e:
+            logger.error(f"Erro ao carregar dados: {e}")
             return 0
 
-    total = 0
+    total = active_tables.count()
     success = 0
 
     if args.extract.lower() == "true":
         for table in active_tables:
-            total += 1
             config_handler.update_table_configuration(
                 table.id,
                 table.source_name,
@@ -129,17 +119,19 @@ def main():
 
             try:
                 check = replicate_table(table) or 0
+                success += check
+
+            except Exception as e:
+                success += 0
+                raise e
+
+            finally:
                 if check == 1:
                     config_handler.update_table_configuration(
                         table.id,
                         table.source_name,
                         last_successful_sync_at=datetime.datetime.now(),
                     )
-                success += check
-
-            except Exception as e:
-                success += 0
-                raise e
     else:
         logger.info("Pulando extração de dados")
 

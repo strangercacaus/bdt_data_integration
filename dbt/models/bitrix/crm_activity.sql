@@ -1,10 +1,3 @@
-{{ config(
-	materialized = 'table',
-	unique_key = 'id',
-	post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ],
-)}}
 select
 	-- Identificadores primários
 	id,
@@ -66,4 +59,4 @@ select
 	-- Origem
 	origin_id as id_origem,
 	originator_id as id_originador
-from {{ref('btx_processed_activity')}}
+from {{ref('btx_processed_crm_activity')}}

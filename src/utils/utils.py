@@ -88,17 +88,7 @@ class Utils:
             default="true",
             choices=["true", "false"],
             help="Turns data extraction on/off for table (default: True)",
-        )
-        
-        # Controle de carregamento
-        parser.add_argument(
-            "--load",
-            type=str,
-            default="true",
-            choices=["true", "false"],
-            help="Turns data loading on/off for table (default: True)",
-        )
-        
+        )        
         # Controle de transformação
         parser.add_argument(
             "--transform",

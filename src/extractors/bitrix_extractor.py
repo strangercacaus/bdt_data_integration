@@ -165,7 +165,7 @@ class BitrixAPIExtractor(GenericAPIExtractor):
         return pd.DataFrame(results, dtype=str)
 
     def extract_as_enum(self):  # We don't need /updated_at here
-        url = self._raw_url(self.table.source_identifier)
+        url = self._raw_url()
         response = requests.get(url)
         response.raise_for_status()
         if response.json().get("result"):

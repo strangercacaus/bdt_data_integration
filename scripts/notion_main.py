@@ -60,7 +60,6 @@ def main():
     # Carrega as variáveis de ambiente
     load_dotenv()
     origin = "notion"
-    token = os.environ["NOTION_APIKEY"]
     host = os.environ["DESTINATION_HOST"]
     user = os.environ["DESTINATION_ROOT_USER"]
     password = os.environ["DESTINATION_ROOT_PASSWORD"]
@@ -88,61 +87,50 @@ def main():
     logger = logging.getLogger("replicate_database")
 
     @notifier.error_handler
-    def replicate_database(table):  # Define logger for this function
-        if args.extract.lower() == "true":
-            stream = NotionStream(table)
-            stream.set_extractor()
-            records = stream.extract_stream()
-
-            if args.load.lower() == "true":
-                stream.set_loader(
-                    engine=create_engine(
-                        f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
-                    )
-                )
-                try:
-                    stream.load_stream(
-                        records,
-                        chunksize=1000,
-                    )
-                    return 1  # Success case
-                except Exception as e:
-                    logger.error(f"Erro ao carregar dados: {e}")
-                    return 0
-            else:
-                logger.info(f"Pulando load em {table.source_name}")
-                return 0
-        elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {table.source_name}: Nada a carregar")
-            return 0
-        else:
-            logger.info(f"Pulando {table.source_name}: Nenhuma operação solicitada")
+    
+    def replicate_table(table):
+        
+        if args.extract.lower() == "false":
+            return 1
+        stream = NotionStream(table)
+        stream.set_extractor()
+        records = stream.extract_stream()
+        stream.set_table_definition()
+        stream.set_loader(
+            engine=create_engine(
+                f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
+            )
+        )
+        try:
+            stream.load_stream(
+                records,
+                chunksize=args.chunk_size,
+            )
+            return 1
+        except Exception as e:
+            logger.error(f"Erro ao carregar dados: {e}")
             return 0
 
-    total = 0
+    total = len(active_tables)
     success = 0
 
-    if args.extract.lower() == "true" or args.load.lower() == "true":
+    if args.extract.lower() == "true":
 
         for table in active_tables:
-            total += 1
             config_handler.update_table_configuration(
                 table.id,
                 table.source_name,
                 last_sync_attempt_at=datetime.datetime.now(),
             )
+            check = replicate_table(table) or 0
+            success += check
 
-            try:
-                check = replicate_database(table) or 0
-                if check == 1:
-                    success += 1
-                    config_handler.update_table_configuration(
-                        table.id,
-                        table.source_name,
-                        last_successful_sync_at=datetime.datetime.now(),
-                    )
-            except Exception as e:
-                print(f"Error: {e}")
+            if check == 1:
+                config_handler.update_table_configuration(
+                    table.id,
+                    table.source_name,
+                    last_successful_sync_at=datetime.datetime.now(),
+                )
 
     if args.transform.lower() == "true":
 
@@ -184,7 +172,7 @@ def main():
             logger.info("Atualizando configurações dos modelos DBT...")
             dbt_runner.update_model_configs(tables, origin)
 
-    dbt_runner.run(models="notion", target_schema=origin)
+    dbt_runner.run(models=origin, target_schema=origin)
 
     elapsed_time_formatted = Utils.format_elapsed_time(time.time() - start_time)
 

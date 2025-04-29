@@ -1,4 +1,3 @@
-{{config(materialized = 'view', unique_key = 'id')}}
 select
     -- Primary identifiers
     ("CONTENT"->>'ID')::int2 AS id,

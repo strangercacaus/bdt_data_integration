@@ -1,10 +1,3 @@
-{{ config(
-	materialized = 'table',
-	unique_key = 'id',
-	post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ],
-)}}
 SELECT
 	id,
 	title AS titulo,
@@ -126,4 +119,4 @@ SELECT
 	utm_content, -- não é usado
 	utm_campaign -- não é usado
 FROM
-	{{ ref('btx_processed_deal') }}
+	{{ ref('btx_processed_crm_deal') }}

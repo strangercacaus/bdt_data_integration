@@ -50,6 +50,19 @@ class BitrixStream(Stream):
             self.set_extractor()
         return self.extractor.run()
 
+    def set_table_definition(self, table_definition=None):
+        """
+        Set the table definition for this stream.
+
+        Args:
+            table_definition (str, optional): SQL DDL statement for table creation
+        """
+        if not table_definition:
+            table_definition = self.table.schemaless_ddl
+
+        self.table_definition = table_definition
+        logger.info(f"Table definition set for {self.table.source_name}")
+
     def set_loader(self, engine):
         """
         Set up the PostgreSQLLoader for this stream.
@@ -79,7 +92,7 @@ class BitrixStream(Stream):
         logger.info(f"{__name__} Chamando load_data com raw_data.shape: {records.shape}")
 
         logger.info(
-            f"Loading {len(records)} records into {self.table.origin}.{self.table.target_name}"
+            f"Loading {len(records)} records into {self.table.origin}.{self.table.raw_model_name}"
         )
 
         self.loader.load_data(df=records, chunksize=chunksize, mode="replace")

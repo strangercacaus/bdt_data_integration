@@ -94,7 +94,7 @@ class PostgresLoader(BaseLoader):
 
         with self.engine.begin() as connection:
             try:
-                connection.execute(text(self.table.s))
+                connection.execute(text(self.table.schemaless_ddl))
             except SQLAlchemyError as e:
                 if isinstance(e, ObjectNotExecutableError):
                     logger.error(f"O comando SQL não é executável: {self.table.schemaless_ddl}")
@@ -115,7 +115,7 @@ class PostgresLoader(BaseLoader):
             target_schema (str): O esquema de destino onde a tabela está localizada.
         """
         with self.engine.begin() as connection:
-            truncate_query = text(f"TRUNCATE TABLE {self.table.origin}.{self.table.target_name}")
+            truncate_query = text(f"TRUNCATE TABLE {self.table.origin}.{self.table.raw_model_name}")
             connection.execute(truncate_query)
 
     def drop_table(self):
@@ -127,7 +127,7 @@ class PostgresLoader(BaseLoader):
             target_schema (str): O esquema de destino onde a tabela está localizada.
         """
         with self.engine.begin() as connection:
-            drop_query = text(f"DROP TABLE {self.table.origin}.{self.table.target_name}")
+            drop_query = text(f"DROP TABLE {self.table.origin}.{self.table.raw_model_name}")
             connection.execute(drop_query)
 
     def create_updated_at_trigger(self):
@@ -144,13 +144,13 @@ class PostgresLoader(BaseLoader):
         with self.engine.begin() as connection:
             try:
                 create_query = text(
-                    f"CREATE TRIGGER set_updated_at_{self.table.target_name} BEFORE UPDATE ON {self.table.origin}.{self.table.target_name} FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+                    f"CREATE TRIGGER set_updated_at_{self.table.raw_model_name} BEFORE UPDATE ON {self.table.origin}.{self.table.raw_model_name} FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
                 )
                 connection.execute(create_query)
             except ProgrammingError as e:
                 if isinstance(e.orig, psycopg2.errors.DuplicateObject):
                     logger.warning(
-                        f"O trigger set_updated_at_{self.table.target_name} já existe, pulando a criação."
+                        f"O trigger set_updated_at_{self.table.raw_model_name} já existe, pulando a criação."
                     )
                 else:
                     raise e
@@ -190,11 +190,11 @@ class PostgresLoader(BaseLoader):
         with self.engine.begin() as connection:
             if kind == "primary_key":
                 create_query = text(
-                    f"""ALTER TABLE {self.table.origin}.{self.table.target_name} ADD CONSTRAINT {self.table.target_name}_pk PRIMARY KEY ("{column}")"""
+                    f"""ALTER TABLE {self.table.origin}.{self.table.raw_model_name} ADD CONSTRAINT {self.table.raw_model_name}_pk PRIMARY KEY ("{column}")"""
                 )
             elif kind == "unique_key":
                 create_query = text(
-                    f"""ALTER TABLE {self.table.origin}.{self.table.target_name} ADD CONSTRAINT {self.table.target_name}__unique UNIQUE ("{column}")"""
+                    f"""ALTER TABLE {self.table.origin}.{self.table.raw_model_name} ADD CONSTRAINT {self.table.raw_model_name}__unique UNIQUE ("{column}")"""
                 )
             connection.execute(create_query)
 
@@ -212,7 +212,7 @@ class PostgresLoader(BaseLoader):
                 - schema (str): Definição SQL da tabela quando schema_file_type='schema'.
         """
         logger.info(
-            f"loader.create_sql_schema, target_table: {self.table.target_name}, target_schema: {self.table.origin}"
+            f"loader.create_sql_schema, target_table: {self.table.raw_model_name}, target_schema: {self.table.origin}"
         )
 
         self.create_table()
@@ -269,7 +269,7 @@ class PostgresLoader(BaseLoader):
                 - table_definition (str): Definição SQL da tabela quando schema_file_type='schema'.
         """
         logger.debug(
-            f"Iniciando load_data para {self.table.target_name} em {self.table.origin}, modo: {self.table.extraction_strategy}"
+            f"Iniciando load_data para {self.table.raw_model_name} em {self.table.origin}, modo: {self.table.extraction_strategy}"
         )
 
         schema_exists = self.check_if_schema_exists()
@@ -283,31 +283,31 @@ class PostgresLoader(BaseLoader):
         tables = inspect(self.engine).get_table_names(schema=self.table.origin)
 
         # Se a tabela existe no schema, carrega os dados
-        if self.table.target_name in tables:
-            logger.debug(f"Tabela {self.table.target_name} encontrada em {self.table.origin}")
+        if self.table.raw_model_name in tables:
+            logger.debug(f"Tabela {self.table.raw_model_name} encontrada em {self.table.origin}")
 
             # Se o modo é replace, trunca a tabela para limpar os dados antes do insert
             if mode == "replace":
-                logger.debug(f"Truncando dados de {self.table.target_name}.")
+                logger.debug(f"Truncando dados de {self.table.raw_model_name}.")
                 self.truncate_table()
 
         # Se a tabela não existe no schema, cria a tabela
         else:
-            logger.debug(f"Tabela {self.table.target_name} não encontrada em {self.table.origin}")
+            logger.debug(f"Tabela {self.table.raw_model_name} não encontrada em {self.table.origin}")
 
             if self.table_definition is None:
                 raise ValueError(
                     "Relação não existe no destino, definição de tabela de destino precisa estar presente."
                 )
 
-            logger.debug(f"Criando tabela {self.table.target_name} em {self.self.table.origin}")
+            logger.debug(f"Criando tabela {self.table.raw_model_name} em {self.table.origin}")
             self.create_sql_schema()
 
         loaded_rows = 0
-        logger.debug(f"Inserindo dados em {self.table.target_name}")
+        logger.debug(f"Inserindo dados em {self.table.raw_model_name}")
 
         loaded_rows = df.to_sql(
-            self.table.target_name,
+            self.table.raw_model_name,
             con=self.engine,
             if_exists="append",
             schema=self.table.origin,
@@ -316,5 +316,5 @@ class PostgresLoader(BaseLoader):
         )
 
         logger.debug(
-            f"Fim do carregamento de dados em {self.table.target_name}, {loaded_rows} linhas inseridas."
+            f"Fim do carregamento de dados em {self.table.raw_model_name}, {loaded_rows} linhas inseridas."
         )

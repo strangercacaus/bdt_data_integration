@@ -1,10 +1,3 @@
-{{ config(
-	materialized = 'table',
-	unique_key = 'id',
-	post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ],
-)}}
 select
 	id,
 	"name" as nome,
@@ -32,4 +25,4 @@ select
 	last_activity_date as data_da_ultima_atividade,
 	uf_employment_date as data_de_contratacao
 from
-	{{ref('btx_processed_user')}}
+	{{ref('btx_processed_crm_user')}}

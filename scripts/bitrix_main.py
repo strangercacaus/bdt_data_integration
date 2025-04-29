@@ -77,60 +77,50 @@ def main():
 
     logger = logging.getLogger("replicate_database")
 
-    @notifier.error_handler
+    # @notifier.error_handler
     def replicate_table(table):
-        if args.extract.lower() == "true":
-            stream = BitrixStream(table)
-            stream.set_extractor()
-            records = stream.extract_stream()
-
-            if args.load.lower() == "true":
-                stream.set_table_definition()
-                stream.set_loader(
-                    engine=create_engine(
-                        f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
-                    )
-                )
-                try:
-                    stream.load_stream(
-                        records,
-                        chunksize=args.chunk_size,
-                    )
-                    return 1
-                except Exception as e:
-                    logger.error(f"Erro ao carregar dados: {e}")
-                    return 0
-            else:
-                logger.info(f"Pulando load em {table.source_name}")
-                return 0
-        elif args.load.lower() == "true":
-            logger.info(f"Pulando load em {table.source_name}: Nada a carregar")
-            return 0
-        else:
-            logger.info(f"Pulando {table.source_name}: Nenhuma operação solicitada")
+        
+        if args.extract.lower() == "false":
+            return 1
+        stream = BitrixStream(table)
+        stream.set_extractor()
+        records = stream.extract_stream()
+        stream.set_table_definition()
+        stream.set_loader(
+            engine=create_engine(
+                f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
+            )
+        )
+        try:
+            stream.load_stream(
+                records,
+                chunksize=args.chunk_size,
+            )
+            return 1
+        except Exception as e:
+            logger.error(f"Erro ao carregar dados: {e}")
             return 0
 
-    total = 0
+    total = len(active_tables)
     success = 0
 
-    for table in active_tables:
-        total += 1
-        config_handler.update_table_configuration(
-            table.id, table.source_name, last_sync_attempt_at=datetime.datetime.now()
-        )
+    if args.extract.lower() == "true":
 
-        try:
+        for table in active_tables:
+            config_handler.update_table_configuration(
+                table.id,
+                table.source_name,
+                last_sync_attempt_at=datetime.datetime.now(),
+            )
             check = replicate_table(table) or 0
+            success += check
+
             if check == 1:
                 config_handler.update_table_configuration(
                     table.id,
                     table.source_name,
                     last_successful_sync_at=datetime.datetime.now(),
                 )
-            success += check
-        except Exception as e:
-            success += 0
-            raise e
     # Execute dbt transformations for bitrix models after all tables have been loaded
     logger = logging.getLogger("dbt_runner")
     logger.info("Executando transformações dbt para os modelos do Bitrix")

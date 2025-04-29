@@ -29,10 +29,10 @@ class DBTRunner:
     def get_suffix(self, origin):
         """
         Returns the suffix for a given origin.
-        
+
         Args:
             origin (str): The origin ('bendito', 'notion', 'bitrix')
-            
+
         Returns:
             str: The suffix for the origin
         """
@@ -69,11 +69,13 @@ class DBTRunner:
         # Verifica se o dbt está instalado
         if not self.dbt_path:
             self.dbt_path = shutil.which("dbt")  # Tentar novamente localizar o dbt
-            
-            if not self.dbt_path:
-                logger.error("Executável dbt não encontrado. Por favor, instale o dbt: pip install dbt-core dbt-postgres")
-                return False
-                
+
+        if not self.dbt_path:
+            logger.error(
+                "Executável dbt não encontrado. Por favor, instale o dbt: pip install dbt-core dbt-postgres"
+            )
+            return False
+
         # Prepara o comando base usando o caminho completo do dbt
         cmd = [self.dbt_path, command]
 
@@ -136,7 +138,13 @@ class DBTRunner:
             return False
 
     def run(
-        self, models=None, exclude=None, selector=None, target_schema=None, select=None, full_refresh=False
+        self,
+        models=None,
+        exclude=None,
+        selector=None,
+        target_schema=None,
+        select=None,
+        full_refresh=False,
     ):
         """
         Executa o comando 'dbt run'.
@@ -158,7 +166,7 @@ class DBTRunner:
             selector=selector,
             vars_dict=vars_dict,
             select=select,
-            full_refresh=full_refresh
+            full_refresh=full_refresh,
         )
 
     def test(
@@ -216,12 +224,9 @@ class DBTRunner:
         try:
             models_dir = self._ensure_models_directory(origin)
             schema_config = self._load_existing_schema(models_dir)
-
             model_configs = self._generate_model_configs(tables)
             updated_schema = self._update_schema_config(
-                schema_config, 
-                model_configs, 
-                origin
+                schema_config, model_configs, origin
             )
 
             return self._save_schema_config(models_dir, updated_schema)
@@ -273,28 +278,22 @@ class DBTRunner:
     def _generate_model_configs(self, tables):
         """
         Generates configurations for processed and curated models.
-        
+
         Args:
             active_tables (DataFrame): Table configurations
             origin (str): Data origin ('bendito', 'notion', 'bitrix')
-        
+
         Returns:
             list: List of model configurations
         """
         model_configs = []
 
         for table in tables:
-            source_name = table.source_name
-            if not source_name:
-                continue
-
-            active = table.active
-
             # Processed model config
             processed_model = self._create_model_config(
                 model_name=table.processed_model_name,
-                materialization="view",
-                active=active,
+                materialization="ephemeral",
+                active = False if table.active == False else table.run_dbt_processed,
             )
             model_configs.append(processed_model)
 
@@ -302,22 +301,21 @@ class DBTRunner:
             curated_model = self._create_model_config(
                 model_name=table.curated_model_name,
                 materialization=table.materialization_strategy,
-                active=active,
+                active = False if table.active == False else table.run_dbt_curated,
                 unique_key=table.unique_id_property,
             )
             model_configs.append(curated_model)
-
         return model_configs
 
     def _update_schema_config(self, schema_config, new_configs, origin):
         """
         Updates schema configuration with new model configs.
-        
+
         Args:
             schema_config (dict): Existing schema configuration
             new_configs (list): New model configurations to add/update
             origin (str): Data origin ('bendito', 'notion', 'bitrix')
-        
+
         Returns:
             dict: Updated schema configuration
         """
@@ -326,7 +324,7 @@ class DBTRunner:
         except Exception as e:
             logger.error(f"Error getting suffix for origin {origin}: {e}")
             return schema_config
-        
+
         existing_models = {
             model.get("name"): model for model in schema_config["models"]
         }
@@ -358,8 +356,13 @@ class DBTRunner:
         """Saves the schema configuration to file."""
         schema_path = models_dir / "schema.yml"
         try:
+            # Create a custom dumper class that ignores aliases
+            class NoAliasDumper(yaml.Dumper):
+                def ignore_aliases(self, data):
+                    return True
+                
             with open(schema_path, "w") as f:
-                yaml.dump(schema_config, f, default_flow_style=False, sort_keys=False)
+                yaml.dump(schema_config, f, Dumper=NoAliasDumper, default_flow_style=False, sort_keys=False)
             logger.info(f"Successfully updated DBT model configurations: {schema_path}")
             return True
         except Exception as e:
