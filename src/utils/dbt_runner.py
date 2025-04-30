@@ -207,7 +207,9 @@ class DBTRunner:
 
     def update_model_configs(self, tables, origin):
         """
-        Updates DBT model configurations based on active tables metadata.
+        Rebuilds DBT model configurations completely based on tables metadata.
+        Instead of modifying existing schema.yml, this method creates a fresh schema
+        based solely on the provided input data.
 
         Args:
             active_tables (DataFrame): Configuration DataFrame containing:
@@ -223,16 +225,12 @@ class DBTRunner:
         """
         try:
             models_dir = self._ensure_models_directory(origin)
-            schema_config = self._load_existing_schema(models_dir)
             model_configs = self._generate_model_configs(tables)
-            updated_schema = self._update_schema_config(
-                schema_config, model_configs, origin
-            )
+            new_schema = {"version": 2, "models": model_configs}
 
-            return self._save_schema_config(models_dir, updated_schema)
-
+            return self._save_schema_config(models_dir, new_schema)
         except Exception as e:
-            logger.error(f"Failed to update DBT model configurations: {e}")
+            logger.error(f"Failed to rebuild DBT model configurations: {e}")
             return False
 
     def _ensure_models_directory(self, origin):
@@ -242,7 +240,7 @@ class DBTRunner:
         return models_dir
 
     def _load_existing_schema(self, models_dir):
-        """Loads existing schema.yml if present, or returns default structure."""
+        """This method is kept for backward compatibility but is no longer used in the rebuild approach."""
         schema_path = models_dir / "schema.yml"
         default_schema = {"version": 2, "models": []}
 
@@ -290,26 +288,28 @@ class DBTRunner:
 
         for table in tables:
             # Processed model config
-            processed_model = self._create_model_config(
-                model_name=table.processed_model_name,
-                materialization="ephemeral",
-                active = False if table.active == False else table.run_dbt_processed,
-            )
-            model_configs.append(processed_model)
+            if table.active and table.run_dbt_processed == True:
+                processed_model = self._create_model_config(
+                    model_name=table.processed_model_name,
+                    materialization="ephemeral",
+                    active=True,
+                )
+                model_configs.append(processed_model)
 
-            # Curated model config
-            curated_model = self._create_model_config(
-                model_name=table.curated_model_name,
-                materialization=table.materialization_strategy,
-                active = False if table.active == False else table.run_dbt_curated,
-                unique_key=table.unique_id_property,
-            )
-            model_configs.append(curated_model)
+            if table.active and table.run_dbt_curated == True:
+                curated_model = self._create_model_config(
+                    model_name=table.curated_model_name,
+                    materialization=table.materialization_strategy,
+                    active=False if table.active == False else table.run_dbt_curated,
+                    unique_key=table.unique_id_property,
+                )
+                model_configs.append(curated_model)
         return model_configs
 
     def _update_schema_config(self, schema_config, new_configs, origin):
         """
-        Updates schema configuration with new model configs.
+        This method is kept for backward compatibility but is no longer used in the rebuild approach.
+        In the new approach, we directly create a new schema with only the models from the current origin.
 
         Args:
             schema_config (dict): Existing schema configuration
@@ -319,43 +319,8 @@ class DBTRunner:
         Returns:
             dict: Updated schema configuration
         """
-        try:
-            suffix = self.get_suffix(origin)
-        except Exception as e:
-            logger.error(f"Error getting suffix for origin {origin}: {e}")
-            return schema_config
-
-        # Create a dictionary of existing models for quick lookup
-        existing_models = {
-            model.get("name"): model for model in schema_config["models"]
-        }
-        
-        # Create a set of all current model names with the current origin's prefix
-        current_origin_models = {
-            name for name in existing_models.keys() 
-            if name.startswith(f"{suffix}_processed_") or name.startswith(f"{suffix}_curated_")
-        }
-        
-        # Filter out models from the current origin to prevent duplication
-        filtered_models = [
-            model for model in schema_config["models"]
-            if model.get("name") not in current_origin_models
-        ]
-        
-        # Add all new model configurations
-        result_models = filtered_models.copy()
-        for new_config in new_configs:
-            model_name = new_config["name"]
-            # If the model already exists in filtered models (from another origin), update it
-            # Otherwise, add it as a new model
-            if model_name in existing_models and model_name not in current_origin_models:
-                existing_model = existing_models[model_name]
-                existing_model["config"] = new_config["config"]
-            else:
-                result_models.append(new_config)
-
-        schema_config["models"] = result_models
-        return schema_config
+        # Simply return a new schema with the provided configurations
+        return {"version": 2, "models": new_configs}
 
     def _save_schema_config(self, models_dir, schema_config):
         """Saves the schema configuration to file."""
@@ -365,10 +330,16 @@ class DBTRunner:
             class NoAliasDumper(yaml.Dumper):
                 def ignore_aliases(self, data):
                     return True
-                
+
             with open(schema_path, "w") as f:
-                yaml.dump(schema_config, f, Dumper=NoAliasDumper, default_flow_style=False, sort_keys=False)
-            logger.info(f"Successfully updated DBT model configurations: {schema_path}")
+                yaml.dump(
+                    schema_config,
+                    f,
+                    Dumper=NoAliasDumper,
+                    default_flow_style=False,
+                    sort_keys=False,
+                )
+            logger.info(f"Successfully rebuilt DBT model configurations: {schema_path}")
             return True
         except Exception as e:
             logger.error(f"Failed to save schema configuration: {e}")

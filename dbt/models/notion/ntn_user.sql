@@ -1,10 +1,3 @@
-{{ config(
-	materialized = 'incremental',
-	unique_key = 'id',
-    post_hook=[
-        "GRANT SELECT ON {{ this }} TO bendito_metabase"
-    ]
-)}}
 with unique_person as
 (
 	select distinct jsonb_array_elements(solicitante->'people') as person

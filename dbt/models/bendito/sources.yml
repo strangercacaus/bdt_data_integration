@@ -55,7 +55,7 @@ sources:
       - name: bdt_raw_feature
       - name: bdt_raw_feedback_question
       - name: bdt_raw_feedback_response
-      - name: bdt_raw_goals
+      - name: bdt_raw_goal
       - name: bdt_raw_goals_client_rules
       - name: bdt_raw_goals_invoice_rules
       - name: bdt_raw_goals_product_rules

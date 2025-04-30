@@ -279,6 +279,8 @@ select
                 ELSE '[]'::jsonb
             END
         ) AS tester_item
-    ) as tester
+    ) as tester,
+    (soma_de_progresso -> 'rollup' ->> 'number')::int2 as soma_de_progresso,
+    (peso_da_tarefa -> 'rollup' ->> 'number')::int2 as peso_da_tarefa
 from {{ ref('ntn_processed_universal_task_database') }}
 

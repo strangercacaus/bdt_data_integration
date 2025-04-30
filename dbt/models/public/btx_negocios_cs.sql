@@ -127,7 +127,7 @@ select
 	--x.cp_como_fazem_gestao_de_pedidos_hj,
 	--x.cp_email_da_pessoa_ponto_focal
 from
-	{{ ref('crm_deal') }} x
+	{{ ref('btx_crm_deal') }} x
 left join {{ref('btx_processed_crm_dealcategory')}} x1
 	on x.id_categoria = x1.id
 left join {{ref('btx_processed_crm_dealcategory_stage')}} x2

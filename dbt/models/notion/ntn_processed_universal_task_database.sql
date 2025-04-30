@@ -348,5 +348,23 @@ select
         WHERE value ->> 'id' = 'gOo%3A'
         LIMIT 1
     ) as tester
+    (
+        SELECT value
+        FROM jsonb_each("CONTENT" -> 'properties')
+        WHERE value ->> 'id' = 'P%7Bn%3C'
+        LIMIT 1
+    ) as itens_de_acao,
+    (
+        SELECT value
+        FROM jsonb_each("CONTENT" -> 'properties')
+        WHERE value ->> 'id' = '%3AnD%7B'
+        LIMIT 1
+    ) as peso_da_tarefa,
+    (
+        SELECT value
+        FROM jsonb_each("CONTENT" -> 'properties')
+        WHERE value ->> 'id' = 'JI%5DF'
+        LIMIT 1
+    ) as soma_de_progresso
 from {{ source('notion', 'ntn_raw_universal_task_database') }}
 WHERE "SUCCESS" = TRUE

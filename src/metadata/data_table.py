@@ -47,7 +47,7 @@ class DataTable:
         return f"{self.get_suffix(self.origin)}_processed_{self.source_name.replace('.', '_')}"
     @property
     def curated_model_name(self):
-        return f"{self.source_name.replace('.', '_')}"
+        return f"{self.get_suffix(self.origin)}_{self.source_name.replace('.', '_')}"
     @property
     def schemaless_ddl(self):
         return f"""CREATE TABLE IF NOT EXISTS {self.origin}.{self.raw_model_name}(
