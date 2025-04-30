@@ -106,7 +106,7 @@ def main():
             logger.error(f"Erro ao carregar dados: {e}")
             return 0
 
-    total = active_tables.count()
+    total = len(active_tables)
     success = 0
 
     if args.extract.lower() == "true":

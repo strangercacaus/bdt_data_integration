@@ -22,12 +22,11 @@ setup(
         "requests==2.31.0",
         "jinja2>=3.1.3,<4",
         "python-dotenv==1.0.0",
-        "protobuf>=5,<6",
-        "dbt_core-1.9.4",
-        "dbt_postgres-1.9.0",
-        "dbt-extractor<=0.6,>=0.5.0",
-        "dbt-semantic-interfaces<0.8,>=0.7.4"
-        
+        "protobuf",
+        "dbt_core",
+        "dbt_postgres",
+        "dbt-extractor",
+        "dbt-semantic-interfaces"
     ],
     author="Cauê Marchionatti Ausec",
     author_email="caue@bendito.digital",

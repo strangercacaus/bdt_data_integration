@@ -1,0 +1,1010 @@
+version: 2
+models:
+- name: bdt_processed_characteristic_value_dependency_rules
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: characteristic_value_dependency_rules
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_health_app
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: health_app
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_ipi_operacao
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: ipi_operacao
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_anp
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: anp
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_invoice_workflow
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: invoice_workflow
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_InvoiceStatuses
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: InvoiceStatuses
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_invoice_status_log
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: invoice_status_log
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_comercial_politics_rules_criteria
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: comercial_politics_rules_criteria
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_cnae
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: cnae
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_pis_operacao
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: pis_operacao
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_notes
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_notes
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_icms_operacao
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: icms_operacao
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_market
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: market
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_services_taxation
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: services_taxation
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cfop
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: cfop
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_product_pricing
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product_pricing
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_custom_field_entity
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: custom_field_entity
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_person_contact
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: person_contact
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_price_table
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: price_table
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer_user
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_user
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer_plans
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_plans
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_deadline
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: deadline
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_characteristic_value_dependency
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: characteristic_value_dependency
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_team
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: team
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_collection
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: collection
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_feedback_question
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: feedback_question
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_family
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: family
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_product_warehouse
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product_warehouse
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_characteristic_value_pricing
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: characteristic_value_pricing
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_route
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: route
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_goals_invoice_rules
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: goals_invoice_rules
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_characteristic_value
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: characteristic_value
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_lostreason
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: lostreason
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_feedback_response
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: feedback_response
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_state
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: state
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_characteristic
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: characteristic
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_payment_log
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: payment_log
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_custom_field
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: custom_field
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_payment_method
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: payment_method
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_saldo_flex
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: saldo_flex
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_domain
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: domain
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_approver
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: approver
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_classes
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: classes
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_product_sku_data
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product_sku_data
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_job
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: job
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_user_configuration
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: user_configuration
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_product_collection
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product_collection
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_product_classes
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product_classes
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_user_profile
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: user_profile
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_saldo_flex_historico
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: saldo_flex_historico
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_invoice_issuance
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: invoice_issuance
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_buyer
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: buyer
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_invoice_change
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: invoice_change
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_subcategory
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: subcategory
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_user
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: user
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_client
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: client
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_sequence
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: sequence
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_route_workflow
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: route_workflow
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_characteristic_value_pricing_rules
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: characteristic_value_pricing_rules
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_matrix
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: matrix
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_visit
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: visit
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer_ncm_st
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_ncm_st
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_city
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: city
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_country
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: country
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_ncm_icms
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_ncm_icms
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_notificationvalidation
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: notificationvalidation
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_invoice_item_characteristic
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: invoice_item_characteristic
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_contact
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_contact
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_product_bom
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product_bom
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_person_address
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: person_address
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_icms
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: icms
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_ncm_icms_cfop_csosn
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_ncm_icms_cfop_csosn
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_ncm
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: ncm
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_notification
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: notification
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_resale
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: resale
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_tasks
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_tasks
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_route_checkpoint
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: route_checkpoint
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_account_receivable
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: account_receivable
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_product_characteristic
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product_characteristic
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer_nf_configuration
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_nf_configuration
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_ncm_st
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: ncm_st
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cofins_operacao
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: cofins_operacao
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_imported_nfe
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: imported_nfe
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_goals_client_rules
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: goals_client_rules
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_profile_feature
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: profile_feature
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_log
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: log
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_product
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_invoice_approvers
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: invoice_approvers
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_comercial_politics_rules
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: comercial_politics_rules
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_workflow
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: workflow
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_log_omie
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: log_omie
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_profile
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: profile
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_report_configuration
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: report_configuration
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_feature
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: feature
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_custom_group
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: custom_group
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_business_unit
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: business_unit
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_icms_origem
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: icms_origem
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_token_info
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: token_info
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_services
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: services
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_customer_buyer
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_buyer
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_mail_model
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: mail_model
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_classes_characteristic
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: classes_characteristic
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_event_monitoring
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: event_monitoring
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_buyer_logs
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: buyer_logs
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_carrier
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: carrier
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_goals
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: goals
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_sku_pricing
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: sku_pricing
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_invoice
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: invoice
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_comercial_politics
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: comercial_politics
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_team_child
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: team_child
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_route_execution
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: route_execution
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_cart
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: cart
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_customer_ncm
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: customer_ncm
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cest
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: cest
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_payment_method_price_table
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: payment_method_price_table
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_cart_item
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: cart_item
+  config:
+    materialized: table
+    enabled: false
+- name: bdt_processed_invoice_item
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: invoice_item
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_payment_plan
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: payment_plan
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_product_sku
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: product_sku
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_warehouse
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: warehouse
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_goals_product_rules
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: goals_product_rules
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_person
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: person
+  config:
+    materialized: incremental
+    enabled: true
+    unique_key: id
+- name: bdt_processed_collection_variation
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: collection_variation
+  config:
+    materialized: table
+    enabled: true
+- name: bdt_processed_plans
+  config:
+    materialized: ephemeral
+    enabled: false
+- name: plans
+  config:
+    materialized: table
+    enabled: true
