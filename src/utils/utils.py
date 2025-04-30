@@ -116,6 +116,13 @@ class Utils:
             help="Update DBT model configurations before running (default: True)",
         )
         
+        parser.add_argument(
+            "--full-extract",
+            type=bool,
+            default=False,
+            help="Força a extração do período completo (default: False)",
+        )
+
         return parser
         
     @staticmethod

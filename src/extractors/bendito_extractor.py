@@ -92,6 +92,9 @@ class BenditoAPIExtractor(GenericAPIExtractor):
             query_string = f"{query} LIMIT {page_size} OFFSET {offset}"
             payload = json.dumps({"query": query_string, "separator": ";"})
             response = self.post_data(payload)
+            if response.json().get("success") == False:
+                logger.error(f"{__name__}: {response.json().get('error')}")
+                break
             response_text = (
                 response.text.replace("\r", "").encode("latin1").decode("utf-8")
             )

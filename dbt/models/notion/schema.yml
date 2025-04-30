@@ -8,6 +8,8 @@ models:
   config:
     materialized: incremental
     enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
     unique_key: page_id
 - name: ntn_processed_universal_task_database
   config:
@@ -17,4 +19,6 @@ models:
   config:
     materialized: incremental
     enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
     unique_key: page_id

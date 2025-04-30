@@ -292,18 +292,27 @@ class DBTRunner:
                 processed_model = self._create_model_config(
                     model_name=table.processed_model_name,
                     materialization="ephemeral",
-                    active=True,
+                    active = False if table.active == False else table.run_dbt_processed,
                 )
                 model_configs.append(processed_model)
 
+            # Curated model config
             if table.active and table.run_dbt_curated == True:
-                curated_model = self._create_model_config(
-                    model_name=table.curated_model_name,
-                    materialization=table.materialization_strategy,
-                    active=False if table.active == False else table.run_dbt_curated,
-                    unique_key=table.unique_id_property,
-                )
+                curated_model = {
+                    "name": table.curated_model_name,
+                    "config": {
+                        "materialized": table.materialization_strategy,
+                        "enabled": bool(table.run_dbt_curated),
+                        "post-hook": [
+                            "grant select on {{ this }} to role bendito_metabase"  # Customize role name
+                        ]
+                    }
+                }
+                if table.unique_id_property and table.materialization_strategy == "incremental":
+                    curated_model["config"]["unique_key"] = table.unique_id_property
+                    
                 model_configs.append(curated_model)
+
         return model_configs
 
     def _update_schema_config(self, schema_config, new_configs, origin):

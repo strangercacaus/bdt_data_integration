@@ -82,8 +82,10 @@ def main():
         active_tables = [table for table in tables if table.source_name == args.table]
     else:
         raise ValueError("Nome da base de dados inválido ou não configurado")
+    
+    if args.full_extract:
+        list(map(lambda table: setattr(table, 'days_interval', 0), active_tables))
 
-    # Define a função que vai processar a extração e o carregamento dos dados
     logger = logging.getLogger("replicate_database")
 
     @notifier.error_handler
