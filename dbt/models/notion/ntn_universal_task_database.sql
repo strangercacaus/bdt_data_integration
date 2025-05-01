@@ -275,7 +275,7 @@ select
             END
         ) AS tester_item
     ) as tester,
-    (soma_de_progresso -> 'rollup' ->> 'number')::int2 as soma_de_progresso,
-    (peso_da_tarefa -> 'rollup' ->> 'number')::int2 as peso_da_tarefa
+    (soma_de_progresso -> 'rollup' ->> 'number')::numeric as soma_de_progresso,
+    (peso_da_tarefa -> 'rollup' ->> 'number')::numeric as peso_da_tarefa
 from {{ ref('ntn_processed_universal_task_database') }}
 

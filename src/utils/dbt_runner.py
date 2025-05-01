@@ -304,7 +304,7 @@ class DBTRunner:
                         "materialized": table.materialization_strategy,
                         "enabled": bool(table.run_dbt_curated),
                         "post-hook": [
-                            "grant select on {{ this }} to role bendito_metabase"  # Customize role name
+                            f"grant select on {table.origin }.{table.curated_model_name} to bendito_metabase"
                         ]
                     }
                 }

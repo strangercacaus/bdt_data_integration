@@ -5,509 +5,509 @@ models:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_characteristic_value_dependency_rules to bendito_metabase
 - name: bdt_characteristic_value_dependency
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_characteristic_value_dependency to bendito_metabase
 - name: bdt_goals_invoice_rules
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_payment_method
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_goals_invoice_rules to bendito_metabase
 - name: bdt_health_app
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_health_app to bendito_metabase
 - name: bdt_invoice_workflow
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_invoice_workflow to bendito_metabase
 - name: bdt_characteristic_value
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_characteristic_value to bendito_metabase
 - name: bdt_characteristic_value_pricing
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_characteristic_value_pricing to bendito_metabase
 - name: bdt_comercial_politics_rules_criteria
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_comercial_politics_rules_criteria to bendito_metabase
 - name: bdt_payment_log
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_payment_log to bendito_metabase
 - name: bdt_customer_user
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_customer_user to bendito_metabase
 - name: bdt_custom_field
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_custom_field to bendito_metabase
 - name: bdt_state
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_state to bendito_metabase
 - name: bdt_customer_plans
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_customer_plans to bendito_metabase
 - name: bdt_deadline
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_deadline to bendito_metabase
 - name: bdt_team
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_team to bendito_metabase
 - name: bdt_route
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_route to bendito_metabase
 - name: bdt_collection
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_collection to bendito_metabase
 - name: bdt_feedback_question
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_feedback_question to bendito_metabase
 - name: bdt_family
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_family to bendito_metabase
 - name: bdt_lostreason
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_lostreason to bendito_metabase
 - name: bdt_customer
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_customer to bendito_metabase
 - name: bdt_feedback_response
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_feedback_response to bendito_metabase
 - name: bdt_characteristic
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_characteristic to bendito_metabase
 - name: bdt_invoice_status_log
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_invoice_status_log to bendito_metabase
     unique_key: id
 - name: bdt_price_table
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_price_table to bendito_metabase
+- name: bdt_payment_method
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_payment_method to bendito_metabase
 - name: bdt_saldo_flex
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_saldo_flex to bendito_metabase
 - name: bdt_domain
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_domain to bendito_metabase
 - name: bdt_approver
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_approver to bendito_metabase
 - name: bdt_classes
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_characteristic_value_pricing_rules
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_subcategory
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_classes to bendito_metabase
 - name: bdt_invoice_change
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_route_workflow
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_user
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_buyer
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_job
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_product_sku_data
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_user_profile
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_invoice_issuance
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_matrix
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_product_collection
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-- name: bdt_visit
-  config:
-    materialized: table
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_invoice_change to bendito_metabase
 - name: bdt_product_classes
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_product_classes to bendito_metabase
+- name: bdt_route_workflow
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_route_workflow to bendito_metabase
+- name: bdt_user
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_user to bendito_metabase
 - name: bdt_client
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_client to bendito_metabase
     unique_key: id
 - name: bdt_user_configuration
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_user_configuration to bendito_metabase
 - name: bdt_saldo_flex_historico
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_saldo_flex_historico to bendito_metabase
     unique_key: id
+- name: bdt_buyer
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_buyer to bendito_metabase
+- name: bdt_characteristic_value_pricing_rules
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_characteristic_value_pricing_rules to bendito_metabase
+- name: bdt_job
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_job to bendito_metabase
+- name: bdt_subcategory
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_subcategory to bendito_metabase
+- name: bdt_product_sku_data
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_product_sku_data to bendito_metabase
+- name: bdt_user_profile
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_user_profile to bendito_metabase
+- name: bdt_invoice_issuance
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_invoice_issuance to bendito_metabase
+- name: bdt_matrix
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_matrix to bendito_metabase
+- name: bdt_product_collection
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_product_collection to bendito_metabase
+- name: bdt_visit
+  config:
+    materialized: table
+    enabled: true
+    post-hook:
+    - grant select on bendito.bdt_visit to bendito_metabase
 - name: bdt_customer_ncm_icms
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_customer_ncm_icms to bendito_metabase
 - name: bdt_product_characteristic
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_product_characteristic to bendito_metabase
 - name: bdt_imported_nfe
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_imported_nfe to bendito_metabase
 - name: bdt_route_checkpoint
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_route_checkpoint to bendito_metabase
 - name: bdt_account_receivable
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_account_receivable to bendito_metabase
 - name: bdt_goals_client_rules
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_goals_client_rules to bendito_metabase
 - name: bdt_profile_feature
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_profile_feature to bendito_metabase
 - name: bdt_comercial_politics_rules
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_comercial_politics_rules to bendito_metabase
 - name: bdt_custom_group
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_custom_group to bendito_metabase
 - name: bdt_profile
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_profile to bendito_metabase
 - name: bdt_workflow
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_workflow to bendito_metabase
 - name: bdt_product
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_product to bendito_metabase
     unique_key: id
 - name: bdt_report_configuration
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_report_configuration to bendito_metabase
 - name: bdt_business_unit
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_business_unit to bendito_metabase
 - name: bdt_invoice_approvers
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_invoice_approvers to bendito_metabase
 - name: bdt_token_info
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_token_info to bendito_metabase
 - name: bdt_feature
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_feature to bendito_metabase
 - name: bdt_services
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_services to bendito_metabase
 - name: bdt_customer_buyer
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_customer_buyer to bendito_metabase
 - name: bdt_mail_model
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_mail_model to bendito_metabase
 - name: bdt_classes_characteristic
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_classes_characteristic to bendito_metabase
 - name: bdt_event_monitoring
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_event_monitoring to bendito_metabase
 - name: bdt_buyer_logs
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_buyer_logs to bendito_metabase
 - name: bdt_carrier
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_carrier to bendito_metabase
 - name: bdt_goal
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_goal to bendito_metabase
 - name: bdt_invoice_item
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_invoice_item to bendito_metabase
     unique_key: id
 - name: bdt_product_sku
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_product_sku to bendito_metabase
 - name: bdt_plans
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_plans to bendito_metabase
 - name: bdt_warehouse
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_warehouse to bendito_metabase
 - name: bdt_payment_plan
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_payment_plan to bendito_metabase
 - name: bdt_comercial_politics
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_comercial_politics to bendito_metabase
 - name: bdt_route_execution
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_route_execution to bendito_metabase
 - name: bdt_invoice
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_invoice to bendito_metabase
     unique_key: id
 - name: bdt_collection_variation
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_collection_variation to bendito_metabase
 - name: bdt_team_child
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_team_child to bendito_metabase
 - name: bdt_person
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_person to bendito_metabase
     unique_key: id
 - name: bdt_goals_product_rules
   config:
     materialized: table
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bendito.bdt_goals_product_rules to bendito_metabase

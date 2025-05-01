@@ -9,7 +9,7 @@ models:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on notion.ntn_universal_task_database to bendito_metabase
     unique_key: page_id
 - name: ntn_processed_bendito_blueprint
   config:
@@ -20,5 +20,5 @@ models:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on notion.ntn_bendito_blueprint to bendito_metabase
     unique_key: page_id

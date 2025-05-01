@@ -347,7 +347,7 @@ select
         FROM jsonb_each("CONTENT" -> 'properties')
         WHERE value ->> 'id' = 'gOo%3A'
         LIMIT 1
-    ) as tester
+    ) as tester,
     (
         SELECT value
         FROM jsonb_each("CONTENT" -> 'properties')
