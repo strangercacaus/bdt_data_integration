@@ -80,7 +80,7 @@ def main():
     else:
         raise ValueError("Nome da base de dados inválido ou não configurado")
 
-    if args.full_extract:
+    if args.full_extract.lower() == "true":
         list(map(lambda table: setattr(table, 'days_interval', 0), active_tables))
 
     logger = logging.getLogger("replicate_database")
@@ -90,16 +90,21 @@ def main():
         
         if args.extract.lower() == "false":
             return 1
-        stream = BenditoStream(table)
-        stream.set_extractor()
-        records = stream.extract_stream(page_size=args.page_size)
-        stream.set_table_definition()
-        stream.set_loader(
-            engine=create_engine(
-                f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
-            )
-        )
         try:
+            stream = BenditoStream(table)
+            stream.set_extractor()
+            records = stream.extract_stream(page_size=args.page_size)
+        except Exception as e:
+            logger.error(f"Erro ao extrair dados: {e}")
+            return 0
+            
+        try:
+            stream.set_table_definition()
+            stream.set_loader(
+                engine=create_engine(
+                    f"postgresql://{user}:{password}@{host}/{db_name}?sslmode=require"
+                )
+            )
             stream.load_stream(
                 records,
                 chunksize=args.chunk_size,
@@ -129,7 +134,7 @@ def main():
                 raise e
 
             finally:
-                if check == 1:
+                if  check or 0 == 1:
                     config_handler.update_table_configuration(
                         table.id,
                         table.source_name,

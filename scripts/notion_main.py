@@ -83,7 +83,7 @@ def main():
     else:
         raise ValueError("Nome da base de dados inválido ou não configurado")
     
-    if args.full_extract:
+    if args.full_extract.lower() == "true":
         list(map(lambda table: setattr(table, 'days_interval', 0), active_tables))
 
     logger = logging.getLogger("replicate_database")

@@ -25,4 +25,4 @@ select
 	last_activity_date as data_da_ultima_atividade,
 	uf_employment_date as data_de_contratacao
 from
-	{{ref('btx_processed_crm_user')}}
+	{{ref('btx_processed_user')}}

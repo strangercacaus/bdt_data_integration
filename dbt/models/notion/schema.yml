@@ -1,21 +1,21 @@
 version: 2
 models:
-- name: ntn_processed_bendito_blueprint
+- name: ntn_processed_universal_task_database
   config:
     materialized: ephemeral
     enabled: true
-- name: ntn_bendito_blueprint
+- name: ntn_universal_task_database
   config:
     materialized: incremental
     enabled: true
     post-hook:
     - grant select on {{ this }} to role bendito_metabase
     unique_key: page_id
-- name: ntn_processed_universal_task_database
+- name: ntn_processed_bendito_blueprint
   config:
     materialized: ephemeral
     enabled: true
-- name: ntn_universal_task_database
+- name: ntn_bendito_blueprint
   config:
     materialized: incremental
     enabled: true

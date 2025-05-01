@@ -118,8 +118,9 @@ class Utils:
         
         parser.add_argument(
             "--full-extract",
-            type=bool,
-            default=False,
+            type=str,
+            default="false",
+            choices=["true", "false"],
             help="Força a extração do período completo (default: False)",
         )
 

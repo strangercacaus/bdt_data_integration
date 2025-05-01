@@ -8,6 +8,8 @@ models:
   config:
     materialized: incremental
     enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
     unique_key: id
 - name: btx_processed_crm_contact
   config:
@@ -17,6 +19,8 @@ models:
   config:
     materialized: incremental
     enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
     unique_key: id
 - name: btx_processed_crm_activity
   config:
@@ -26,7 +30,24 @@ models:
   config:
     materialized: incremental
     enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
     unique_key: id
+- name: btx_processed_crm_lead
+  config:
+    materialized: ephemeral
+    enabled: true
+- name: btx_crm_lead
+  config:
+    materialized: incremental
+    enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
+    unique_key: id
+- name: btx_processed_crm_company_userfield
+  config:
+    materialized: ephemeral
+    enabled: true
 - name: btx_processed_crm_deal_userfield
   config:
     materialized: ephemeral
@@ -39,20 +60,9 @@ models:
   config:
     materialized: incremental
     enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
     unique_key: id
-- name: btx_processed_crm_lead
-  config:
-    materialized: ephemeral
-    enabled: true
-- name: btx_crm_lead
-  config:
-    materialized: incremental
-    enabled: true
-    unique_key: id
-- name: btx_processed_crm_company_userfield
-  config:
-    materialized: ephemeral
-    enabled: true
 - name: btx_processed_crm_deal
   config:
     materialized: ephemeral
@@ -61,20 +71,13 @@ models:
   config:
     materialized: incremental
     enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
     unique_key: id
 - name: btx_processed_crm_dealcategory
   config:
     materialized: ephemeral
     enabled: true
-- name: btx_processed_crm_status
-  config:
-    materialized: ephemeral
-    enabled: true
-- name: btx_crm_status
-  config:
-    materialized: incremental
-    enabled: true
-    unique_key: id
 - name: btx_processed_crm_dealcategory_stage
   config:
     materialized: ephemeral
@@ -91,6 +94,8 @@ models:
   config:
     materialized: incremental
     enabled: true
+    post-hook:
+    - grant select on {{ this }} to role bendito_metabase
     unique_key: id
 - name: btx_processed_crm_contact_userfield
   config:
