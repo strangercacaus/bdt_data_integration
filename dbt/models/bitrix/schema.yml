@@ -2,102 +2,98 @@ version: 2
 models:
 - name: btx_processed_crm_company
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_crm_company
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bitrix.btx_crm_company to bendito_metabase
     unique_key: id
 - name: btx_processed_crm_contact
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_crm_contact
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bitrix.btx_crm_contact to bendito_metabase
     unique_key: id
 - name: btx_processed_crm_activity
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_crm_activity
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
-    unique_key: id
-- name: btx_processed_crm_lead
-  config:
-    materialized: ephemeral
-    enabled: true
-- name: btx_crm_lead
-  config:
-    materialized: incremental
-    enabled: true
-    post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bitrix.btx_crm_activity to bendito_metabase
     unique_key: id
 - name: btx_processed_crm_company_userfield
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_processed_crm_deal_userfield
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_processed_user
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_user
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bitrix.btx_user to bendito_metabase
+    unique_key: id
+- name: btx_processed_crm_lead
+  config:
+    materialized: view
+    enabled: true
+- name: btx_crm_lead
+  config:
+    materialized: incremental
+    enabled: true
+    post-hook:
+    - grant select on bitrix.btx_crm_lead to bendito_metabase
     unique_key: id
 - name: btx_processed_crm_deal
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_crm_deal
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bitrix.btx_crm_deal to bendito_metabase
     unique_key: id
 - name: btx_processed_crm_dealcategory
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_processed_crm_dealcategory_stage
   config:
-    materialized: ephemeral
-    enabled: true
-- name: btx_processed_crm_enum_activitypriority
-  config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_processed_crm_product
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true
 - name: btx_crm_product
   config:
     materialized: incremental
     enabled: true
     post-hook:
-    - grant select on {{ this }} to role bendito_metabase
+    - grant select on bitrix.btx_crm_product to bendito_metabase
     unique_key: id
 - name: btx_processed_crm_contact_userfield
   config:
-    materialized: ephemeral
+    materialized: view
     enabled: true

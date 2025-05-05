@@ -291,7 +291,7 @@ class DBTRunner:
             if table.active and table.run_dbt_processed == True:
                 processed_model = self._create_model_config(
                     model_name=table.processed_model_name,
-                    materialization="ephemeral",
+                    materialization="view",
                     active = False if table.active == False else table.run_dbt_processed,
                 )
                 model_configs.append(processed_model)

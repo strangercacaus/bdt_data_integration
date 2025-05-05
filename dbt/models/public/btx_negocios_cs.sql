@@ -45,19 +45,17 @@ select
 	(
 		select 
 			value 
-		from bitrix.userfield_options o 
+		from bitrix.btx_crm_userfield_options o 
 		where o.id = x.cp_forma_pgto_implementacao 
 		and o.field_name = 'UF_CRM_1719234611470'
-	)
-	 as forma_pgto_implementacao,
+	) as forma_pgto_implementacao,
 		(
 		select 
 			value 
-		from bitrix.userfield_options o 
+		from bitrix.btx_crm_userfield_options o 
 		where o.id = x.cp_forma_pgto_recorrencia 
 		and o.field_name = 'UF_CRM_1719234653377'
-	)
-	 as forma_pgto_recorrencia,
+	) as forma_pgto_recorrencia,
 	x.cp_vr_negociado_recorrencia as vr_negociado_recorrencia,
 	x.cp_vr_negociado_implementacao as vr_negociado_implementacao,
 	case 
@@ -108,7 +106,7 @@ select
 	ARRAY(
 	SELECT o.value
 	FROM jsonb_array_elements(x.cp_plano) e
-	JOIN bitrix.userfield_options o 
+	JOIN bitrix.btx_crm_userfield_options o 
 	ON e::int = o.id 
 	AND o.field_name = 'UF_CRM_DEAL_1719236124580'),';') AS plano,
 	x.cp_tem_desenvolvimento_bendito::int::bool as tem_desenvolvimento_bendito,
@@ -116,7 +114,7 @@ select
 	ARRAY(
 	SELECT o.value
 	FROM jsonb_array_elements(x.cp_tipo_de_desenvolvimento) e
-	JOIN bitrix.userfield_options o 
+	JOIN bitrix.btx_crm_userfield_options o 
 	ON e::int = o.id 
 	AND o.field_name = 'UF_CRM_DEAL_1725540759541'),'; ') AS tipo_de_desenvolvimento--,
 	--x.cp_expectativa_valor_recorrencia as ,
@@ -127,18 +125,18 @@ select
 	--x.cp_como_fazem_gestao_de_pedidos_hj,
 	--x.cp_email_da_pessoa_ponto_focal
 from
-	{{ ref('btx_crm_deal') }} x
-left join {{ref('btx_processed_crm_dealcategory')}} x1
+	bitrix.btx_crm_deal x
+left join bitrix.btx_processed_crm_dealcategory x1
 	on x.id_categoria = x1.id
-left join {{ref('btx_processed_crm_dealcategory_stage')}} x2
+left join bitrix.btx_processed_crm_dealcategory_stage x2
 	on x.id_estagio = x2.status_id
-left join {{ref('btx_user')}} x3
+left join bitrix.btx_user x3
 	on x.id_atribuido_por = x3.id
-left join {{ref('btx_user')}} x4
+left join bitrix.btx_user x4
 	on x.id_modificdo_por  = x4.id
-left join {{ref('btx_user')}} x5
+left join bitrix.btx_user x5
 	on x.id_ultima_atividade_por = x5.id
-left join {{ref('btx_user')}} x6
+left join bitrix.btx_user x6
 	on x.id_criado_por = x6.id
-left join {{ref('btx_user')}} x7
+left join bitrix.btx_user x7
 	on x.id_movido_por = x7.id

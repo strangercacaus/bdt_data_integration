@@ -19,7 +19,7 @@ SELECT
   '{{ key }}' as id
   {% for key in keys %}
     {% if key|lower != 'id' %}
-    ,{{ content_column }} ->> '{{ key }}' AS "{{ key }}"
+    ,{{ content_column }} ->> '{{ key }}' AS {{ key|lower|replace(' ', '_')|replace('-', '_') }}
     {% endif %}
   {% endfor %}
 FROM {{ source_table }}
