@@ -50,6 +50,7 @@ class ConfigurationHelper:
                         updated_at=row["updated_at"],
                         run_dbt_processed=bool(row["run_dbt_processed"]),
                         run_dbt_curated=bool(row["run_dbt_curated"]),
+                        index_columns=row["index_columns"],
                     )
                     for row in result_dataframe.to_dict('records')
                 ]

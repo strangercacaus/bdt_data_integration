@@ -21,9 +21,10 @@ from bdt_data_integration.src.utils.dbt_runner import DBTRunner
 def main():
     # Create command line argument parser using the utility method
     parser = Utils.get_parser("Run the Bendito data integration pipeline")
+    
 
     args = parser.parse_args()
-    # Set up the root logger
+    
     logging.basicConfig(
         level=logging.DEBUG,  # Set to DEBUG to capture all log messages
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",

@@ -18,6 +18,7 @@ class DataTable:
         updated_at: str = None,
         run_dbt_processed: bool = True,
         run_dbt_curated: bool = True,
+        index_columns: list = None,
     ):
         self.id = id
         self.origin = origin
@@ -36,6 +37,7 @@ class DataTable:
         self.updated_at = updated_at
         self.run_dbt_processed = run_dbt_processed
         self.run_dbt_curated = run_dbt_curated
+        self.index_columns = index_columns
 
     @property
     def raw_model_name(self):

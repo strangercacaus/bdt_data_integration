@@ -298,17 +298,29 @@ class DBTRunner:
 
             # Curated model config
             if table.active and table.run_dbt_curated == True:
+                
+                post_hook = [
+                    f"grant select on {table.origin}.{table.curated_model_name} to bendito_metabase"
+                ]
+                if table.unique_id_property:
+                    post_hook.append(
+                        f"create index if not exists idx_{table.curated_model_name}_{table.unique_id_property} on {table.origin}.{table.curated_model_name} using btree ({table.unique_id_property})"
+                    )
+                if table.index_columns:
+                    for column in table.index_columns:
+                        post_hook.append(
+                            f"create index if not exists idx_{table.curated_model_name}_{column} on {table.origin}.{table.curated_model_name} using btree ({column})"
+                        )
+                
                 curated_model = {
                     "name": table.curated_model_name,
                     "config": {
                         "materialized": table.materialization_strategy,
                         "enabled": bool(table.run_dbt_curated),
-                        "post-hook": [
-                            f"grant select on {table.origin }.{table.curated_model_name} to bendito_metabase"
-                        ]
+                        "post-hook": post_hook
                     }
                 }
-                if table.unique_id_property and table.materialization_strategy == "incremental":
+                if table.unique_id_property and table.materialization_strategy in ["incremental", "table"]:
                     curated_model["config"]["unique_key"] = table.unique_id_property
                     
                 model_configs.append(curated_model)

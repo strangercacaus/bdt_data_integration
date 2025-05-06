@@ -84,7 +84,7 @@ SELECT
     NULLIF("CONTENT"->>'UF_CRM_1721083874978', '')::numeric as uf_crm_1721083874978,
     NULLIF("CONTENT"->>'UF_CRM_1721083894608', '')::numeric as uf_crm_1721083894608,
     NULLIF("CONTENT"->>'UF_CRM_1721083906720', '')::numeric as uf_crm_1721083906720,
-    NULLIF("CONTENT"->>'UF_CRM_1721226126', '[]')::bool as uf_crm_1721226126,
+    NULLIF("CONTENT"->>'UF_CRM_1721226126', 'false')::text as uf_crm_1721226126,
     nullif("CONTENT"->>'UF_CRM_1721227124', '[]')::bool as uf_crm_1721227124,
     ("CONTENT"->>'UF_CRM_1721241190')::varchar as uf_crm_1721241190,
     ("CONTENT"->>'UF_CRM_1721243220370')::varchar as uf_crm_1721243220370,
