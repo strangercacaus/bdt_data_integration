@@ -4,12 +4,12 @@
 	enabled = true,
     post_hook=[
         "GRANT SELECT ON {{ this }} TO bendito_metabase",
-		"CREATE INDEX idx_{{ this.name }}_id ON {{ this }} (id)",
-		"CREATE INDEX idx_{{ this.name }}_status ON {{ this }} (status)",
-		"CREATE INDEX idx_{{ this.name }}_tipo_integracao ON {{ this }} (tipo_integracao)",
-		"CREATE INDEX idx_{{ this.name }}_email_cs ON {{ this }} (email_cs)",
-		"CREATE INDEX idx_{{ this.name }}_criado_em ON {{ this }} (criado_em)",
-		"CREATE INDEX idx_{{ this.name }}_modificado_em ON {{ this }} (modificado_em)",
+		"CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_id ON {{ this }} (id)",
+		"CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_status ON {{ this }} (status)",
+		"CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_tipo_integracao ON {{ this }} (tipo_integracao)",
+		"CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_email_cs ON {{ this }} (email_cs)",
+		"CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_criado_em ON {{ this }} (criado_em)",
+		"CREATE INDEX IF NOT EXISTS idx_{{ this.name }}_modificado_em ON {{ this }} (modificado_em)",
     ]
 )}}
 select
